@@ -1,10 +1,10 @@
 # Catalyze CLI Version 2.0.0
 
-## Upgrading from 1.X.X
+## Upgrading from 1.X.X <a id="upgrading"></a>
 
-Upgrading to the Catalyze CLI version 2.0.0 is easy! First, you need to uninstall the previous version of the CLI. This is most likely done through `pip uninstall catalyze`. Next you need to <a href="#">download</a> the new version. Lastly, you need to <a href="#associate">reassociate</a> all your environments.
+Upgrading to the Catalyze CLI version 2.0.0 is easy! First, you need to uninstall the previous version of the CLI. This is most likely done through `pip uninstall catalyze`. Next you need to [download](https://github.com/catalyzeio/cli#downloads) the new version. Lastly, you need to [reassociate](#associate) all your environments.
 
-## <span id="supported">Supported Platforms & Architectures</span>
+## Supported Platforms & Architectures <a id="supported-platforms"></a>
 
 Since version 2.0.0, the following platforms and architectures are supported by the Catalyze CLI.
 
@@ -14,23 +14,23 @@ Since version 2.0.0, the following platforms and architectures are supported by 
 | Linux | 64-bit, arm |
 | Windows | 64-bit |
 
-# <span id="scope">Global Scope</span>
+# Global Scope <a id="global-scope"></a>
 
 The CLI now supports the concept of scope. Previous to version 2.0.0, all commands had to be run within an associated local git repo. Now, the only time you need to be in a local git repo is when you associate a new environment. After the initial associated, CLI commands can be run from any directory. If you have more than one environment, the CLI uses this concept of scope to decide which environment you are using for the command. 
 
 Let's say you have an environment that you associated in the directory `~/mysandbox-code` and another you associated in the directory `~/myprod-code`. These environments are named `mysandbox` and `myprod` respectively. When you are within either of those directories, the CLI knows that any command you run will be in the context of the given environment. Commands run in the `~/myprod-code` directory will be run against the `myprod` environment. Similarly for `~/mysandbox-code` and the `mysandbox` environment. What if you are outside those directories? You have three options.
 
-First, you can tell the CLI which environment you want to use with the global option `-E` or `--env` (see <a href="#global-options">Global Options</a>). Your command might start like this
+First, you can tell the CLI which environment you want to use with the global option `-E` or `--env` (see [Global Options](#global-options)). Your command might start like this
 
 ```
 catalyze -E myprod ...
 ```
 
-This global option will even override the environment found in a local git repo. If you don't set the `-E` flag, and the CLI can't find an environment in your local git repo, the CLI then checks for a default environment. A default environment is used whenever you are outside of a git repo and an environment is not specified. A default environment can be specified using the <a href="#default">default</a> command. You can find out which environment is the default by running the <a href="#associated">associated</a> command.
+This global option will even override the environment found in a local git repo. If you don't set the `-E` flag, and the CLI can't find an environment in your local git repo, the CLI then checks for a default environment. A default environment is used whenever you are outside of a git repo and an environment is not specified. A default environment can be specified using the [default](#default) command. You can find out which environment is the default by running the [associated](#associated) command.
 
 Lastly, if no environment is specified, you're outside of a git repo, and no default environment is set, then the CLI simply takes the first environment you associated and prompts you to continue with this environment. This concept of scope will make it easier for Catalyze customers with multiple environments to use the CLI!
 
-# <span id="aliases">Environment Aliases</span>
+# Environment Aliases <a id="aliases"></a>
 
 When you associate an environment from within a local git repo, you typically run the following command:
 
@@ -38,7 +38,7 @@ When you associate an environment from within a local git repo, you typically ru
 catalyze associate "My Health Tech Company Production"
 ```
 
-Where `My Health Tech Company Production` is the name of your environment. However with the concept of <a href="#scope">scope</a> and being able to specify which environment to use on a command by command basis with the `-E` global option, that is a lot to type! This is where environment aliases come in handy.
+Where `My Health Tech Company Production` is the name of your environment. However with the concept of [scope](#global-scope) and being able to specify which environment to use on a command by command basis with the `-E` global option, that is a lot to type! This is where environment aliases come in handy.
 
 When you associate an environment and you want to pick a shorter name to reference the environment by, simply add a `-a` flag to the command. Let's try the command again calling it `prod` this time:
 
@@ -46,19 +46,19 @@ When you associate an environment and you want to pick a shorter name to referen
 catalyze associate "My Health Tech Company Production" -a prod
 ```
 
-Now when you run the <a href="#associated">associated</a> command, you will see the alias as well as the actual environment name. 
+Now when you run the [associated](#associated) command, you will see the alias as well as the actual environment name. 
 
 When using aliases, there are a couple things to keep in mind. Aliases are only local and never leave your local machine. If you alias this environment `prod`, a coworker can alias the environment `healthtech-prod` with no ramifications. Second, after setting an alias, you will never reference the environment by its actual name with the CLI. You will always use the alias for flags, arguments, options, etc. 
 
-To change or remove an alias, you must <a href="#disassociate">disassociate</a> and then <a href="#associate">reassociate</a> with a new alias.
+To change or remove an alias, you must [disassociate](#disassociate) and then [reassociate](#associate) with a new alias.
 
-# <span id="autocomplete">Bash Autocompletion</span>
+# Bash Autocompletion <a id="autocompletion"></a>
 
 One feature we've found helpful on \*Nix systems is autocompletion in bash. To enable this feature, head over to the github repo and download the `bash_autocomplete` file. If you use a Mac, you will need to install bash-completion with `brew install bash-completion` or `source` the `bash_autocomplete` file each time you start up terminal. Store this file locally in `/etc/bash_completion.d/` or (`/usr/local/etc/bash_completion.d/` on Mac). Completion will be available when you restart terminal. Now simply type `catalyze ` and hit tab twice to see the list of available commands. **Please note** that autocompletion only works one level deep. The CLI will not autocomplete or suggest completions when you type `catalyze db ` and then hit tab twice. It currently only works when you have just `catalyze ` typed into your terminal. This is a feature we are looking into expanding in the future.
 
 Note: you may have to add `source /etc/bash_completion.d/completionfile` (`/usr/loca/etc/bsah_completion.d/completionfile`) in your `~/.bashrc` (`~/.bash_profile`) file.
 
-# <span id="global-options">Global Options</span>
+# Global Options <a id="global-options"></a>
 
 The following table outlines all global options available in the CLI. Global options are always set after the word `catalyze` and before any commands. Rather than setting these each time, you may also set an environment variable with the appropriate value which will automatically be used.
 
@@ -66,14 +66,14 @@ The following table outlines all global options available in the CLI. Global opt
 |------------|-----------|-------------|----------------------|
 | -U | --username | Your catalyze username that you login to the Dashboard with | CATALYZE_USERNAME |
 | -P | --password | Your catalyze password that you login to the Dashboard with | CATALYZE_PASSWORD |
-| -E | --env | The local alias of the environment in which this command will be run. Read more about <a href="#aliases">environment aliases</a> | CATALYZE_ENV |
+| -E | --env | The local alias of the environment in which this command will be run. Read more about [environment aliases](#aliases) | CATALYZE_ENV |
 | | --version | Prints out the CLI version | |
 
-# <span id="commands">Commands</span>
+# Commands <a id="commands"></a>
 
 This section lists all commands the CLI offers. Help text, along with a description, and a sample are given for each command.
 
-## <span id="associate">associate</span>
+## associate <a id="associate"></a>
 
 ```
 Usage: catalyze associate ENV_NAME [SERVICE_NAME] [-a] [-r] [-d] 
@@ -90,13 +90,13 @@ Options:
   -d, --default=false       Specifies whether or not the associated environment will be the default
 ```
 
-`associate` is the entry point of the cli. You need to associate an environment before you can run most other commands. Check out <a href="#scope">scope</a> and <a href="#alises">aliases</a> for more info on the value of the alias and default options. Here is a sample command
+`associate` is the entry point of the cli. You need to associate an environment before you can run most other commands. Check out [scope](#global-scope) and [aliases](#aliases) for more info on the value of the alias and default options. Here is a sample command
 
 ```
 catalyze associate My-Production-Environment -a prod -d
 ```
 
-## <span id="associated">associated</span>
+## associated <a id="associated"></a>
 
 ```
 Usage: catalyze associated  
@@ -110,11 +110,11 @@ Lists all associated environments
 catalyze associated
 ```
 
-## <span id="backup">backup</span>
+## backup <a id="backup"></a>
 
 The `backup` command gives access to backup and restores services for databases. The backup command can not be run directly but has four sub commands.
 
-### <span id="backup-create">create</span>
+### create <a id="backup-create"></a>
 
 ```
 Usage: catalyze backup create SERVICE_NAME [-s] 
@@ -134,7 +134,7 @@ Options:
 catalyze backup create db01
 ```
 
-### <span id="backup-download">download</span>
+### download <a id="backup-download"></a>
 
 ```
 Usage: catalyze backup download SERVICE_NAME BACKUP_ID FILEPATH [-f] 
@@ -150,7 +150,7 @@ Options:
   -f, --force=false   If a file previously exists at "filepath", overwrite it and download the backup
 ```
 
-`backup download` downloads a previously created backup to your local hard drive. Be careful using this command is it could download PHI. Be sure that all hard drive encryption and necessary precautions have been taken before performing a download. The ID of the backup is found by first running the <a href="#backup-list">backup list</a> command. Here is a sample command
+`backup download` downloads a previously created backup to your local hard drive. Be careful using this command is it could download PHI. Be sure that all hard drive encryption and necessary precautions have been taken before performing a download. The ID of the backup is found by first running the [backup list](#backup-list) command. Here is a sample command
 
 ```
 catalyze backup download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.sql
@@ -162,7 +162,7 @@ This assumes you are download a MySQL or PostgreSQL backup which takes the `.sql
 catalyze backup download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.tar.gz
 ```
 
-### <span id="backup-list">list</span>
+### list <a id="backup-list"></a>
 
 ```
 Usage: catalyze backup list SERVICE_NAME [-p] [-n] 
@@ -183,7 +183,7 @@ Options:
 catalyze backup list db01
 ```
 
-### <span id="backup-restore">restore</span>
+### restore <a id="backup-restore"></a>
 
 ```
 Usage: catalyze backup restore SERVICE_NAME BACKUP_ID [-s] 
@@ -198,12 +198,12 @@ Options:
   -s, --skip-poll=false   Whether or not to wait for the restore to finish
 ```
 
-`backup restore` restores your database service to a previous point in time. **Be careful** using this command as your database will be wiped. The backup ID can be found by running the <a href="#backup-list">backup list</a> command. Regardless of a successful backup or not, the logs for the backup will be printed to the console when the backup is finished. Here is a sample command
+`backup restore` restores your database service to a previous point in time. **Be careful** using this command as your database will be wiped. The backup ID can be found by running the [backup list](#backup-list) command. Regardless of a successful backup or not, the logs for the backup will be printed to the console when the backup is finished. Here is a sample command
 
 ```
 catalyze backup restore db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203
 ```
-## <span id="console">console</span>
+## console <a id="console"></a>
 
 ```
 Usage: catalyze console SERVICE_NAME [COMMAND] 
@@ -222,7 +222,7 @@ catalyze console db01
 catalyze console app01 "bundle exec rails console"
 ```
 
-## <span id="dashboard">dashboard</span>
+## dashboard <a id="dashboard"></a>
 
 ```
 Usage: catalyze dashboard  
@@ -236,11 +236,11 @@ Open the Catalyze Dashboard in your default browser
 catalyze dashboard
 ```
 
-## <span id="db">db</span>
+## db <a id="db"></a>
 
 The `db` command gives access to import and export services for databases. The db command can not be run directly but has two sub commands.
 
-### <span id="db-import">import</span>
+### import <a id="db-import"></a>
 
 ```
 Usage: catalyze db import DATABASE_NAME FILEPATH [-d [-c]] 
@@ -274,7 +274,7 @@ and stored it at `./db.sql` you could import this into your database service. If
 catalyze db import db01 ./db.sql
 ```
 
-### <span id="db-export">export</span>
+### export <a id="db-export"></a>
 
 ```
 Usage: catalyze db export DATABASE_NAME FILEPATH [-f] 
@@ -289,13 +289,13 @@ Options:
   -f, --force=false   If a file previously exists at `filepath`, overwrite it and export data
 ```
 
-`export` is a simple wrapper around the `backup create` and `backup download` command. When you request an export, a backup is created that will be added to the list of backups shown when you perform the <a href="#backup-list">backup list</a> command. Next, that backup is immediately downloaded. Regardless of a successful export or not, the logs for the export will be printed to the console when the export is finished. Here is a sample command
+`export` is a simple wrapper around the `backup create` and `backup download` command. When you request an export, a backup is created that will be added to the list of backups shown when you perform the [backup list](#backup-list) command. Next, that backup is immediately downloaded. Regardless of a successful export or not, the logs for the export will be printed to the console when the export is finished. Here is a sample command
 
 ```
 catalyze db export db01 ./dbexport.sql
 ```
 
-## <span id="default">default</span>
+## default <a id="default"></a>
 
 ```
 Usage: catalyze default ENV_ALIAS 
@@ -306,13 +306,13 @@ Arguments:
   ENV_ALIAS=""   The alias of an already associated environment to set as the default
 ```
 
-`default` sets the default environment for all commands without a specified environment and run outside of a git repo. See <a href="#scope">scope</a> for more information on scope and default environments. When setting a default environment, you must give the alias of the environment if one was set when it was associated and not the real environment name. Here is a sample command
+`default` sets the default environment for all commands without a specified environment and run outside of a git repo. See [scope](#global-scope) for more information on scope and default environments. When setting a default environment, you must give the alias of the environment if one was set when it was associated and not the real environment name. Here is a sample command
 
 ```
 catalyze default prod
 ```
 
-## <span id="disassociate">disassociate</span>
+## disassociate <a id="disassociate"></a>
 
 ```
 Usage: catalyze disassociate  
@@ -326,7 +326,7 @@ Remove the association with an environment
 catalyze disassociate
 ```
 
-## <span id="environments">environments</span>
+## environments <a id="environments"></a>
 
 ```
 Usage: catalyze environments  
@@ -340,7 +340,7 @@ List all environments you have access to
 catalyze environments
 ```
 
-## <span id="logs">logs</span>
+## logs <a id="logs"></a>
 
 ```
 Usage: catalyze logs [QUERY] [-f] [-h] 
@@ -361,7 +361,7 @@ Options:
 catalyze logs -f -h 24
 ```
 
-## <span id="logout">logout</span>
+## logout <a id="logout"></a>
 
 ```
 Usage: catalyze logout  
@@ -375,7 +375,7 @@ When using the CLI, your username and password are **never** stored in any file 
 catalyze logout
 ```
 
-## <span id="metrics">metrics</span>
+## metrics <a id="metrics"></a>
 
 ```
 Usage: catalyze metrics [SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m] 
@@ -402,7 +402,7 @@ catalyze metrics --json
 catalyze metrics db01 --csv -m 60
 ```
 
-## <span id="rake">rake</span>
+## rake <a id="rake"></a>
 
 ```
 Usage: catalyze rake TASK_NAME 
@@ -413,13 +413,13 @@ Arguments:
   TASK_NAME=""   The name of the rake task to run
 ```
 
-`rake` executes a rake task by its name asynchronously. Once executed, the output of the task can be seen through your logging Dashboard or using the <a href="#logs">logs</a> command. Here is a sample command
+`rake` executes a rake task by its name asynchronously. Once executed, the output of the task can be seen through your logging Dashboard or using the [logs](#logs) command. Here is a sample command
 
 ```
 catalyze rake db:migrate
 ```
 
-## <span id="redeploy">redeploy</span>
+## redeploy <a id="redeploy"></a>
 
 ```
 Usage: catalyze redeploy  
@@ -427,15 +427,15 @@ Usage: catalyze redeploy
 Redeploy a service without having to do a git push
 ```
 
-`redeploy` restarts your code service without having to perform a code push. Typically when you want to update your code service you make a code change, git commit, then git push catalyze master. After the build finishes and a couple minutes later your code service will be redeployed. With the redeploy command, you skip the git push and the build. The code service that is redeployed is the one that was associated when the <a href="#associate">associate</a> command was run. You can see which code service ID this is with the <a href="#associated">associated</a> command. Here is a sample command
+`redeploy` restarts your code service without having to perform a code push. Typically when you want to update your code service you make a code change, git commit, then git push catalyze master. After the build finishes and a couple minutes later your code service will be redeployed. With the redeploy command, you skip the git push and the build. The code service that is redeployed is the one that was associated when the [associate](#associate) command was run. You can see which code service ID this is with the [associated](#associated) command. Here is a sample command
 
 ```
 catalyze redeploy
 ```
 
-## <span id="ssl">ssl</span>
+## ssl <a id="ssl"></a>
 
-### <span id="ssl-verify">verify</span>
+### verify <a id="ssl-verify"></a>
 
 ```
 Usage: catalyze ssl verify CHAIN PRIVATE_KEY HOSTNAME [-s] 
@@ -473,7 +473,7 @@ You can also use this command to verify self-signed certificates match a given p
 catalyze ssl verify ./catalyze.crt ./catalyze.key *.catalyze.io
 ```
 
-## <span id="status">status</span>
+## status <a id="status"></a>
 
 ```
 Usage: catalyze status  
@@ -487,7 +487,7 @@ Get quick readout of the current status of your associated environment and all o
 catalyze status
 ```
 
-## <span id="support-ids">support-ids</span>
+## support-ids <a id="support-ids"></a>
 
 ```
 Usage: catalyze support-ids  
@@ -501,11 +501,11 @@ Print out various IDs related to your associated environment to be used when con
 catalyze support-ids
 ```
 
-## <span id="users">users</span>
+## users <a id="users"></a>
 
 The `users` command allows you to manage who has access to your environment. The users command can not be run directly but has three sub commands.
 
-### <span id="users-add">add</span>
+### add <a id="users-add"></a>
 
 ```
 Usage: catalyze users add USER_ID 
@@ -516,13 +516,13 @@ Arguments:
   USER_ID=""   The Users ID to give access to the associated environment
 ```
 
-`users add` grants an existing Catalyze Dashboard user access to your environment. To give them access, request that they first run the <a href="#whoami">whoami</a> command and send you their users ID. Here is a sample command
+`users add` grants an existing Catalyze Dashboard user access to your environment. To give them access, request that they first run the [whoami](#whoami) command and send you their users ID. Here is a sample command
 
 ```
 catalyze users add 774bf982-fc4a-428b-a048-c38cffb7d0ab
 ```
 
-### <span id="users-list">list</span>
+### list <a id="users-list"></a>
 
 ```
 Usage: catalyze users list  
@@ -536,7 +536,7 @@ List all users who have access to the associated environment
 catalyze users list
 ```
 
-### <span id="users-rm">rm</span>
+### rm <a id="users-rm"></a>
 
 ```
 Usage: catalyze users rm USER_ID 
@@ -547,17 +547,17 @@ Arguments:
   USER_ID=""   The Users ID to revoke access from for the associated environment
 ```
 
-`users rm` revokes a users access to your environment. This is the opposite of the <a href="#users-add">users add</a> command. Here is a sample command
+`users rm` revokes a users access to your environment. This is the opposite of the [users add](#users-add) command. Here is a sample command
 
 ```
 catalyze users rm 774bf982-fc4a-428b-a048-c38cffb7d0ab
 ```
 
-## <span id="vars">vars</span>
+## vars <a id="vars"></a>
 
 The `vars` command allows you to manage environment variables for your code services. The vars command can not be run directly but has three sub commands.
 
-### <span id="vars-list">list</span>
+### list <a id="vars-list"></a>
 
 ```
 Usage: catalyze vars list  
@@ -571,7 +571,7 @@ List all environment variables
 catalyze vars list
 ```
 
-### <span id="vars-set">set</span>
+### set <a id="vars-set"></a>
 
 ```
 Usage: catalyze vars set -v... 
@@ -582,13 +582,13 @@ Options:
   -v, --variable    The env variable to set or update in the form "<key>=<value>"
 ```
 
-`vars set` allows you to add a new environment variable or update the value of an existing environment variable on your code service. You can set/update 1 or more environment variables at a time with this command by repeating the `-v` option multiple times. Once new environment variables are added or values updated, a <a href="#redeploy">redeploy</a> is required for your code service to have access to the changes. The environment variables must be of the form `<key>=<value>`. Here is a sample command
+`vars set` allows you to add a new environment variable or update the value of an existing environment variable on your code service. You can set/update 1 or more environment variables at a time with this command by repeating the `-v` option multiple times. Once new environment variables are added or values updated, a [redeploy](#redeploy) is required for your code service to have access to the changes. The environment variables must be of the form `<key>=<value>`. Here is a sample command
 
 ```
 catalyze vars set -v AWS_ACCESS_KEY_ID=1234 -v AWS_SECRET_ACCESS_KEY=5678
 ```
 
-### <span id="vars-unset">unset</span>
+### unset <a id="vars-unset"></a>
 
 ```
 Usage: catalyze vars unset VARIABLE 
@@ -599,13 +599,13 @@ Arguments:
   VARIABLE=""   The name of the environment variable to unset
 ```
 
-`vars unset` removes an environment variables from your associated code service. Only the environment variable name is required to unset. Once environment variables are unset, a <a href="#redeploy">redeploy</a> is required for your code service to have access to the changes. Here is a sample command
+`vars unset` removes an environment variables from your associated code service. Only the environment variable name is required to unset. Once environment variables are unset, a [redeploy](#redeploy) is required for your code service to have access to the changes. Here is a sample command
 
 ```
 catalyze vars unset AWS_ACCESS_KEY_ID
 ```
 
-## <span id="version">version</span>
+## version <a id="version"></a>
 
 ```
 Usage: catalyze version  
@@ -619,7 +619,7 @@ Output the version and quit
 catalyze version
 ```
 
-## <span id="whoami">whoami</span>
+## whoami <a id="whoami"></a>
 
 ```
 Usage: catalyze whoami  
@@ -627,13 +627,13 @@ Usage: catalyze whoami
 Retrieve your user ID
 ```
 
-`whoami` prints out the currently logged in user's users ID. This is used with the <a href="#users-add">users add</a> and <a href="#users-rm">users rm</a> commands as well as with Catalyze support. Here is a sample command
+`whoami` prints out the currently logged in user's users ID. This is used with the [users add](#users-add) and [users rm](#users-rm) commands as well as with Catalyze support. Here is a sample command
 
 ```
 catalyze whoami
 ```
 
-## <span id="worker">worker</span>
+## worker <a id="worker"></a>
 
 ```
 Usage: catalyze worker TARGET 
@@ -644,7 +644,7 @@ Arguments:
   TARGET=""    The name of the Procfile target to invoke as a worker
 ```
 
-`worker` starts a background worker asynchronously. The `TARGET` argument must be specified in your `Procfile`. Once the worker is started, any output can be found in your logging Dashboard or using the <a href="#logs">logs</a> command. Here is a sample command
+`worker` starts a background worker asynchronously. The `TARGET` argument must be specified in your `Procfile`. Once the worker is started, any output can be found in your logging Dashboard or using the [logs](#logs) command. Here is a sample command
 
 ```
 catalyze worker Scrape
