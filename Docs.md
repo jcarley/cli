@@ -1,10 +1,10 @@
 # Catalyze CLI Version 2.0.0
 
-## Upgrading from 1.X.X <a id="upgrading"></a>
+## <a id="upgrading"></a> Upgrading from 1.X.X
 
 Upgrading to the Catalyze CLI version 2.0.0 is easy! First, you need to uninstall the previous version of the CLI. This is most likely done through `pip uninstall catalyze`. Next you need to [download](https://github.com/catalyzeio/cli#downloads) the new version. Lastly, you need to [reassociate](#associate) all your environments.
 
-## Supported Platforms & Architectures <a id="supported-platforms"></a>
+## <a id="supported-platforms"></a> Supported Platforms & Architectures
 
 Since version 2.0.0, the following platforms and architectures are supported by the Catalyze CLI.
 
@@ -14,7 +14,7 @@ Since version 2.0.0, the following platforms and architectures are supported by 
 | Linux | 64-bit, arm |
 | Windows | 64-bit |
 
-# Global Scope <a id="global-scope"></a>
+# <a id="global-scope"></a> Global Scope
 
 The CLI now supports the concept of scope. Previous to version 2.0.0, all commands had to be run within an associated local git repo. Now, the only time you need to be in a local git repo is when you associate a new environment. After the initial associated, CLI commands can be run from any directory. If you have more than one environment, the CLI uses this concept of scope to decide which environment you are using for the command. 
 
@@ -30,7 +30,7 @@ This global option will even override the environment found in a local git repo.
 
 Lastly, if no environment is specified, you're outside of a git repo, and no default environment is set, then the CLI simply takes the first environment you associated and prompts you to continue with this environment. This concept of scope will make it easier for Catalyze customers with multiple environments to use the CLI!
 
-# Environment Aliases <a id="aliases"></a>
+# <a id="aliases"></a> Environment Aliases
 
 When you associate an environment from within a local git repo, you typically run the following command:
 
@@ -52,13 +52,13 @@ When using aliases, there are a couple things to keep in mind. Aliases are only 
 
 To change or remove an alias, you must [disassociate](#disassociate) and then [reassociate](#associate) with a new alias.
 
-# Bash Autocompletion <a id="autocompletion"></a>
+# <a id="autocompletion"></a> Bash Autocompletion
 
 One feature we've found helpful on \*Nix systems is autocompletion in bash. To enable this feature, head over to the github repo and download the `bash_autocomplete` file. If you use a Mac, you will need to install bash-completion with `brew install bash-completion` or `source` the `bash_autocomplete` file each time you start up terminal. Store this file locally in `/etc/bash_completion.d/` or (`/usr/local/etc/bash_completion.d/` on Mac). Completion will be available when you restart terminal. Now simply type `catalyze ` and hit tab twice to see the list of available commands. **Please note** that autocompletion only works one level deep. The CLI will not autocomplete or suggest completions when you type `catalyze db ` and then hit tab twice. It currently only works when you have just `catalyze ` typed into your terminal. This is a feature we are looking into expanding in the future.
 
 Note: you may have to add `source /etc/bash_completion.d/completionfile` (`/usr/loca/etc/bsah_completion.d/completionfile`) in your `~/.bashrc` (`~/.bash_profile`) file.
 
-# Global Options <a id="global-options"></a>
+# <a id="global-options"></a> Global Options
 
 The following table outlines all global options available in the CLI. Global options are always set after the word `catalyze` and before any commands. Rather than setting these each time, you may also set an environment variable with the appropriate value which will automatically be used.
 
@@ -69,11 +69,11 @@ The following table outlines all global options available in the CLI. Global opt
 | -E | --env | The local alias of the environment in which this command will be run. Read more about [environment aliases](#aliases) | CATALYZE_ENV |
 | | --version | Prints out the CLI version | |
 
-# Commands <a id="commands"></a>
+# <a id="commands"></a> Commands
 
 This section lists all commands the CLI offers. Help text, along with a description, and a sample are given for each command.
 
-## associate <a id="associate"></a>
+## <a id="associate"></a> associate
 
 ```
 Usage: catalyze associate ENV_NAME [SERVICE_NAME] [-a] [-r] [-d] 
@@ -96,7 +96,7 @@ Options:
 catalyze associate My-Production-Environment -a prod -d
 ```
 
-## associated <a id="associated"></a>
+## <a id="associated"></a> associated
 
 ```
 Usage: catalyze associated  
@@ -110,11 +110,11 @@ Lists all associated environments
 catalyze associated
 ```
 
-## backup <a id="backup"></a>
+## <a id="backup"></a> backup
 
 The `backup` command gives access to backup and restores services for databases. The backup command can not be run directly but has four sub commands.
 
-### create <a id="backup-create"></a>
+### <a id="backup-create"></a> create
 
 ```
 Usage: catalyze backup create SERVICE_NAME [-s] 
@@ -134,7 +134,7 @@ Options:
 catalyze backup create db01
 ```
 
-### download <a id="backup-download"></a>
+### <a id="backup-download"></a> download
 
 ```
 Usage: catalyze backup download SERVICE_NAME BACKUP_ID FILEPATH [-f] 
@@ -162,7 +162,7 @@ This assumes you are download a MySQL or PostgreSQL backup which takes the `.sql
 catalyze backup download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.tar.gz
 ```
 
-### list <a id="backup-list"></a>
+### <a id="backup-list"></a> list
 
 ```
 Usage: catalyze backup list SERVICE_NAME [-p] [-n] 
@@ -183,7 +183,7 @@ Options:
 catalyze backup list db01
 ```
 
-### restore <a id="backup-restore"></a>
+### <a id="backup-restore"></a> restore
 
 ```
 Usage: catalyze backup restore SERVICE_NAME BACKUP_ID [-s] 
@@ -203,7 +203,7 @@ Options:
 ```
 catalyze backup restore db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203
 ```
-## console <a id="console"></a>
+## <a id="console"></a> console
 
 ```
 Usage: catalyze console SERVICE_NAME [COMMAND] 
@@ -222,7 +222,7 @@ catalyze console db01
 catalyze console app01 "bundle exec rails console"
 ```
 
-## dashboard <a id="dashboard"></a>
+## <a id="dashboard"></a> dashboard
 
 ```
 Usage: catalyze dashboard  
@@ -236,11 +236,11 @@ Open the Catalyze Dashboard in your default browser
 catalyze dashboard
 ```
 
-## db <a id="db"></a>
+## <a id="db"></a> db
 
 The `db` command gives access to import and export services for databases. The db command can not be run directly but has two sub commands.
 
-### import <a id="db-import"></a>
+### <a id="db-import"></a> import
 
 ```
 Usage: catalyze db import DATABASE_NAME FILEPATH [-d [-c]] 
@@ -274,7 +274,7 @@ and stored it at `./db.sql` you could import this into your database service. If
 catalyze db import db01 ./db.sql
 ```
 
-### export <a id="db-export"></a>
+### <a id="db-export"></a> export
 
 ```
 Usage: catalyze db export DATABASE_NAME FILEPATH [-f] 
@@ -295,7 +295,7 @@ Options:
 catalyze db export db01 ./dbexport.sql
 ```
 
-## default <a id="default"></a>
+## <a id="default"></a> default
 
 ```
 Usage: catalyze default ENV_ALIAS 
@@ -312,7 +312,7 @@ Arguments:
 catalyze default prod
 ```
 
-## disassociate <a id="disassociate"></a>
+## <a id="disassociate"></a> disassociate
 
 ```
 Usage: catalyze disassociate  
@@ -326,7 +326,7 @@ Remove the association with an environment
 catalyze disassociate
 ```
 
-## environments <a id="environments"></a>
+## <a id="environments"></a> environments
 
 ```
 Usage: catalyze environments  
@@ -340,7 +340,7 @@ List all environments you have access to
 catalyze environments
 ```
 
-## logs <a id="logs"></a>
+## <a id="logs"></a> logs
 
 ```
 Usage: catalyze logs [QUERY] [-f] [-h] 
@@ -361,7 +361,7 @@ Options:
 catalyze logs -f -h 24
 ```
 
-## logout <a id="logout"></a>
+## <a id="logout"></a> logout
 
 ```
 Usage: catalyze logout  
@@ -375,7 +375,7 @@ When using the CLI, your username and password are **never** stored in any file 
 catalyze logout
 ```
 
-## metrics <a id="metrics"></a>
+## <a id="metrics"></a> metrics
 
 ```
 Usage: catalyze metrics [SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m] 
@@ -402,7 +402,7 @@ catalyze metrics --json
 catalyze metrics db01 --csv -m 60
 ```
 
-## rake <a id="rake"></a>
+## <a id="rake"></a> rake
 
 ```
 Usage: catalyze rake TASK_NAME 
@@ -419,7 +419,7 @@ Arguments:
 catalyze rake db:migrate
 ```
 
-## redeploy <a id="redeploy"></a>
+## <a id="redeploy"></a> redeploy
 
 ```
 Usage: catalyze redeploy  
@@ -433,9 +433,9 @@ Redeploy a service without having to do a git push
 catalyze redeploy
 ```
 
-## ssl <a id="ssl"></a>
+## <a id="ssl"></a> ssl
 
-### verify <a id="ssl-verify"></a>
+### <a id="ssl-verify"></a> verify
 
 ```
 Usage: catalyze ssl verify CHAIN PRIVATE_KEY HOSTNAME [-s] 
@@ -473,7 +473,7 @@ You can also use this command to verify self-signed certificates match a given p
 catalyze ssl verify ./catalyze.crt ./catalyze.key *.catalyze.io
 ```
 
-## status <a id="status"></a>
+## <a id="status"></a> status
 
 ```
 Usage: catalyze status  
@@ -487,7 +487,7 @@ Get quick readout of the current status of your associated environment and all o
 catalyze status
 ```
 
-## support-ids <a id="support-ids"></a>
+## <a id="support-ids"></a> support-ids
 
 ```
 Usage: catalyze support-ids  
@@ -501,11 +501,11 @@ Print out various IDs related to your associated environment to be used when con
 catalyze support-ids
 ```
 
-## users <a id="users"></a>
+## <a id="users"></a> users
 
 The `users` command allows you to manage who has access to your environment. The users command can not be run directly but has three sub commands.
 
-### add <a id="users-add"></a>
+### <a id="users-add"></a> add
 
 ```
 Usage: catalyze users add USER_ID 
@@ -522,7 +522,7 @@ Arguments:
 catalyze users add 774bf982-fc4a-428b-a048-c38cffb7d0ab
 ```
 
-### list <a id="users-list"></a>
+### <a id="users-list"></a> list
 
 ```
 Usage: catalyze users list  
@@ -536,7 +536,7 @@ List all users who have access to the associated environment
 catalyze users list
 ```
 
-### rm <a id="users-rm"></a>
+### <a id="users-rm"></a> rm
 
 ```
 Usage: catalyze users rm USER_ID 
@@ -553,11 +553,11 @@ Arguments:
 catalyze users rm 774bf982-fc4a-428b-a048-c38cffb7d0ab
 ```
 
-## vars <a id="vars"></a>
+## <a id="vars"></a> vars
 
 The `vars` command allows you to manage environment variables for your code services. The vars command can not be run directly but has three sub commands.
 
-### list <a id="vars-list"></a>
+### <a id="vars-list"></a> list
 
 ```
 Usage: catalyze vars list  
@@ -571,7 +571,7 @@ List all environment variables
 catalyze vars list
 ```
 
-### set <a id="vars-set"></a>
+### <a id="vars-set"></a> set
 
 ```
 Usage: catalyze vars set -v... 
@@ -588,7 +588,7 @@ Options:
 catalyze vars set -v AWS_ACCESS_KEY_ID=1234 -v AWS_SECRET_ACCESS_KEY=5678
 ```
 
-### unset <a id="vars-unset"></a>
+### <a id="vars-unset"></a> unset
 
 ```
 Usage: catalyze vars unset VARIABLE 
@@ -605,7 +605,7 @@ Arguments:
 catalyze vars unset AWS_ACCESS_KEY_ID
 ```
 
-## version <a id="version"></a>
+## <a id="version"></a> version
 
 ```
 Usage: catalyze version  
@@ -619,7 +619,7 @@ Output the version and quit
 catalyze version
 ```
 
-## whoami <a id="whoami"></a>
+## <a id="whoami"></a> whoami
 
 ```
 Usage: catalyze whoami  
@@ -633,7 +633,7 @@ Retrieve your user ID
 catalyze whoami
 ```
 
-## worker <a id="worker"></a>
+## <a id="worker"></a> worker
 
 ```
 Usage: catalyze worker TARGET 
