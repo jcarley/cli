@@ -1,0 +1,17 @@
+{
+	"ArtifactsDest": "builds/",
+	"Tasks": [
+		"default",
+		"publish-github"
+	],
+	"BuildConstraints": "linux windows darwin",
+	"PackageVersion": "2.0.0",
+	"PrereleaseInfo": "snapshot",
+	"TaskSettings": {
+		"publish-github": {
+			"owner": "catalyzeio",
+			"repository": "cli"
+		}
+	},
+	"ConfigVersion": "0.9"
+}
