@@ -108,8 +108,6 @@ func Logs(queryString string, tail bool, hours int, settings *models.Settings) {
 		}
 		var logs models.Logs
 		json.Unmarshal(respBody, &logs)
-		//fmt.Println("        @timestamp       -        message")
-		//sort.Sort(SortedLogHits(*logs.Hits.Hits))
 		for _, lh := range *logs.Hits.Hits {
 			fmt.Printf("%s - %s\n", lh.Fields["@timestamp"][0], lh.Fields["message"][0])
 		}
@@ -120,21 +118,3 @@ func Logs(queryString string, tail bool, hours int, settings *models.Settings) {
 		from += len(*logs.Hits.Hits)
 	}
 }
-
-// SortedLogHits is a wrapper for LogHits array in order to sort them by
-// @timestamp
-/*type SortedLogHits []models.LogHits
-
-func (logHits SortedLogHits) Len() int {
-	return len(logHits)
-}
-
-func (logHits SortedLogHits) Swap(i, j int) {
-	logHits[i], logHits[j] = logHits[j], logHits[i]
-}
-
-func (logHits SortedLogHits) Less(i, j int) bool {
-	iTime, _ := time.Parse(time.RFC3339Nano, strings.Trim(logHits[i].Fields["@timestamp"][0], "[]"))
-	jTime, _ := time.Parse(time.RFC3339Nano, strings.Trim(logHits[j].Fields["@timestamp"][0], "[]"))
-	return iTime.Before(jTime)
-}*/

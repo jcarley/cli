@@ -13,10 +13,10 @@ import (
 )
 
 // SettingsPath is the location of the catalyze config file.
-const SettingsPath = "/.catalyze"
+const SettingsFile = ".catalyze"
 
 // LocalSettingsPath stores a breadcrumb in a local git repo with an env name
-const LocalSettingsPath = "./.git/catalyze-config.json"
+const LocalSettingsFile = "catalyze-config.json"
 
 // GetSettings returns a Settings object for the current context
 func GetSettings(required bool, promptForEnv bool, envName string, baasHost string, paasHost string, username string, password string) *models.Settings {
@@ -25,9 +25,10 @@ func GetSettings(required bool, promptForEnv bool, envName string, baasHost stri
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	file, err := os.Open(HomeDir + SettingsPath)
+
+	file, err := os.Open(filepath.Join(HomeDir, SettingsFile))
 	if os.IsNotExist(err) {
-		file, err = os.Create(HomeDir + SettingsPath)
+		file, err = os.Create(filepath.Join(HomeDir, SettingsFile))
 	}
 	defer file.Close()
 	if err != nil {
@@ -87,7 +88,7 @@ func SaveSettings(settings *models.Settings) {
 		os.Exit(1)
 	}
 	b, _ := json.Marshal(&settings)
-	err = ioutil.WriteFile(HomeDir+SettingsPath, b, 0644)
+	err = ioutil.WriteFile(filepath.Join(HomeDir, SettingsFile), b, 0644)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
@@ -100,7 +101,7 @@ func DropBreadcrumb(envName string, settings *models.Settings) {
 	b, _ := json.Marshal(&models.Breadcrumb{
 		EnvName: envName,
 	})
-	err := ioutil.WriteFile(LocalSettingsPath, b, 0644)
+	err := ioutil.WriteFile(filepath.Join(".git", LocalSettingsFile), b, 0644)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
@@ -111,10 +112,10 @@ func DropBreadcrumb(envName string, settings *models.Settings) {
 func DeleteBreadcrumb(alias string, settings *models.Settings) {
 	env := settings.Environments[alias]
 	dir := env.Directory
-	if !strings.HasSuffix(dir, "/") {
-		dir = fmt.Sprintf("%s/", dir)
+	if !strings.HasSuffix(dir, string(os.PathSeparator)) {
+		dir = fmt.Sprintf("%s%s", dir, string(os.PathSeparator))
 	}
-	dir = fmt.Sprintf("%s%s", dir, LocalSettingsPath[1:]) // strip off the .
+	dir = fmt.Sprintf("%s%s", dir, LocalSettingsFile)
 	file, err := os.Open(dir)
 	defer file.Close()
 	if err == nil {
@@ -146,7 +147,7 @@ func setGivenEnv(envName string, settings *models.Settings) {
 // searches for it in the given settings object. It then populates the
 // EnvironmentID and ServiceID on the settings object with appropriate values.
 func setLocalEnv(required bool, settings *models.Settings) {
-	file, err := os.Open(LocalSettingsPath)
+	file, err := os.Open(filepath.Join(".git", LocalSettingsFile))
 	defer file.Close()
 	if err == nil {
 		var breadcrumb models.Breadcrumb
@@ -203,25 +204,5 @@ func defaultEnvPrompt(envName string) {
 	if answer == "n" {
 		fmt.Println("Exiting")
 		os.Exit(1)
-	}
-}
-
-// convertSettings translates the old config file format at SettingsPath to
-// the new format. The only piece of information missing is the environment
-// name. During translation, the name of the git repo directory is used as
-// the env name.
-func convertSettings(breadcrumb *models.Breadcrumb, settings *models.Settings) {
-	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	if err != nil {
-		panic(err)
-	}
-	envName := dir[strings.LastIndex(dir, "/")+1:]
-	breadcrumb.EnvName = envName
-	settings.UsersID = breadcrumb.UsersID
-	settings.SessionToken = breadcrumb.SessionToken
-	settings.Environments[envName] = models.AssociatedEnv{
-		EnvironmentID: breadcrumb.EnvironmentID,
-		ServiceID:     breadcrumb.ServiceID,
-		Directory:     dir,
 	}
 }

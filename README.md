@@ -10,6 +10,8 @@ Check out the [releases](https://github.com/catalyzeio/cli/releases) page or che
 
 Once downloaded, the CLI will automatically update itself when a new version becomes available. However you can always check out the latest release here.
 
+**PLEASE NOTE** You **must** put the CLI binary in a location for which you have write permissions. Without write permissions, the CLI will not automatically update and you will have to update manually by visiting the github repo and downloading the latest binary.
+
 ## Version 2.0.0
 
 ### Darwin (Apple Mac)

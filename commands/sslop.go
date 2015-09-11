@@ -96,11 +96,11 @@ func outputCertInfo(cert *x509.Certificate) {
 	case x509.DSA:
 		fmt.Println("Public Key Algorithm: DSA")
 		publicKey := cert.PublicKey.(*dsa.PublicKey)
-		fmt.Printf("Key Size: %d\n", publicKey.Y.BitLen()) // TODO not sure on Y
+		fmt.Printf("Key Size: %d\n", publicKey.Y.BitLen())
 	case x509.ECDSA:
 		fmt.Println("Public Key Algorithm: ECDSA")
 		publicKey := cert.PublicKey.(*ecdsa.PublicKey)
-		fmt.Printf("Key Size: %d\n", publicKey.Y.BitLen()) // TODO not sure on Y
+		fmt.Printf("Key Size: %d\n", publicKey.Y.BitLen())
 	}
 	fmt.Printf("Not Valid Before: %s\n", cert.NotBefore.Local().String())
 	fmt.Printf("Not Valid After: %s\n", cert.NotAfter.Local().String())

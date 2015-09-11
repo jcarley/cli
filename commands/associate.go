@@ -14,7 +14,7 @@ import (
 // Associate an environment so that commands can be run against it. This command
 // no longer adds a git remote. See commands.AddRemote().
 func Associate(envLabel string, serviceLabel string, alias string, remote string, defaultEnv bool, settings *models.Settings) {
-	if _, err := os.Stat("./.git/"); os.IsNotExist(err) {
+	if _, err := os.Stat(".git"); os.IsNotExist(err) {
 		fmt.Println("Not git repo found in the current directory")
 		os.Exit(1)
 	}

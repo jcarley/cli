@@ -45,6 +45,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -55,6 +56,7 @@ import (
 	"github.com/catalyzeio/catalyze/config"
 	"github.com/kardianos/osext"
 	"github.com/kr/binarydist"
+	"github.com/mitchellh/go-homedir"
 	"gopkg.in/inconshreveable/go-update.v0"
 )
 
@@ -65,13 +67,15 @@ const (
 
 const validTime = 1 * 24 * time.Hour
 
+var homeDir, _ = homedir.Dir() // a failure here defaults to "" which is ok
+
 // CLI auto updater
 var AutoUpdater = &Updater{
 	CurrentVersion: config.VERSION,
 	APIURL:         "https://s3.amazonaws.com/cli-autoupdates/",
 	BinURL:         "https://s3.amazonaws.com/cli-autoupdates/",
 	DiffURL:        "https://s3.amazonaws.com/cli-autoupdates/",
-	Dir:            ".catalyze_update/",
+	Dir:            filepath.Join(homeDir, ".catalyze_update"),
 	CmdName:        "catalyze",
 }
 
@@ -117,7 +121,7 @@ func (u *Updater) getExecRelativeDir(dir string) string {
 
 // BackgroundRun starts the update check and apply cycle.
 func (u *Updater) BackgroundRun() error {
-	os.MkdirAll(u.getExecRelativeDir(u.Dir), 0777)
+	os.MkdirAll(u.getExecRelativeDir(u.Dir), 0755)
 	if u.wantUpdate() {
 		if err := up.CanUpdate(); err != nil {
 			// fail
@@ -140,13 +144,13 @@ func (u *Updater) BackgroundRun() error {
 // the normal update process. This is useful when an update is required for
 // the program to continue functioning normally.
 func (u *Updater) ForcedUpgrade() error {
-	path := u.getExecRelativeDir(u.Dir + upcktimePath)
+	path := u.getExecRelativeDir(filepath.Join(u.Dir, upcktimePath))
 	writeTime(path, time.Now().Add(-1*validTime))
 	return u.BackgroundRun()
 }
 
 func (u *Updater) wantUpdate() bool {
-	path := u.getExecRelativeDir(u.Dir + upcktimePath)
+	path := u.getExecRelativeDir(filepath.Join(u.Dir, upcktimePath))
 	if u.CurrentVersion == "dev" || readTime(path).After(time.Now()) {
 		return false
 	}
@@ -175,20 +179,21 @@ func (u *Updater) update() error {
 	bin, err := u.fetchAndVerifyPatch(old)
 	if err != nil {
 		if err == ErrHashMismatch {
-			//log.Println("update: hash mismatch from patched binary")
+			log.Println("update: hash mismatch from patched binary - attempting full replacement")
 		} else {
 			if u.DiffURL != "" {
-				//log.Println("update: patching binary,", err)
+				log.Println("update: error patching binary,", err)
 			}
 		}
 
 		bin, err = u.fetchAndVerifyFullBin()
 		if err != nil {
 			if err == ErrHashMismatch {
-				//log.Println("update: hash mismatch from full binary")
+				log.Println("update: hash mismatch from full binary")
 			} else {
-				//log.Println("update: fetching full binary,", err)
+				log.Println("update: error fetching full binary,", err)
 			}
+			log.Println("update: please upgrade your CLI manually")
 			return err
 		}
 	}

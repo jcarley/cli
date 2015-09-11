@@ -8,6 +8,8 @@ Upgrading to the Catalyze CLI version 2.0.0 is easy! First, you need to uninstal
 
 Once downloaded, the CLI will automatically update itself when a new version becomes available. This ensures you are always running a compatible version of the Catalyze CLI. However you can always check out the latest releases on the [releases page](https://github.com/catalyzeio/cli/releases).
 
+**PLEASE NOTE** You **must** put the CLI binary in a location for which you have write permissions. Without write permissions, the CLI will not automatically update and you will have to update manually by visiting the github repo and downloading the latest binary.
+
 ## <a id="supported-platforms"></a> Supported Platforms & Architectures
 
 Since version 2.0.0, the following platforms and architectures are supported by the Catalyze CLI.
