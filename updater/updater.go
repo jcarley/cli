@@ -179,10 +179,13 @@ func (u *Updater) update() error {
 	bin, err := u.fetchAndVerifyPatch(old)
 	if err != nil {
 		if err == ErrHashMismatch {
-			log.Println("update: hash mismatch from patched binary - attempting full replacement")
+			log.Println("update: hash mismatch from patched binary - attempting full replacement...")
 		} else {
 			if u.DiffURL != "" {
-				log.Println("update: error patching binary,", err)
+				//log.Println("update: error patching binary,", err)
+				// dont print this because a full binary replacement will be attempted.
+				// if that fails, it will print out an error
+				// if it succeeds, nothing needs to be printed
 			}
 		}
 
@@ -209,6 +212,7 @@ func (u *Updater) update() error {
 	if err != nil {
 		return err
 	}
+	log.Println("update: your CLI has been successfully upgraded!")
 	return nil
 }
 
