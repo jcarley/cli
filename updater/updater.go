@@ -56,7 +56,6 @@ import (
 	"github.com/catalyzeio/catalyze/config"
 	"github.com/kardianos/osext"
 	"github.com/kr/binarydist"
-	"github.com/mitchellh/go-homedir"
 	"gopkg.in/inconshreveable/go-update.v0"
 )
 
@@ -67,15 +66,13 @@ const (
 
 const validTime = 1 * 24 * time.Hour
 
-var homeDir, _ = homedir.Dir() // a failure here defaults to "" which is ok
-
 // CLI auto updater
 var AutoUpdater = &Updater{
 	CurrentVersion: config.VERSION,
 	APIURL:         "https://s3.amazonaws.com/cli-autoupdates/",
 	BinURL:         "https://s3.amazonaws.com/cli-autoupdates/",
 	DiffURL:        "https://s3.amazonaws.com/cli-autoupdates/",
-	Dir:            filepath.Join(homeDir, ".catalyze_update"),
+	Dir:            ".catalyze_update",
 	CmdName:        "catalyze",
 }
 
