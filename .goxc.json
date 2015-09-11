@@ -8,11 +8,11 @@
                 "rmbin"
         ],
 	"BuildConstraints": "linux windows darwin",
-	"OutPath": "{{.Dest}}{{.PS}}{{.Version}}{{.PS}}{{.Os}}-{{.Arch}}",
         "PackageVersion": "2.0.0",
 	"PrereleaseInfo": "",
 	"Resources": {
-                "Include": ""
+                "Include": "",
+                "Exclude": "README*"
         },
         "TaskSettings": {
 		"publish-github": {
