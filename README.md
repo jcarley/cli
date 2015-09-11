@@ -1,12 +1,16 @@
 # Catalyze CLI Version 2.0.0 Beta
 
-This CLI is written in Go. The move to Go allows us to support a larger variety of platforms including Mac, Windows, and Linux. The Go CLI is currently in beta. 
+This CLI is written in Go. The move to Go allows us to support a larger variety of platforms including Mac, Windows, and Linux. The Go CLI is currently in beta.
 
 To learn more about the new CLI and all the great features we've added, we recommend reading the <a href="https://github.com/catalyzeio/cli/blob/master/Docs.md">documentation</a>.
 
-Check out the <a href="https://github.com/catalyzeio/cli/releases">releases</a> page or check below to download the right version for your platform.
+Check out the <a href="https://github.com/catalyzeio/cli/releases">releases</a> page or check below to download the right version for your platform. 
 
-## Downloads 
+## Automatic Updates
+
+Once downloaded, the CLI will automatically update itself when a new version becomes available. However you can always check out the latest release here.
+
+## Downloads
 ### Version 2.0.0-snapshot
 
 #### Darwin (Apple Mac)

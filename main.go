@@ -9,17 +9,21 @@ import (
 	"github.com/jawher/mow.cli"
 )
 
-// current cli version
-const VERSION = "2.0.0"
-
-// alternate BaaS URL
-const BaasHost = "https://api.catalyze.io"
-
-// alternate PaaS URL
-const PaasHost = "https://paas-api.catalyze.io"
-
 func main() {
-	var app = cli.App("catalyze", fmt.Sprintf("Catalyze CLI. Version %s", VERSION))
+	var updater = &commands.Updater{
+		CurrentVersion: config.VERSION,
+		APIURL:         "https://s3.amazonaws.com/cli-autoupdates/",
+		BinURL:         "https://s3.amazonaws.com/cli-autoupdates/",
+		DiffURL:        "https://s3.amazonaws.com/cli-autoupdates/",
+		Dir:            ".catalyze_update/",
+		CmdName:        "catalyze",
+	}
+
+	if updater != nil {
+		updater.BackgroundRun()
+	}
+
+	var app = cli.App("catalyze", fmt.Sprintf("Catalyze CLI. Version %s", config.VERSION))
 	InitCLI(app)
 
 	versionFlag := app.Bool(cli.BoolOpt{
@@ -49,11 +53,11 @@ func main() {
 func InitCLI(app *cli.Cli) {
 	baasHost := os.Getenv("BAAS_HOST")
 	if baasHost == "" {
-		baasHost = BaasHost
+		baasHost = config.BaasHost
 	}
 	paasHost := os.Getenv("PAAS_HOST")
 	if paasHost == "" {
-		paasHost = PaasHost
+		paasHost = config.PaasHost
 	}
 	username := app.String(cli.StringOpt{
 		Name:      "U username",
@@ -123,7 +127,7 @@ func InitCLI(app *cli.Cli) {
 			}
 			subCmd.Spec = "SERVICE_NAME [-p] [-n]"
 		})
-		cmd.Command("restore", "Restore from a previously created backup", func(subCmd *cli.Cmd) {
+		/*cmd.Command("restore", "Restore from a previously created backup", func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the database service to restore (i.e. 'db01')")
 			backupID := subCmd.StringArg("BACKUP_ID", "", "The ID of the backup to restore (found from `catalyze backup list`)")
 			skipPoll := subCmd.BoolOpt("s skip-poll", false, "Whether or not to wait for the restore to finish")
@@ -132,7 +136,7 @@ func InitCLI(app *cli.Cli) {
 				commands.RestoreBackup(*serviceName, *backupID, *skipPoll, settings)
 			}
 			subCmd.Spec = "SERVICE_NAME BACKUP_ID [-s]"
-		})
+		})*/
 	})
 	app.Command("console", "Open a secure console to a service", func(cmd *cli.Cmd) {
 		serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to open up a console for")
@@ -152,12 +156,14 @@ func InitCLI(app *cli.Cli) {
 			filePath := subCmd.StringArg("FILEPATH", "", "The location of the file to import to the database")
 			mongoCollection := subCmd.StringOpt("c mongo-collection", "", "If importing into a mongo service, the name of the collection to import into")
 			mongoDatabase := subCmd.StringOpt("d mongo-database", "", "If importing into a mongo service, the name of the database to import into")
-			wipeFirst := subCmd.BoolOpt("w wipe-first", false, "Whether or not to wipe the database before processing the import file")
+			//wipeFirst := subCmd.BoolOpt("w wipe-first", false, "Whether or not to wipe the database before processing the import file")
 			subCmd.Action = func() {
 				settings := config.GetSettings(true, true, *givenEnvName, baasHost, paasHost, *username, *password)
-				commands.Import(*databaseName, *filePath, *mongoCollection, *mongoDatabase, *wipeFirst, settings)
+				//commands.Import(*databaseName, *filePath, *mongoCollection, *mongoDatabase, *wipeFirst, settings)
+				commands.Import(*databaseName, *filePath, *mongoCollection, *mongoDatabase, false, settings)
 			}
-			subCmd.Spec = "DATABASE_NAME FILEPATH [-w] [-d [-c]]"
+			//subCmd.Spec = "DATABASE_NAME FILEPATH [-w] [-d [-c]]"
+			subCmd.Spec = "DATABASE_NAME FILEPATH [-d [-c]]"
 		})
 		cmd.Command("export", "Export data from a database", func(subCmd *cli.Cmd) {
 			databaseName := subCmd.StringArg("DATABASE_NAME", "", "The name of the database to export data from (i.e. 'db01')")
@@ -179,10 +185,12 @@ func InitCLI(app *cli.Cli) {
 		cmd.Spec = "ENV_ALIAS"
 	})
 	app.Command("disassociate", "Remove the association with an environment", func(cmd *cli.Cmd) {
+		envAlias := cmd.StringArg("ENV_ALIAS", "", "The alias of an already associated environment to disassociate")
 		cmd.Action = func() {
 			settings := config.GetSettings(true, false, *givenEnvName, baasHost, paasHost, *username, *password)
-			commands.Disassociate(settings)
+			commands.Disassociate(*envAlias, settings)
 		}
+		cmd.Spec = "ENV_ALIAS"
 	})
 	app.Command("environments", "List all environments you have access to", func(cmd *cli.Cmd) {
 		cmd.Action = func() {
@@ -328,5 +336,5 @@ func InitCLI(app *cli.Cli) {
 }
 
 func version() {
-	fmt.Printf("version %s\n", VERSION)
+	fmt.Printf("version %s\n", config.VERSION)
 }

@@ -4,6 +4,10 @@
 
 Upgrading to the Catalyze CLI version 2.0.0 is easy! First, you need to uninstall the previous version of the CLI. This is most likely done through `pip uninstall catalyze`. Next you need to [download](https://github.com/catalyzeio/cli#downloads) the new version. Lastly, you need to [reassociate](#associate) all your environments.
 
+## <a id="autoupdate"></a> Automatic Updates
+
+Once downloaded, the CLI will automatically update itself when a new version becomes available. This ensures you are always running a compatible version of the Catalyze CLI. However you can always check out the latest releases on the [releases page](https://github.com/catalyzeio/cli/releases).
+
 ## <a id="supported-platforms"></a> Supported Platforms & Architectures
 
 Since version 2.0.0, the following platforms and architectures are supported by the Catalyze CLI.
@@ -16,7 +20,7 @@ Since version 2.0.0, the following platforms and architectures are supported by 
 
 # <a id="global-scope"></a> Global Scope
 
-The CLI now supports the concept of scope. Previous to version 2.0.0, all commands had to be run within an associated local git repo. Now, the only time you need to be in a local git repo is when you associate a new environment. After the initial associated, CLI commands can be run from any directory. If you have more than one environment, the CLI uses this concept of scope to decide which environment you are using for the command. 
+The CLI now supports the concept of scope. Previous to version 2.0.0, all commands had to be run within an associated local git repo. Now, the only time you need to be in a local git repo is when you associate a new environment. After the initial associated, CLI commands can be run from any directory. If you have more than one environment, the CLI uses this concept of scope to decide which environment you are using for the command.
 
 Let's say you have an environment that you associated in the directory `~/mysandbox-code` and another you associated in the directory `~/myprod-code`. These environments are named `mysandbox` and `myprod` respectively. When you are within either of those directories, the CLI knows that any command you run will be in the context of the given environment. Commands run in the `~/myprod-code` directory will be run against the `myprod` environment. Similarly for `~/mysandbox-code` and the `mysandbox` environment. What if you are outside those directories? You have three options.
 
@@ -46,17 +50,17 @@ When you associate an environment and you want to pick a shorter name to referen
 catalyze associate "My Health Tech Company Production" -a prod
 ```
 
-Now when you run the [associated](#associated) command, you will see the alias as well as the actual environment name. 
+Now when you run the [associated](#associated) command, you will see the alias as well as the actual environment name.
 
-When using aliases, there are a couple things to keep in mind. Aliases are only local and never leave your local machine. If you alias this environment `prod`, a coworker can alias the environment `healthtech-prod` with no ramifications. Second, after setting an alias, you will never reference the environment by its actual name with the CLI. You will always use the alias for flags, arguments, options, etc. 
+When using aliases, there are a couple things to keep in mind. Aliases are only local and never leave your local machine. If you alias this environment `prod`, a coworker can alias the environment `healthtech-prod` with no ramifications. Second, after setting an alias, you will never reference the environment by its actual name with the CLI. You will always use the alias for flags, arguments, options, etc.
 
 To change or remove an alias, you must [disassociate](#disassociate) and then [reassociate](#associate) with a new alias.
 
 # <a id="autocompletion"></a> Bash Autocompletion
 
-One feature we've found helpful on \*Nix systems is autocompletion in bash. To enable this feature, head over to the github repo and download the `bash_autocomplete` file. If you use a Mac, you will need to install bash-completion with `brew install bash-completion` or `source` the `bash_autocomplete` file each time you start up terminal. Store this file locally in `/etc/bash_completion.d/` or (`/usr/local/etc/bash_completion.d/` on Mac). Completion will be available when you restart terminal. Now simply type `catalyze ` and hit tab twice to see the list of available commands. **Please note** that autocompletion only works one level deep. The CLI will not autocomplete or suggest completions when you type `catalyze db ` and then hit tab twice. It currently only works when you have just `catalyze ` typed into your terminal. This is a feature we are looking into expanding in the future.
+One feature we've found helpful on \*Nix systems is autocompletion in bash. To enable this feature, head over to the github repo and download the `catalyze_autocomplete` file. If you use a Mac, you will need to install bash-completion with `brew install bash-completion` or `source` the `catalyze_autocomplete` file each time you start up terminal. Store this file locally in `/etc/bash_completion.d/` or (`/usr/local/etc/bash_completion.d/` on Mac). Completion will be available when you restart terminal. Now simply type `catalyze ` and hit tab twice to see the list of available commands. **Please note** that autocompletion only works one level deep. The CLI will not autocomplete or suggest completions when you type `catalyze db ` and then hit tab twice. It currently only works when you have just `catalyze ` typed into your terminal. This is a feature we are looking into expanding in the future.
 
-Note: you may have to add `source /etc/bash_completion.d/completionfile` (`/usr/loca/etc/bsah_completion.d/completionfile`) in your `~/.bashrc` (`~/.bash_profile`) file.
+Note: you may have to add `source /etc/bash_completion.d/catalyze_autocomplete` (`/usr/loca/etc/bsah_completion.d/catalyze_autocomplete`) in your `~/.bashrc` (`~/.bash_profile`) file.
 
 # <a id="global-options"></a> Global Options
 
@@ -76,7 +80,7 @@ This section lists all commands the CLI offers. Help text, along with a descript
 ## <a id="associate"></a> associate
 
 ```
-Usage: catalyze associate ENV_NAME [SERVICE_NAME] [-a] [-r] [-d] 
+Usage: catalyze associate ENV_NAME [SERVICE_NAME] [-a] [-r] [-d]
 
 Associates an environment
 
@@ -117,7 +121,7 @@ The `backup` command gives access to backup and restores services for databases.
 ### <a id="backup-create"></a> create
 
 ```
-Usage: catalyze backup create SERVICE_NAME [-s] 
+Usage: catalyze backup create SERVICE_NAME [-s]
 
 Create a new backup
 
@@ -137,7 +141,7 @@ catalyze backup create db01
 ### <a id="backup-download"></a> download
 
 ```
-Usage: catalyze backup download SERVICE_NAME BACKUP_ID FILEPATH [-f] 
+Usage: catalyze backup download SERVICE_NAME BACKUP_ID FILEPATH [-f]
 
 Download a previously created backup
 
@@ -165,7 +169,7 @@ catalyze backup download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.tar.gz
 ### <a id="backup-list"></a> list
 
 ```
-Usage: catalyze backup list SERVICE_NAME [-p] [-n] 
+Usage: catalyze backup list SERVICE_NAME [-p] [-n]
 
 List created backups
 
@@ -183,30 +187,10 @@ Options:
 catalyze backup list db01
 ```
 
-### <a id="backup-restore"></a> restore
-
-```
-Usage: catalyze backup restore SERVICE_NAME BACKUP_ID [-s] 
-
-Restore from a previously created backup
-
-Arguments:
-  SERVICE_NAME=""   The name of the database service to restore (i.e. 'db01')
-  BACKUP_ID=""      The ID of the backup to restore (found from `catalyze backup list`)
-
-Options:
-  -s, --skip-poll=false   Whether or not to wait for the restore to finish
-```
-
-`backup restore` restores your database service to a previous point in time. **Be careful** using this command as your database will be wiped. The backup ID can be found by running the [backup list](#backup-list) command. Regardless of a successful backup or not, the logs for the backup will be printed to the console when the backup is finished. Here is a sample command
-
-```
-catalyze backup restore db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203
-```
 ## <a id="console"></a> console
 
 ```
-Usage: catalyze console SERVICE_NAME [COMMAND] 
+Usage: catalyze console SERVICE_NAME [COMMAND]
 
 Open a secure console to a service
 
@@ -243,7 +227,7 @@ The `db` command gives access to import and export services for databases. The d
 ### <a id="db-import"></a> import
 
 ```
-Usage: catalyze db import DATABASE_NAME FILEPATH [-d [-c]] 
+Usage: catalyze db import DATABASE_NAME FILEPATH [-d [-c]]
 
 Import data to a database
 
@@ -254,7 +238,6 @@ Arguments:
 Options:
   -c, --mongo-collection=""   If importing into a mongo service, the name of the collection to import into
   -d, --mongo-database=""     If importing into a mongo service, the name of the database to import into
-  -w, --wipe-first=false      Whether or not to wipe the database before processing the import file
 ```
 
 `import` allows you to inject new data into your database service. For example, if you wrote a simple SQL file
@@ -268,7 +251,7 @@ val TEXT
 INSERT INTO mytable (id, val) values ('1', 'test');
 ```
 
-and stored it at `./db.sql` you could import this into your database service. If you are initializing your database, you will want to use the `-w` option as this will first remove all data in your database and then perform the import. When import data into mongo, you may specify the database and collection to import into using the `-d` and `-c` flags respectively. Regardless of a successful import or not, the logs for the import will be printed to the console when the import is finished. Here is a sample command
+and stored it at `./db.sql` you could import this into your database service. When import data into mongo, you may specify the database and collection to import into using the `-d` and `-c` flags respectively. Regardless of a successful import or not, the logs for the import will be printed to the console when the import is finished. Here is a sample command
 
 ```
 catalyze db import db01 ./db.sql
@@ -277,7 +260,7 @@ catalyze db import db01 ./db.sql
 ### <a id="db-export"></a> export
 
 ```
-Usage: catalyze db export DATABASE_NAME FILEPATH [-f] 
+Usage: catalyze db export DATABASE_NAME FILEPATH [-f]
 
 Export data from a database
 
@@ -298,7 +281,7 @@ catalyze db export db01 ./dbexport.sql
 ## <a id="default"></a> default
 
 ```
-Usage: catalyze default ENV_ALIAS 
+Usage: catalyze default ENV_ALIAS
 
 Set the default associated environment
 
@@ -315,15 +298,18 @@ catalyze default prod
 ## <a id="disassociate"></a> disassociate
 
 ```
-Usage: catalyze disassociate  
+Usage: catalyze disassociate ENV_ALIAS
 
 Remove the association with an environment
+
+Arguments:
+  ENV_ALIAS=""   The alias of an already associated environment to disassociate
 ```
 
-`disassociate` must be run from within an associated git repo. Disassociate removes the environment from your list of associated environments but **does not** remove the catalyze git remote on the git repo. Here is a sample command
+`disassociate` does not have to be run from within a git repo. Disassociate removes the environment from your list of associated environments but **does not** remove the catalyze git remote on the git repo. Here is a sample command
 
 ```
-catalyze disassociate
+catalyze disassociate myprod
 ```
 
 ## <a id="environments"></a> environments
@@ -343,7 +329,7 @@ catalyze environments
 ## <a id="logs"></a> logs
 
 ```
-Usage: catalyze logs [QUERY] [-f] [-h] 
+Usage: catalyze logs [QUERY] [-f] [-h]
 
 Show the logs in your terminal streamed from your logging dashboard
 
@@ -378,7 +364,7 @@ catalyze logout
 ## <a id="metrics"></a> metrics
 
 ```
-Usage: catalyze metrics [SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m] 
+Usage: catalyze metrics [SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]
 
 Print service and environment metrics in your local time zone
 
@@ -405,7 +391,7 @@ catalyze metrics db01 --csv -m 60
 ## <a id="rake"></a> rake
 
 ```
-Usage: catalyze rake TASK_NAME 
+Usage: catalyze rake TASK_NAME
 
 Execute a rake task
 
@@ -438,7 +424,7 @@ catalyze redeploy
 ### <a id="ssl-verify"></a> verify
 
 ```
-Usage: catalyze ssl verify CHAIN PRIVATE_KEY HOSTNAME [-s] 
+Usage: catalyze ssl verify CHAIN PRIVATE_KEY HOSTNAME [-s]
 
 Verify whether a certificate chain is complete and if it matches the given private key
 
@@ -465,12 +451,13 @@ Options:
 -----END CERTIFICATE-----
 ```
 
-This command also requires you to specify the hostname that you are using the SSL certificate for in order to verify that the hostname matches what is in the chain. If it is a wildcard certificate, your hostname would be in the following format: `*.catalyze.io`. This command will verify a complete chain can be made from your certificate down through the intermediate certificates all the way to a root certificate that you have given or one found in your system. 
+This command also requires you to specify the hostname that you are using the SSL certificate for in order to verify that the hostname matches what is in the chain. If it is a wildcard certificate, your hostname would be in the following format: `*.catalyze.io`. This command will verify a complete chain can be made from your certificate down through the intermediate certificates all the way to a root certificate that you have given or one found in your system.
 
-You can also use this command to verify self-signed certificates match a given private key. To do so, add the `-s` option which will skip verifying the certificate to root chain and just tell you if your certificate matches your private key. Here is a sample command
+You can also use this command to verify self-signed certificates match a given private key. To do so, add the `-s` option which will skip verifying the certificate to root chain and just tell you if your certificate matches your private key. Please note that the empty quotes are required for checking self signed certificates. This is the required parameter HOSTNAME which is ignored when checking self signed certificates. Here are some sample commands
 
 ```
 catalyze ssl verify ./catalyze.crt ./catalyze.key *.catalyze.io
+catalyze ssl verify ~/self-signed.crt ~/self-signed.key "" -s
 ```
 
 ## <a id="status"></a> status
@@ -508,7 +495,7 @@ The `users` command allows you to manage who has access to your environment. The
 ### <a id="users-add"></a> add
 
 ```
-Usage: catalyze users add USER_ID 
+Usage: catalyze users add USER_ID
 
 Grant access to the associated environment for the given user
 
@@ -539,7 +526,7 @@ catalyze users list
 ### <a id="users-rm"></a> rm
 
 ```
-Usage: catalyze users rm USER_ID 
+Usage: catalyze users rm USER_ID
 
 Revoke access to the associated environment for the given user
 
@@ -574,7 +561,7 @@ catalyze vars list
 ### <a id="vars-set"></a> set
 
 ```
-Usage: catalyze vars set -v... 
+Usage: catalyze vars set -v...
 
 Set one or more new environment variables or update the values of existing ones
 
@@ -591,7 +578,7 @@ catalyze vars set -v AWS_ACCESS_KEY_ID=1234 -v AWS_SECRET_ACCESS_KEY=5678
 ### <a id="vars-unset"></a> unset
 
 ```
-Usage: catalyze vars unset VARIABLE 
+Usage: catalyze vars unset VARIABLE
 
 Unset (delete) an existing environment variable
 
@@ -636,7 +623,7 @@ catalyze whoami
 ## <a id="worker"></a> worker
 
 ```
-Usage: catalyze worker TARGET 
+Usage: catalyze worker TARGET
 
 Start a background worker
 

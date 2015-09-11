@@ -5,9 +5,13 @@
 		"publish-github"
 	],
 	"BuildConstraints": "linux windows darwin",
-	"PackageVersion": "2.0.0",
-	"PrereleaseInfo": "snapshot",
-	"TaskSettings": {
+	"OutPath": "{{.Dest}}{{.PS}}{{.Version}}{{.PS}}{{.Os}}-{{.Arch}}",
+        "PackageVersion": "2.0.0",
+	"PrereleaseInfo": "rc1",
+	"Resources": {
+                "Include": ""
+        },
+        "TaskSettings": {
 		"publish-github": {
 			"owner": "catalyzeio",
 			"repository": "cli"

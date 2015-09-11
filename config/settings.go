@@ -108,8 +108,15 @@ func DropBreadcrumb(envName string, settings *models.Settings) {
 }
 
 // DeleteBreadcrumb removes the config file at LocalSettingsPath
-func DeleteBreadcrumb(settings *models.Settings) {
-	file, err := os.Open(LocalSettingsPath)
+func DeleteBreadcrumb(alias string, settings *models.Settings) {
+	env := settings.Environments[alias]
+	dir := env.Directory
+	if !strings.HasSuffix(dir, "/") {
+		dir = fmt.Sprintf("%s/", dir)
+	}
+	dir = fmt.Sprintf("%s%s", dir, LocalSettingsPath[1:]) // strip off the .
+	file, err := os.Open(dir)
+	defer file.Close()
 	if err == nil {
 		var breadcrumb models.Breadcrumb
 		json.NewDecoder(file).Decode(&breadcrumb)
@@ -119,8 +126,7 @@ func DeleteBreadcrumb(settings *models.Settings) {
 			settings.Default = ""
 		}
 	}
-	file.Close()
-	os.Remove(LocalSettingsPath)
+	os.Remove(dir)
 	SaveSettings(settings)
 }
 

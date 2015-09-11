@@ -1,5 +1,19 @@
 package models
 
+// Errors is a wrapper around an array of errors from the API
+type Errors struct {
+	ReportedErrors *[]ReportedError `json:"errors"`
+	Title          string           `json:"title"`
+	Description    string           `json:"description"`
+	Code           int              `json:"code"`
+}
+
+// ReportedError is the standard error model sent back from the API
+type ReportedError struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
 // Login is used for making an authentication request
 type Login struct {
 	Username string `json:"username"`
@@ -44,6 +58,7 @@ type EnvironmentData struct {
 	Name      string     `json:"name"`
 	Services  *[]Service `json:"services"`
 	Namespace string     `json:"namespace"`
+	DNSName   string     `json:"dns_name"`
 }
 
 // EnvironmentUsers users who have access to an environment

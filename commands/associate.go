@@ -128,11 +128,11 @@ func SetDefault(alias string, settings *models.Settings) {
 	fmt.Printf("%s is now the default environment\n", alias)
 }
 
-// Disassociate removes the existing association with the environment. The
+// Disassociate removes an existing association with the environment. The
 // `catalyze` remote on the local github repo will *NOT* be removed.
-func Disassociate(settings *models.Settings) {
+func Disassociate(alias string, settings *models.Settings) {
 	// DeleteBreadcrumb removes the environment from the settings.Environments
 	// array for you
-	config.DeleteBreadcrumb(settings)
+	config.DeleteBreadcrumb(alias, settings)
 	fmt.Println("Association cleared.")
 }

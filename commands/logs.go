@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/catalyzeio/catalyze/config"
@@ -22,21 +21,28 @@ import (
 // not very cohesive. This is intended to be similar to the `heroku logs`
 // command.
 func Logs(queryString string, tail bool, hours int, settings *models.Settings) {
-	fmt.Println("Please enter your logging dashboard credentials")
+	if settings.Username == "" || settings.Password == "" {
+		// sometimes this will be filled in from env variables
+		// if it is, just use that and don't prompt them
+		settings.Username = ""
+		settings.Password = ""
+		fmt.Println("Please enter your logging dashboard credentials")
+	}
 	// if we remove the session token, the CLI will prompt for the
 	// username/password normally. It will also set the username/password
 	// on the settings object.
 	sessionToken := settings.SessionToken
 	settings.SessionToken = ""
+
 	helpers.SignIn(settings)
 
 	env := helpers.RetrieveEnvironment("pod", settings)
-	var domain = "catalyze.io"
-	if strings.HasPrefix(env.Data.Namespace, "csb") {
-		domain = "catalyzeapps.com"
+	var domain = env.Data.DNSName
+	if domain == "" {
+		domain = fmt.Sprintf("%s.catalyze.io", env.Data.Namespace)
 	}
 
-	urlString := fmt.Sprintf("https://%s.%s/__es", env.Data.Namespace, domain)
+	urlString := fmt.Sprintf("https://%s/__es", domain)
 
 	from := 0
 	query := &models.LogQuery{
