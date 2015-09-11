@@ -4,10 +4,13 @@
 		"default",
 		"publish-github"
 	],
+        "TasksExclude": [
+                "rmbin"
+        ],
 	"BuildConstraints": "linux windows darwin",
 	"OutPath": "{{.Dest}}{{.PS}}{{.Version}}{{.PS}}{{.Os}}-{{.Arch}}",
         "PackageVersion": "2.0.0",
-	"PrereleaseInfo": "rc1",
+	"PrereleaseInfo": "",
 	"Resources": {
                 "Include": ""
         },
