@@ -6,21 +6,13 @@ import (
 
 	"github.com/catalyzeio/catalyze/commands"
 	"github.com/catalyzeio/catalyze/config"
+	"github.com/catalyzeio/catalyze/updater"
 	"github.com/jawher/mow.cli"
 )
 
 func main() {
-	var updater = &commands.Updater{
-		CurrentVersion: config.VERSION,
-		APIURL:         "https://s3.amazonaws.com/cli-autoupdates/",
-		BinURL:         "https://s3.amazonaws.com/cli-autoupdates/",
-		DiffURL:        "https://s3.amazonaws.com/cli-autoupdates/",
-		Dir:            ".catalyze_update/",
-		CmdName:        "catalyze",
-	}
-
-	if updater != nil {
-		updater.BackgroundRun()
+	if updater.AutoUpdater != nil {
+		updater.AutoUpdater.BackgroundRun()
 	}
 
 	var app = cli.App("catalyze", fmt.Sprintf("Catalyze CLI. Version %s", config.VERSION))

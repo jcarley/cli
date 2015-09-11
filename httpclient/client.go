@@ -12,6 +12,7 @@ import (
 
 	"github.com/catalyzeio/catalyze/config"
 	"github.com/catalyzeio/catalyze/models"
+	"github.com/catalyzeio/catalyze/updater"
 )
 
 func getClient() *http.Client {
@@ -97,7 +98,11 @@ func MakeRequest(method string, url string, body io.Reader, verify bool, setting
 	}
 	defer resp.Body.Close()
 	respBody, _ := ioutil.ReadAll(resp.Body)
-	if verify && (resp.StatusCode < 200 || resp.StatusCode >= 300) {
+	if resp.StatusCode == 412 {
+		updater.AutoUpdater.ForcedUpgrade()
+		fmt.Println("A required update has been applied. Please re-run this command.")
+		os.Exit(1)
+	} else if verify && (resp.StatusCode < 200 || resp.StatusCode >= 300) {
 		var errors models.Errors
 		err := json.Unmarshal(respBody, &errors)
 		if err == nil && errors.ReportedErrors != nil && len(*errors.ReportedErrors) > 0 {

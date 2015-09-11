@@ -1,4 +1,4 @@
-package commands
+package updater
 
 // modified version of https://github.com/sanbornm/go-selfupdate/blob/master/selfupdate/selfupdate.go
 // 463b28194bdc57bd431b638b80fcbb20eeb0790a
@@ -8,6 +8,7 @@ package commands
 //     removed all log statements
 // Changes 9/11/15:
 //     changed all usages of time to use validTime (this tells the program how long to wait before updating)
+//     added a ForcedUpgrade method to rewrite the valid cktime and do a BackgroundRun
 
 // Update protocol:
 //
@@ -51,6 +52,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/catalyzeio/catalyze/config"
 	"github.com/kardianos/osext"
 	"github.com/kr/binarydist"
 	"gopkg.in/inconshreveable/go-update.v0"
@@ -62,6 +64,16 @@ const (
 )
 
 const validTime = 1 * 24 * time.Hour
+
+// CLI auto updater
+var AutoUpdater = &Updater{
+	CurrentVersion: config.VERSION,
+	APIURL:         "https://s3.amazonaws.com/cli-autoupdates/",
+	BinURL:         "https://s3.amazonaws.com/cli-autoupdates/",
+	DiffURL:        "https://s3.amazonaws.com/cli-autoupdates/",
+	Dir:            ".catalyze_update/",
+	CmdName:        "catalyze",
+}
 
 // mismatch hash error
 var ErrHashMismatch = errors.New("new file hash mismatch after patch")
@@ -122,6 +134,15 @@ func (u *Updater) BackgroundRun() error {
 		}
 	}
 	return nil
+}
+
+// ForcedUpgrade writes a time in the past to the cktime file and then triggers
+// the normal update process. This is useful when an update is required for
+// the program to continue functioning normally.
+func (u *Updater) ForcedUpgrade() error {
+	path := u.getExecRelativeDir(u.Dir + upcktimePath)
+	writeTime(path, time.Now().Add(-1*validTime))
+	return u.BackgroundRun()
 }
 
 func (u *Updater) wantUpdate() bool {
