@@ -20,7 +20,7 @@ import (
 // log statement into a separate block that spans multiple lines so it's
 // not very cohesive. This is intended to be similar to the `heroku logs`
 // command.
-func Logs(queryString string, tail bool, hours int, settings *models.Settings) {
+func Logs(queryString string, tail bool, hours int, mins int, secs int, settings *models.Settings) {
 	if settings.Username == "" || settings.Password == "" {
 		// sometimes this will be filled in from env variables
 		// if it is, just use that and don't prompt them
@@ -44,6 +44,8 @@ func Logs(queryString string, tail bool, hours int, settings *models.Settings) {
 
 	urlString := fmt.Sprintf("https://%s/__es", domain)
 
+	now := time.Now().In(time.UTC)
+
 	from := 0
 	query := &models.LogQuery{
 		Fields: []string{"@timestamp", "message"},
@@ -55,7 +57,7 @@ func Logs(queryString string, tail bool, hours int, settings *models.Settings) {
 		Filter: &models.FilterRange{
 			Range: &models.RangeTimestamp{
 				Timestamp: map[string]string{
-					"gte": fmt.Sprintf("now-%dh", hours),
+					"gt": fmt.Sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ", now.Year(), now.Month(), now.Day(), now.Hour()-hours, now.Minute()-mins, now.Second()-secs),
 				},
 			},
 		},

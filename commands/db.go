@@ -43,9 +43,12 @@ func Import(databaseLabel string, filePath string, mongoCollection string, mongo
 	fmt.Println("Encrypting...")
 	encrFilePath := helpers.EncryptFile(filePath, key, iv, pod.ImportRequiresLength)
 	defer os.Remove(encrFilePath)
-	options := map[string]string{
-		"mongoCollection": mongoCollection,
-		"mongoDatabase":   mongoDatabase,
+	options := map[string]string{}
+	if mongoCollection != "" {
+		options["mongoCollection"] = mongoCollection
+	}
+	if mongoDatabase != "" {
+		options["mongoDatabase"] = mongoDatabase
 	}
 	fmt.Println("Upoading...")
 	tempURL := helpers.RetrieveTempUploadURL(service.ID, settings)

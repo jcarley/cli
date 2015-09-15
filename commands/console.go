@@ -17,8 +17,6 @@ import (
 	"github.com/docker/docker/pkg/term"
 )
 
-var quitTries = 0
-
 // Console opens a secure console to a code or database service. For code
 // services, a command is required. This command is executed as root in the
 // context of the application root directory. For database services, no command
@@ -43,6 +41,7 @@ func Console(serviceLabel string, command string, settings *models.Settings) {
 
 	creds.URL = strings.Replace(creds.URL, "http", "ws", 1)
 	fmt.Println("Connecting...")
+
 	// BEGIN websocket impl
 	config, _ := websocket.NewConfig(creds.URL, "ws://localhost:9443/")
 	config.TlsConfig = &tls.Config{
@@ -53,11 +52,9 @@ func Console(serviceLabel string, command string, settings *models.Settings) {
 	if err != nil {
 		panic(err)
 	}
+	defer ws.Close()
 	fmt.Println("Connection opened")
-	wsCh := make(chan bool)
-	readCh := make(chan bool)
 
-	// when we are ready to stop processing messages, send true through the channel
 	stdin, stdout, _ := term.StdStreams()
 	fdIn, isTermIn := term.GetFdInfo(stdin)
 	if !isTermIn {
@@ -68,106 +65,59 @@ func Console(serviceLabel string, command string, settings *models.Settings) {
 		panic(err)
 	}
 
-	go webSocketDaemon(ws, &stdout, wsCh, readCh)
+	done := make(chan bool)
+	msgCh := make(chan []byte, 2)
+	go webSocketDaemon(ws, &stdout, done, msgCh)
 
-	cleanupHandler := make(chan os.Signal, 1)
-	signal.Notify(cleanupHandler, os.Interrupt)
-	go func() {
-		for range cleanupHandler {
-			quitTries++
-			if quitTries > 1 {
-				fmt.Println("Force closing")
-				term.RestoreTerminal(fdIn, oldState)
-				os.Exit(0)
-			}
-			go func() {
-				// This is all really ugly, trapping ctrl-c. with the new console
-				// gateway we will be able to remove this and properly shutdown when
-				// we receive a close frame from the remote.
-				fmt.Println("\nCleaning up")
-				term.RestoreTerminal(fdIn, oldState)
-				wsCh <- true
-				readCh <- true
-				// we need the destroy here because deferred statements do not get
-				// called when you use os.Exit(). Again this will get cleaned up with
-				// the new console gateway
-				helpers.DestroyConsole(jobID, service.ID, settings)
-				os.Exit(0)
-			}()
-		}
-	}()
+	signal.Notify(make(chan os.Signal, 1), os.Interrupt)
 
 	defer term.RestoreTerminal(fdIn, oldState)
-	quit := make(chan bool)
-	tCh := make(chan []byte)
-	go termDaemon(&stdin, tCh, quit, cleanupHandler)
-passthrough:
-	for {
-		select {
-		case msg := <-tCh:
-			ws.Write(msg)
-		case <-readCh:
-			wsCh <- true
-			quit <- true
-			break passthrough
-		}
-	}
+	go termDaemon(&stdin, ws)
+	<-done
 }
 
-// handles outputting messages from the remote socket
-func webSocketDaemon(ws *websocket.Conn, t *io.Writer, ch chan bool, readDone chan bool) {
-	readCh := make(chan []byte)
-	go readDaemon(ws, readCh, readDone)
+// handles setting up a read daemon and outputting messages from the remote
+// socket. If a websocket.CloseFrame is read, then the websocket connection
+// is properly closed.
+func webSocketDaemon(ws *websocket.Conn, t *io.Writer, done chan bool, msgCh chan []byte) {
+	go readDaemon(ws, msgCh)
 	for {
-		select {
-		case msg := <-readCh:
-			(*t).Write(msg)
-		case <-ch:
-			readDone <- true
+		msg := <-msgCh
+		if len(msg) == 1 && msg[0] == websocket.CloseFrame {
 			ws.Close()
 			fmt.Println("Connection closed")
+			done <- true
 			return
 		}
+		(*t).Write(msg)
 	}
 }
 
-// handles reading messages from the web socket
-func readDaemon(ws *websocket.Conn, ch chan []byte, readDone chan bool) {
+// handles reading messages from the web socket and passing them through the
+// given chan. If an error occurs, the websocket.CloseFrame signal is sent
+// through the chan.
+func readDaemon(ws *websocket.Conn, msgCh chan []byte) {
 	for {
 		msg := make([]byte, 1024)
 		n, err := ws.Read(msg)
 		if err != nil {
-			if ws.IsServerConn() {
-				fmt.Println("Error: " + err.Error())
-			}
-			readDone <- true
+			msgCh <- []byte{websocket.CloseFrame}
 			return
 		}
-		ch <- msg[:n]
+		msgCh <- msg[:n]
 	}
 }
 
 // handles reading input from the terminal and passing it through the websocket
-// connection. once ctrl+c or another quit command is issued, the chan is
-// notified
-func termDaemon(t *io.ReadCloser, ch chan []byte, quit chan bool, signalCh chan os.Signal) {
+// connection.
+func termDaemon(t *io.ReadCloser, ws *websocket.Conn) {
 	reader := bufio.NewReader(*t)
 	for {
 		msg := make([]byte, 1024)
-		select {
-		case <-quit:
+		n, err := reader.Read(msg)
+		if err != nil {
 			return
-		default:
-			n, err := reader.Read(msg)
-			// try and capture the ctrl-c byte (3)
-			if n == 1 && msg[0] == 3 {
-				signalCh <- os.Interrupt
-				return
-			}
-			if err != nil {
-				break
-			}
-			ch <- msg[:n]
 		}
+		ws.Write(msg[:n])
 	}
 }
