@@ -4,17 +4,13 @@
 		"default",
 		"publish-github"
 	],
-        "TasksExclude": [
-                "rmbin"
-        ],
+	"TasksExclude": [
+		"rmbin"
+	],
 	"BuildConstraints": "linux windows darwin",
-        "PackageVersion": "2.0.0",
-	"PrereleaseInfo": "",
-	"Resources": {
-                "Include": "",
-                "Exclude": "README*"
-        },
-        "TaskSettings": {
+	"ResourcesExclude": "README*",
+	"PackageVersion": "2.1.0",
+	"TaskSettings": {
 		"publish-github": {
 			"owner": "catalyzeio",
 			"repository": "cli"

@@ -1,4 +1,4 @@
-# Catalyze CLI Version 2.0.0
+# Catalyze CLI Version 2.1.0
 
 ## <a id="upgrading"></a> Upgrading from 1.X.X
 
@@ -120,74 +120,7 @@ catalyze associated
 
 The `backup` command gives access to backup and restores services for databases. The backup command can not be run directly but has four sub commands.
 
-### <a id="backup-create"></a> create
 
-```
-Usage: catalyze backup create SERVICE_NAME [-s]
-
-Create a new backup
-
-Arguments:
-  SERVICE_NAME=""   The name of the database service to create a backup for (i.e. 'db01')
-
-Options:
-  -s, --skip-poll=false   Whether or not to wait for the backup to finish
-```
-
-`backup create` creates a new backup for the given database service. The backup is started and unless `-s` is specified, the CLI will poll every 2 seconds until it finishes. Regardless of a successful backup or not, the logs for the backup will be printed to the console when the backup is finished. Here is a sample command
-
-```
-catalyze backup create db01
-```
-
-### <a id="backup-download"></a> download
-
-```
-Usage: catalyze backup download SERVICE_NAME BACKUP_ID FILEPATH [-f]
-
-Download a previously created backup
-
-Arguments:
-  SERVICE_NAME=""   The name of the database service which was backed up (i.e. 'db01')
-  BACKUP_ID=""      The ID of the backup to download (found from "catalyze backup list")
-  FILEPATH=""       The location to save the downloaded backup to. This location must NOT already exist unless -f is specified
-
-Options:
-  -f, --force=false   If a file previously exists at "filepath", overwrite it and download the backup
-```
-
-`backup download` downloads a previously created backup to your local hard drive. Be careful using this command is it could download PHI. Be sure that all hard drive encryption and necessary precautions have been taken before performing a download. The ID of the backup is found by first running the [backup list](#backup-list) command. Here is a sample command
-
-```
-catalyze backup download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.sql
-```
-
-This assumes you are download a MySQL or PostgreSQL backup which takes the `.sql` file format. If you are downloading a mongo backup, the command might look like this
-
-```
-catalyze backup download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.tar.gz
-```
-
-### <a id="backup-list"></a> list
-
-```
-Usage: catalyze backup list SERVICE_NAME [-p] [-n]
-
-List created backups
-
-Arguments:
-  SERVICE_NAME=""   The name of the database service to list backups for (i.e. 'db01')
-
-Options:
-  -p, --page=1         The page to view
-  -n, --page-size=10   The number of items to show per page
-```
-
-`backup list` lists all previously created backups. After listing backups you can copy the backup ID and use it to download that backup or restore your database from that backup. Here is a sample command
-
-```
-catalyze backup list db01
-```
 
 ## <a id="console"></a> console
 
@@ -224,7 +157,76 @@ catalyze dashboard
 
 ## <a id="db"></a> db
 
-The `db` command gives access to import and export services for databases. The db command can not be run directly but has two sub commands.
+The `db` command gives access to backup, import, and export services for databases. The db command can not be run directly but has sub commands.
+
+### <a id="db-create"></a> create
+
+```
+Usage: catalyze db backup SERVICE_NAME [-s] 
+
+Create a new backup
+
+Arguments:
+  SERVICE_NAME=""   The name of the database service to create a backup for (i.e. 'db01')
+
+Options:
+  -s, --skip-poll=false   Whether or not to wait for the backup to finish
+```
+
+`db backup` creates a new backup for the given database service. The backup is started and unless `-s` is specified, the CLI will poll every 2 seconds until it finishes. Regardless of a successful backup or not, the logs for the backup will be printed to the console when the backup is finished. Here is a sample command
+
+```
+catalyze db backup db01
+```
+
+### <a id="db-download"></a> download
+
+```
+Usage: catalyze db download SERVICE_NAME BACKUP_ID FILEPATH [-f] 
+
+Download a previously created backup
+
+Arguments:
+  SERVICE_NAME=""   The name of the database service which was backed up (i.e. 'db01')
+  BACKUP_ID=""      The ID of the backup to download (found from "catalyze backup list")
+  FILEPATH=""       The location to save the downloaded backup to. This location must NOT already exist unless -f is specified
+
+Options:
+  -f, --force=false   If a file previously exists at "filepath", overwrite it and download the backup
+```
+
+`db download` downloads a previously created backup to your local hard drive. Be careful using this command is it could download PHI. Be sure that all hard drive encryption and necessary precautions have been taken before performing a download. The ID of the backup is found by first running the [db list](#db-list) command. Here is a sample command
+
+```
+catalyze db download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.sql
+```
+
+This assumes you are download a MySQL or PostgreSQL backup which takes the `.sql` file format. If you are downloading a mongo backup, the command might look like this
+
+```
+catalyze db download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.tar.gz
+```
+
+### <a id="db-export"></a> export
+
+```
+Usage: catalyze db export DATABASE_NAME FILEPATH [-f]
+
+Export data from a database
+
+Arguments:
+  DATABASE_NAME=""   The name of the database to export data from (i.e. 'db01')
+  FILEPATH=""        The location to save the exported data. This location must NOT already exist unless -f is specified
+
+Options:
+  -f, --force=false   If a file previously exists at `filepath`, overwrite it and export data
+```
+
+`export` is a simple wrapper around the `backup create` and `backup download` command. When you request an export, a backup is created that will be added to the list of backups shown when you perform the [db list](#db-list) command. Next, that backup is immediately downloaded. Regardless of a successful export or not, the logs for the export will be printed to the console when the export is finished. Here is a sample command
+
+```
+catalyze db export db01 ./dbexport.sql
+```
 
 ### <a id="db-import"></a> import
 
@@ -259,25 +261,25 @@ and stored it at `./db.sql` you could import this into your database service. Wh
 catalyze db import db01 ./db.sql
 ```
 
-### <a id="db-export"></a> export
+### <a id="db-list"></a> list
 
 ```
-Usage: catalyze db export DATABASE_NAME FILEPATH [-f]
+Usage: catalyze db list SERVICE_NAME [-p] [-n] 
 
-Export data from a database
+List created backups
 
 Arguments:
-  DATABASE_NAME=""   The name of the database to export data from (i.e. 'db01')
-  FILEPATH=""        The location to save the exported data. This location must NOT already exist unless -f is specified
+  SERVICE_NAME=""   The name of the database service to list backups for (i.e. 'db01')
 
 Options:
-  -f, --force=false   If a file previously exists at `filepath`, overwrite it and export data
+  -p, --page=1         The page to view
+  -n, --page-size=10   The number of items to show per page
 ```
 
-`export` is a simple wrapper around the `backup create` and `backup download` command. When you request an export, a backup is created that will be added to the list of backups shown when you perform the [backup list](#backup-list) command. Next, that backup is immediately downloaded. Regardless of a successful export or not, the logs for the export will be printed to the console when the export is finished. Here is a sample command
+`db list` lists all previously created backups. After listing backups you can copy the backup ID and use it to download that backup or restore your database from that backup. Here is a sample command
 
 ```
-catalyze db export db01 ./dbexport.sql
+catalyze db list db01
 ```
 
 ## <a id="default"></a> default
@@ -331,7 +333,7 @@ catalyze environments
 ## <a id="logs"></a> logs
 
 ```
-Usage: catalyze logs [QUERY] [-f] [-h]
+Usage: catalyze logs [QUERY] [(-f | -t)] [--hours] [--minutes] [--seconds] 
 
 Show the logs in your terminal streamed from your logging dashboard
 
@@ -339,14 +341,17 @@ Arguments:
   QUERY="app*"   The query to send to your logging dashboard's elastic search (regex is supported)
 
 Options:
-  -f, --follow=false   Tail/follow the logs
-  -h, --hours=4        The number of hours to retrieve logs
+  -f, --follow=false   Tail/follow the logs (Equivalent to -t)
+  -t, --tail=false     Tail/follow the logs (Equivalent to -f)
+  --hours=0            The number of hours before now (in combination with minutes and seconds) to retrieve logs
+  --minutes=1          The number of minutes before now (in combination with hours and seconds) to retrieve logs
+  --seconds=0          The number of seconds before now (in combination with hours and minutes) to retrieve logs
 ```
 
-`logs` prints out your application logs directly from your logging Dashboard. If you do not see your logs, try adjusting the number of hours of logs that are retrieved with the `-h` option. You can also follow the logs with the `-f` option. When using `-f` all logs will be printed to the console within the given time frame as well as any new logs that are sent to the logging Dashboard for the duration of the command. When using the `-f` option, hit ctrl-c to stop. Here is a sample command
+`logs` prints out your application logs directly from your logging Dashboard. If you do not see your logs, try adjusting the number of hours, minutes, or seconds of logs that are retrieved with the `--hours`, `--minutes`, and `--seconds` options respectively. You can also follow the logs with the `-f` option. When using `-f` all logs will be printed to the console within the given time frame as well as any new logs that are sent to the logging Dashboard for the duration of the command. When using the `-f` option, hit ctrl-c to stop. Here is a sample command
 
 ```
-catalyze logs -f -h 24
+catalyze logs -f --hours=6 --minutes=30
 ```
 
 ## <a id="logout"></a> logout

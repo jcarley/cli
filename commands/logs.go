@@ -20,7 +20,7 @@ import (
 // log statement into a separate block that spans multiple lines so it's
 // not very cohesive. This is intended to be similar to the `heroku logs`
 // command.
-func Logs(queryString string, tail bool, hours int, mins int, secs int, settings *models.Settings) {
+func Logs(queryString string, tail bool, hours int, minutes int, seconds int, settings *models.Settings) {
 	if settings.Username == "" || settings.Password == "" {
 		// sometimes this will be filled in from env variables
 		// if it is, just use that and don't prompt them
@@ -44,7 +44,8 @@ func Logs(queryString string, tail bool, hours int, mins int, secs int, settings
 
 	urlString := fmt.Sprintf("https://%s/__es", domain)
 
-	now := time.Now().In(time.UTC)
+	offset := time.Duration(hours)*time.Hour + time.Duration(minutes)*time.Minute + time.Duration(seconds)*time.Second
+	timestamp := time.Now().In(time.UTC).Add(-1 * offset)
 
 	from := 0
 	query := &models.LogQuery{
@@ -57,7 +58,7 @@ func Logs(queryString string, tail bool, hours int, mins int, secs int, settings
 		Filter: &models.FilterRange{
 			Range: &models.RangeTimestamp{
 				Timestamp: map[string]string{
-					"gt": fmt.Sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ", now.Year(), now.Month(), now.Day(), now.Hour()-hours, now.Minute()-mins, now.Second()-secs),
+					"gt": fmt.Sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ", timestamp.Year(), timestamp.Month(), timestamp.Day(), timestamp.Hour(), timestamp.Minute(), timestamp.Second()),
 				},
 			},
 		},
