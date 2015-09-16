@@ -116,12 +116,6 @@ Lists all associated environments
 catalyze associated
 ```
 
-## <a id="backup"></a> backup
-
-The `backup` command gives access to backup and restores services for databases. The backup command can not be run directly but has four sub commands.
-
-
-
 ## <a id="console"></a> console
 
 ```
