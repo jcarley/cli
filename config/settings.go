@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/catalyzeio/catalyze/models"
 	"github.com/mitchellh/go-homedir"
@@ -112,20 +111,12 @@ func DropBreadcrumb(envName string, settings *models.Settings) {
 func DeleteBreadcrumb(alias string, settings *models.Settings) {
 	env := settings.Environments[alias]
 	dir := env.Directory
-	if !strings.HasSuffix(dir, string(os.PathSeparator)) {
-		dir = fmt.Sprintf("%s%s", dir, string(os.PathSeparator))
-	}
-	dir = fmt.Sprintf("%s%s", dir, LocalSettingsFile)
-	file, err := os.Open(dir)
-	defer file.Close()
-	if err == nil {
-		var breadcrumb models.Breadcrumb
-		json.NewDecoder(file).Decode(&breadcrumb)
+	dir = filepath.Join(dir, ".git", LocalSettingsFile)
+	defer os.Remove(dir)
 
-		delete(settings.Environments, breadcrumb.EnvName)
-		if settings.Default == breadcrumb.EnvName {
-			settings.Default = ""
-		}
+	delete(settings.Environments, alias)
+	if settings.Default == alias {
+		settings.Default = ""
 	}
 	os.Remove(dir)
 	SaveSettings(settings)
