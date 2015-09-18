@@ -156,7 +156,7 @@ The `db` command gives access to backup, import, and export services for databas
 ### <a id="db-create"></a> create
 
 ```
-Usage: catalyze db backup SERVICE_NAME [-s] 
+Usage: catalyze db backup SERVICE_NAME [-s]
 
 Create a new backup
 
@@ -176,7 +176,7 @@ catalyze db backup db01
 ### <a id="db-download"></a> download
 
 ```
-Usage: catalyze db download SERVICE_NAME BACKUP_ID FILEPATH [-f] 
+Usage: catalyze db download SERVICE_NAME BACKUP_ID FILEPATH [-f]
 
 Download a previously created backup
 
@@ -258,7 +258,7 @@ catalyze db import db01 ./db.sql
 ### <a id="db-list"></a> list
 
 ```
-Usage: catalyze db list SERVICE_NAME [-p] [-n] 
+Usage: catalyze db list SERVICE_NAME [-p] [-n]
 
 List created backups
 
@@ -324,10 +324,62 @@ List all environments you have access to
 catalyze environments
 ```
 
+## <a id="invites"></a> invites
+
+The `invites` command gives access to environment invitations. You can invite new users by email and manage pending invites through the CLI. You cannot call the `invites` command directly, but must call one of its subcommands.
+
+### <a id="invites-list"></a> list
+
+```
+Usage: catalyze invites list  
+
+List all pending environment invitations
+```
+
+`invites list` lists all pending invites for the associated environment. Any invites that have already been accepted will not appear in this list. To manage users who have already accepted invitations or are already granted access to your environment, use the [users](#users) group of commands. Here is a sample command
+
+```
+catalyze invites list
+```
+
+### <a id="invites-rm"></a> rm
+
+```
+Usage: catalyze invites rm INVITE_ID
+
+Remove a pending environment invitation
+
+Arguments:
+  INVITE_ID=""   The ID of an invitation to remove
+```
+
+`invites rm` removes a pending invitation. Once an invite has already been accepted, it cannot be removed. Removing an invitation is helpful if an email was misspelled and an invitation was sent to an incorrect email address. If you want to revoke access to a user who already has been given access to your environment, use the [users rm](#users-rm) command. Here is a sample command
+
+```
+catalyze invites rm 78b5d0ed-f71c-47f7-a4c8-6c8c58c29db1
+```
+
+### <a id="invites-send"></a> send
+
+```
+Usage: catalyze invites send EMAIL
+
+Send an invite to a user by email for the associated environment
+
+Arguments:
+  EMAIL=""     The email of a user to invite to the associated environment. This user does not need to have a Catalyze account prior to sending the invitation
+```
+
+`invites send` invites a new user to your environment. The only piece of information required is the email address to send the invitation to. The recipient does **not** need to have a Dashboard account in order to send them an invitation. However, they will need to have a Dashboard account to accept the invitation. Here is a sample command
+
+```
+catalyze invites send coworker@catalyze.io
+```
+
 ## <a id="logs"></a> logs
 
 ```
-Usage: catalyze logs [QUERY] [(-f | -t)] [--hours] [--minutes] [--seconds] 
+Usage: catalyze logs [QUERY] [(-f | -t)] [--hours] [--minutes] [--seconds]
 
 Show the logs in your terminal streamed from your logging dashboard
 

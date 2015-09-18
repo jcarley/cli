@@ -20,6 +20,14 @@ type Login struct {
 	Password string `json:"password"`
 }
 
+// Invite represents an invitation to an environment
+type Invite struct {
+	ID            string `json:"id,omitempty"`
+	Code          string `json:"code,omitempty"`
+	Email         string `json:"email"`
+	EnvironmentID string `json:"environmentId,omitempty"`
+}
+
 // User is an authenticated User
 type User struct {
 	Username     string `json:"username"`
@@ -97,6 +105,7 @@ type Service struct {
 	Name         string            `json:"name"`
 	EnvVars      map[string]string `json:"environmentVariables"`
 	Source       string            `json:"source"`
+	LBIP         string            `json:"load_balancer_ip,omitempty"`
 }
 
 // ServiceSize holds size information for a service

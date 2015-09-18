@@ -190,6 +190,37 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 			commands.Environments(settings)
 		}
 	})
+	app.Command("invites", "Manage invitations for your environments", func(cmd *cli.Cmd) {
+		// email := cmd.StringArg("EMAIL", "", "The email of a user to invite to the associated environment. This user does not need to have a Catalyze account prior to sending the invitation")
+		// cmd.Action = func() {
+		// 	settings := config.GetSettings(false, false, *givenEnvName, baasHost, paasHost, *username, *password)
+		// 	commands.InviteUser(*email, settings)
+		// }
+		// cmd.Spec = "[EMAIL]"
+
+		cmd.Command("list", "List all pending environment invitations", func(subCmd *cli.Cmd) {
+			subCmd.Action = func() {
+				settings := config.GetSettings(false, false, *givenEnvName, baasHost, paasHost, *username, *password)
+				commands.ListInvites(settings)
+			}
+		})
+		cmd.Command("rm", "Remove a pending environment invitation", func(subCmd *cli.Cmd) {
+			inviteID := subCmd.StringArg("INVITE_ID", "", "The ID of an invitation to remove")
+			subCmd.Action = func() {
+				settings := config.GetSettings(false, false, *givenEnvName, baasHost, paasHost, *username, *password)
+				commands.RmInvite(*inviteID, settings)
+			}
+			subCmd.Spec = "INVITE_ID"
+		})
+		cmd.Command("send", "Send an invite to a user by email for the associated environment", func(subCmd *cli.Cmd) {
+			email := subCmd.StringArg("EMAIL", "", "The email of a user to invite to the associated environment. This user does not need to have a Catalyze account prior to sending the invitation")
+			subCmd.Action = func() {
+				settings := config.GetSettings(false, false, *givenEnvName, baasHost, paasHost, *username, *password)
+				commands.InviteUser(*email, settings)
+			}
+			subCmd.Spec = "EMAIL"
+		})
+	})
 	app.Command("logs", "Show the logs in your terminal streamed from your logging dashboard", func(cmd *cli.Cmd) {
 		query := cmd.StringArg("QUERY", "app*", "The query to send to your logging dashboard's elastic search (regex is supported)")
 		follow := cmd.BoolOpt("f follow", false, "Tail/follow the logs (Equivalent to -t)")
