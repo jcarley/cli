@@ -2,9 +2,13 @@ package commands
 
 import (
 	"fmt"
+	"os"
+	"text/tabwriter"
+	"time"
 
 	"github.com/catalyzeio/catalyze/helpers"
 	"github.com/catalyzeio/catalyze/models"
+	"github.com/pmylund/sortutil"
 )
 
 // Status prints out an environment healthcheck. The status of the environment
@@ -13,35 +17,41 @@ func Status(settings *models.Settings) {
 	helpers.SignIn(settings)
 	env := helpers.RetrieveEnvironment("pod", settings)
 	fmt.Printf("%s (environment ID = %s):\n", env.Data.Name, env.ID)
-	for _, service := range *env.Data.Services {
-		if service.Type != "utility" {
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 0, 8, 4, '\t', 0)
+	fmt.Fprintln(w, "ID\tType\tStatus\tCreated At")
+	r := *env.Data.Services
+	sortutil.AscByField(r, "Label")
+	var latestBuild models.Job
+	for _, service := range r {
+		if service.Type != "utility" && service.Type != "" {
+			jobs := helpers.RetrieveAllJobs(service.ID, settings)
+			for jobID, job := range *jobs {
+				if job.Status == "running" {
+					const dateForm = "2006-01-02T15:04:05"
+					t, _ := time.Parse(dateForm, job.CreatedAt)
+
+					displayType := service.Label
+					if job.Type != "deploy" {
+						displayType = fmt.Sprintf("%s (%s)", displayType, job.Type)
+					}
+					fmt.Fprintln(w, jobID[:8]+"\t"+displayType+"\t"+job.Status+"\t"+t.Local().Format(time.Stamp))
+				}
+				if job.Status == "finished" && job.Type == "build" && job.CreatedAt > latestBuild.CreatedAt {
+					latestBuild = job
+					latestBuild.Type = job.Type
+					latestBuild.Status = job.Status
+					latestBuild.ID = jobID
+				}
+			}
 			if service.Type == "code" {
-				switch service.Size.(type) {
-				case string:
-					printLegacySizing(&service)
-				default:
-					printNewSizing(&service)
-				}
-			} else {
-				switch service.Size.(type) {
-				case string:
-					sizeString := service.Size.(string)
-					defer fmt.Printf("\t%s (size = %s, image = %s, status = %s) ID: %s\n", service.Label, sizeString, service.Name, service.DeployStatus, service.ID)
-				default:
-					serviceSize := service.Size.(map[string]interface{})
-					defer fmt.Printf("\t%s (ram = %.0f, storage = %.0f, behavior = %s, type = %s, cpu = %.0f, image = %s, status = %s) ID: %s\n", service.Label, serviceSize["ram"], serviceSize["storage"], serviceSize["behavior"], serviceSize["type"], serviceSize["cpu"], service.Name, service.DeployStatus, service.ID)
-				}
+				const dateForm = "2006-01-02T15:04:05"
+				t, _ := time.Parse(dateForm, latestBuild.CreatedAt)
+				displayType := service.Label
+				displayType = fmt.Sprintf("%s (%s)", displayType, latestBuild.Type)
+				fmt.Fprintln(w, latestBuild.ID[:8]+"\t"+displayType+"\t"+latestBuild.Status+"\t"+t.Local().Format(time.Stamp))
 			}
 		}
 	}
-}
-
-func printLegacySizing(service *models.Service) {
-	sizeString := service.Size.(string)
-	fmt.Printf("\t%s (size = %s, build status = %s, deploy status = %s) ID: %s\n", service.Label, sizeString, service.BuildStatus, service.DeployStatus, service.ID)
-}
-
-func printNewSizing(service *models.Service) {
-	serviceSize := service.Size.(map[string]interface{})
-	fmt.Printf("\t%s (ram = %.0f, storage = %.0f, behavior = %s, type = %s, cpu = %.0f, build status = %s, deploy status = %s) ID: %s\n", service.Label, serviceSize["ram"], serviceSize["storage"], serviceSize["behavior"], serviceSize["type"], serviceSize["cpu"], service.BuildStatus, service.DeployStatus, service.ID)
+	w.Flush()
 }
