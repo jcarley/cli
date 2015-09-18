@@ -11,7 +11,7 @@ import (
 // not need a Dashboard account prior to inviting them, but they must have a
 // Dashboard account in order to accept the invitation.
 func InviteUser(email string, settings *models.Settings) {
-	helpers.YesNoPrompt(fmt.Sprintf("Are you sure you want to invite %s to your environment? (y/n) ", email))
+	helpers.YesNoPrompt(fmt.Sprintf("Are you sure you want to invite %s to your %s environment? (y/n) ", email, settings.EnvironmentName))
 	helpers.SignIn(settings)
 	helpers.CreateInvite(email, settings)
 	fmt.Printf("%s has been invited!\n", email)
@@ -23,7 +23,7 @@ func InviteUser(email string, settings *models.Settings) {
 func ListInvites(settings *models.Settings) {
 	helpers.SignIn(settings)
 	invites := helpers.ListEnvironmentInvites(settings)
-	fmt.Println("Pending invites:")
+	fmt.Printf("Pending invites for %s:\n", settings.EnvironmentName)
 	for _, invite := range *invites {
 		fmt.Printf("\t%s %s\n", invite.Email, invite.Code)
 	}

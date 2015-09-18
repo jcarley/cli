@@ -130,16 +130,17 @@ type PodMetadata struct {
 // `json:"-"` are never persisted to disk but used in memory for the current
 // command.
 type Settings struct {
-	BaasHost      string                   `json:"-"`
-	PaasHost      string                   `json:"-"`
-	Username      string                   `json:"-"`
-	Password      string                   `json:"-"`
-	EnvironmentID string                   `json:"-"`
-	ServiceID     string                   `json:"-"`
-	SessionToken  string                   `json:"token"`
-	UsersID       string                   `json:"user_id"`
-	Environments  map[string]AssociatedEnv `json:"environments"`
-	Default       string                   `json:"default"`
+	BaasHost        string                   `json:"-"`
+	PaasHost        string                   `json:"-"`
+	Username        string                   `json:"-"`
+	Password        string                   `json:"-"`
+	EnvironmentID   string                   `json:"-"` // the id of the environment used for the current command
+	ServiceID       string                   `json:"-"` // the id of the service used for the current command
+	EnvironmentName string                   `json:"-"` // the name of the environment used for the current command
+	SessionToken    string                   `json:"token"`
+	UsersID         string                   `json:"user_id"`
+	Environments    map[string]AssociatedEnv `json:"environments"`
+	Default         string                   `json:"default"`
 }
 
 // AssociatedEnv holds information about an associated environment

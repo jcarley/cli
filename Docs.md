@@ -547,6 +547,8 @@ The `users` command allows you to manage who has access to your environment. The
 
 ### <a id="users-add"></a> add
 
+**WARNING**: This command has been deprecated. Please use [invites send](#invites-send) instead.
+
 ```
 Usage: catalyze users add USER_ID
 

@@ -10,7 +10,7 @@ import (
 // AddUser grants a user access to the associated environment. The ID of the
 // user is required which can be found via `catalyze whoami`.
 func AddUser(usersID string, settings *models.Settings) {
-	fmt.Println("WARNING: This command is deprecated. Please use \"catalyze invite\" instead.")
+	fmt.Println("WARNING: This command is deprecated. Please use \"catalyze invites send\" instead.")
 	helpers.SignIn(settings)
 	helpers.AddUserToEnvironment(usersID, settings)
 	fmt.Println("Added.")

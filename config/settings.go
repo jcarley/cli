@@ -130,6 +130,7 @@ func setGivenEnv(envName string, settings *models.Settings) {
 		if eName == envName {
 			settings.EnvironmentID = e.EnvironmentID
 			settings.ServiceID = e.ServiceID
+			settings.EnvironmentName = envName
 		}
 	}
 }
@@ -169,6 +170,7 @@ func setFirstAssociatedEnv(required bool, promptForEnv bool, settings *models.Se
 	for envName, e := range settings.Environments {
 		settings.EnvironmentID = e.EnvironmentID
 		settings.ServiceID = e.ServiceID
+		settings.EnvironmentName = e.Name
 		if promptForEnv {
 			defaultEnvPrompt(envName)
 		}
