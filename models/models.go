@@ -20,6 +20,14 @@ type Login struct {
 	Password string `json:"password"`
 }
 
+// Invite represents an invitation to an environment
+type Invite struct {
+	ID            string `json:"id,omitempty"`
+	Code          string `json:"code,omitempty"`
+	Email         string `json:"email"`
+	EnvironmentID string `json:"environmentId,omitempty"`
+}
+
 // User is an authenticated User
 type User struct {
 	Username     string `json:"username"`
@@ -97,6 +105,7 @@ type Service struct {
 	Name         string            `json:"name"`
 	EnvVars      map[string]string `json:"environmentVariables"`
 	Source       string            `json:"source"`
+	LBIP         string            `json:"load_balancer_ip,omitempty"`
 }
 
 // ServiceSize holds size information for a service
@@ -121,16 +130,17 @@ type PodMetadata struct {
 // `json:"-"` are never persisted to disk but used in memory for the current
 // command.
 type Settings struct {
-	BaasHost      string                   `json:"-"`
-	PaasHost      string                   `json:"-"`
-	Username      string                   `json:"-"`
-	Password      string                   `json:"-"`
-	EnvironmentID string                   `json:"-"`
-	ServiceID     string                   `json:"-"`
-	SessionToken  string                   `json:"token"`
-	UsersID       string                   `json:"user_id"`
-	Environments  map[string]AssociatedEnv `json:"environments"`
-	Default       string                   `json:"default"`
+	BaasHost        string                   `json:"-"`
+	PaasHost        string                   `json:"-"`
+	Username        string                   `json:"-"`
+	Password        string                   `json:"-"`
+	EnvironmentID   string                   `json:"-"` // the id of the environment used for the current command
+	ServiceID       string                   `json:"-"` // the id of the service used for the current command
+	EnvironmentName string                   `json:"-"` // the name of the environment used for the current command
+	SessionToken    string                   `json:"token"`
+	UsersID         string                   `json:"user_id"`
+	Environments    map[string]AssociatedEnv `json:"environments"`
+	Default         string                   `json:"default"`
 }
 
 // AssociatedEnv holds information about an associated environment
