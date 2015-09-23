@@ -106,6 +106,7 @@ type Service struct {
 	EnvVars      map[string]string `json:"environmentVariables"`
 	Source       string            `json:"source"`
 	LBIP         string            `json:"load_balancer_ip,omitempty"`
+	DockerImage  string            `json:"docker_image,omitempty"`
 }
 
 // ServiceSize holds size information for a service
