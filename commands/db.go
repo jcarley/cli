@@ -50,7 +50,7 @@ func Import(databaseLabel string, filePath string, mongoCollection string, mongo
 	if mongoDatabase != "" {
 		options["mongoDatabase"] = mongoDatabase
 	}
-	fmt.Println("Upoading...")
+	fmt.Println("Uploading...")
 	tempURL := helpers.RetrieveTempUploadURL(service.ID, settings)
 
 	task := helpers.InitiateImport(tempURL.URL, encrFilePath, string(helpers.Base64Encode(helpers.Hex(key))), string(helpers.Base64Encode(helpers.Hex(iv))), options, wipeFirst, service.ID, settings)
