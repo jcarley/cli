@@ -9,7 +9,7 @@
 	],
 	"BuildConstraints": "linux windows darwin",
 	"ResourcesExclude": "README*",
-	"PackageVersion": "2.1.2",
+	"PackageVersion": "2.1.3",
 	"TaskSettings": {
 		"publish-github": {
 			"owner": "catalyzeio",
