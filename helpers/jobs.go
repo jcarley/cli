@@ -24,9 +24,17 @@ func RetrieveJobFromTaskID(taskID string, settings *models.Settings) *models.Job
 	return &job
 }
 
-// RetrieveAllJobs fetches all running jobs for a service
-func RetrieveAllJobs(serviceID string, settings *models.Settings) *map[string]models.Job {
-	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/services/%s/jobs?pageSize=10000", settings.PaasHost, settings.EnvironmentID, serviceID), true, settings)
+// RetrieveRunningJobs fetches all running jobs for a service
+func RetrieveRunningJobs(serviceID string, settings *models.Settings) *map[string]models.Job {
+	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/services/%s/jobs?status=running", settings.PaasHost, settings.EnvironmentID, serviceID), true, settings)
+	var jobs map[string]models.Job
+	json.Unmarshal(resp, &jobs)
+	return &jobs
+}
+
+// RetrieveLatestBuildJob fetches the latest build of a code service (nested in a json)
+func RetrieveLatestBuildJob(serviceID string, settings *models.Settings) *map[string]models.Job {
+	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/services/%s/jobs?type=build&pageSize=1", settings.PaasHost, settings.EnvironmentID, serviceID), true, settings)
 	var jobs map[string]models.Job
 	json.Unmarshal(resp, &jobs)
 	return &jobs
