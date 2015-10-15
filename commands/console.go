@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"bufio"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -64,60 +63,35 @@ func Console(serviceLabel string, command string, settings *models.Settings) {
 	if err != nil {
 		panic(err)
 	}
-
-	done := make(chan bool)
-	msgCh := make(chan []byte, 2)
-	go webSocketDaemon(ws, &stdout, done, msgCh)
+	defer term.RestoreTerminal(fdIn, oldState)
 
 	signal.Notify(make(chan os.Signal, 1), os.Interrupt)
 
-	defer term.RestoreTerminal(fdIn, oldState)
-	go termDaemon(&stdin, ws)
+	done := make(chan struct{}, 2)
+	go readWS(ws, stdout, done)
+	go readStdin(stdin, ws, done)
+
 	<-done
 }
 
-// handles setting up a read daemon and outputting messages from the remote
-// socket. If a websocket.CloseFrame is read, then the websocket connection
-// is properly closed.
-func webSocketDaemon(ws *websocket.Conn, t *io.Writer, done chan bool, msgCh chan []byte) {
-	go readDaemon(ws, msgCh)
-	for {
-		msg := <-msgCh
-		if len(msg) == 1 && msg[0] == websocket.CloseFrame {
-			ws.Close()
-			fmt.Println("Connection closed")
-			done <- true
-			return
-		}
-		(*t).Write(msg)
+// Reads incoming data from the websocket and forwards it to stdout.
+func readWS(ws *websocket.Conn, t io.Writer, done chan struct{}) {
+	_, err := io.Copy(t, ws)
+	if err == io.EOF {
+		fmt.Println("Connection closed")
+	} else if err != nil {
+		fmt.Printf("Error reading data from server: %s", err)
 	}
+	done <- struct{}{}
 }
 
-// handles reading messages from the web socket and passing them through the
-// given chan. If an error occurs, the websocket.CloseFrame signal is sent
-// through the chan.
-func readDaemon(ws *websocket.Conn, msgCh chan []byte) {
-	for {
-		msg := make([]byte, 1024)
-		n, err := ws.Read(msg)
-		if err != nil {
-			msgCh <- []byte{websocket.CloseFrame}
-			return
-		}
-		msgCh <- msg[:n]
+// Reads data from stdin and writes it to the websocket.
+func readStdin(t io.ReadCloser, ws *websocket.Conn, done chan struct{}) {
+	_, err := io.Copy(ws, t)
+	if err == io.EOF {
+		fmt.Println("Input closed")
+	} else if err != nil {
+		fmt.Printf("Error writing data to server: %s", err)
 	}
-}
-
-// handles reading input from the terminal and passing it through the websocket
-// connection.
-func termDaemon(t *io.ReadCloser, ws *websocket.Conn) {
-	reader := bufio.NewReader(*t)
-	for {
-		msg := make([]byte, 1024)
-		n, err := reader.Read(msg)
-		if err != nil {
-			return
-		}
-		ws.Write(msg[:n])
-	}
+	done <- struct{}{}
 }
