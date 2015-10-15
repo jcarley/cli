@@ -35,7 +35,7 @@ func Status(settings *models.Settings) {
 				if job.Type != "deploy" {
 					displayType = fmt.Sprintf("%s (%s)", displayType, job.Type)
 				}
-				fmt.Fprintln(w, jobID[:8]+"\t"+displayType+"\t"+job.Status+"\t"+t.Local().Format(time.Stamp)+"-")
+				fmt.Fprintln(w, jobID[:8]+"\t"+displayType+"\t"+job.Status+"\t"+t.Local().Format(time.Stamp))
 			}
 			if service.Type == "code" {
 				latestBuildMap := helpers.RetrieveLatestBuildJob(service.ID, settings)
@@ -47,7 +47,7 @@ func Status(settings *models.Settings) {
 						t, _ := time.Parse(dateForm, latestBuild.CreatedAt)
 						displayType := service.Label
 						displayType = fmt.Sprintf("%s (%s)", displayType, latestBuild.Type)
-						fmt.Fprintln(w, latestBuildID[:8]+"\t"+displayType+"\t"+latestBuild.Status+"\t"+t.Local().Format(time.Stamp)+"*")
+						fmt.Fprintln(w, latestBuildID[:8]+"\t"+displayType+"\t"+latestBuild.Status+"\t"+t.Local().Format(time.Stamp))
 					}
 				}
 			}
