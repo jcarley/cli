@@ -33,6 +33,21 @@ func Import(databaseLabel string, filePath string, mongoCollection string, mongo
 		fmt.Printf("Could not find a service with the label \"%s\"\n", databaseLabel)
 		os.Exit(1)
 	}
+	// backup before we do an import. so we can be safe
+	fmt.Printf("Backing up \"%s\" before performing the import\n", databaseLabel)
+	task := helpers.CreateBackup(service.ID, settings)
+	fmt.Printf("Backup started (task ID = %s)\n", task.ID)
+	fmt.Print("Polling until backup finishes.")
+	ch := make(chan string, 1)
+	go helpers.PollTaskStatus(task.ID, ch, settings)
+	status := <-ch
+	task.Status = status
+	fmt.Printf("\nEnded in status '%s'\n", task.Status)
+	helpers.DumpLogs(service, task, "backup", settings)
+	if task.Status != "finished" {
+		os.Exit(1)
+	}
+	// end backup section
 	env := helpers.RetrieveEnvironment("spec", settings)
 	pod := helpers.RetrievePodMetadata(env.PodID, settings)
 	fmt.Printf("Importing '%s' into %s (ID = %s)\n", filePath, databaseLabel, service.ID)
@@ -53,12 +68,12 @@ func Import(databaseLabel string, filePath string, mongoCollection string, mongo
 	fmt.Println("Uploading...")
 	tempURL := helpers.RetrieveTempUploadURL(service.ID, settings)
 
-	task := helpers.InitiateImport(tempURL.URL, encrFilePath, string(helpers.Base64Encode(helpers.Hex(key))), string(helpers.Base64Encode(helpers.Hex(iv))), options, wipeFirst, service.ID, settings)
+	task = helpers.InitiateImport(tempURL.URL, encrFilePath, string(helpers.Base64Encode(helpers.Hex(key))), string(helpers.Base64Encode(helpers.Hex(iv))), options, wipeFirst, service.ID, settings)
 	fmt.Printf("Processing import... (task ID = %s)\n", task.ID)
 
-	ch := make(chan string, 1)
+	ch = make(chan string, 1)
 	go helpers.PollTaskStatus(task.ID, ch, settings)
-	status := <-ch
+	status = <-ch
 	task.Status = status
 	fmt.Printf("\nImport complete (end status = '%s')\n", task.Status)
 	helpers.DumpLogs(service, task, "restore", settings)

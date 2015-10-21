@@ -82,7 +82,7 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 			settings := config.GetSettings(false, false, *givenEnvName, baasHost, paasHost, *username, *password)
 			commands.Associate(*envName, *serviceName, *alias, *remote, *defaultEnv, settings)
 		}
-		cmd.Spec = "ENV_NAME [SERVICE_NAME] [-a] [-r] [-d]"
+		cmd.Spec = "ENV_NAME SERVICE_NAME [-a] [-r] [-d]"
 	})
 	app.Command("associated", "Lists all associated environments", func(cmd *cli.Cmd) {
 		cmd.Action = func() {
@@ -262,10 +262,12 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 		cmd.Spec = "TASK_NAME"
 	})
 	app.Command("redeploy", "Redeploy a service without having to do a git push", func(cmd *cli.Cmd) {
+		serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to redeploy (i.e. 'app01')")
 		cmd.Action = func() {
 			settings := config.GetSettings(true, true, *givenEnvName, baasHost, paasHost, *username, *password)
-			commands.Redeploy(settings)
+			commands.Redeploy(*serviceName, settings)
 		}
+		cmd.Spec = "SERVICE_NAME"
 	})
 	app.Command("ssl", "Perform operations on local certificates to verify their validity", func(cmd *cli.Cmd) {
 		cmd.Command("verify", "Verify whether a certificate chain is complete and if it matches the given private key", func(subCmd *cli.Cmd) {

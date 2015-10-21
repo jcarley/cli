@@ -15,10 +15,11 @@ import (
 // no longer adds a git remote. See commands.AddRemote().
 func Associate(envLabel string, serviceLabel string, alias string, remote string, defaultEnv bool, settings *models.Settings) {
 	if _, err := os.Stat(".git"); os.IsNotExist(err) {
-		fmt.Println("Not git repo found in the current directory")
+		fmt.Println("No git repo found in the current directory")
 		os.Exit(1)
 	}
 	helpers.SignIn(settings)
+	fmt.Printf("Existing git remotes named \"%s\" will be overwritten\n", remote)
 	envs := helpers.ListEnvironments("pod", settings)
 	for _, env := range *envs {
 		if env.Data.Name == envLabel {
@@ -85,6 +86,7 @@ func Associate(envLabel string, serviceLabel string, alias string, remote string
 			if len(settings.Environments) > 1 && settings.Default == "" {
 				fmt.Printf("You now have %d environments associated. Consider running \"catalyze default ENV_NAME\" to set a default\n", len(settings.Environments))
 			}
+			fmt.Printf("Your git repository \"%s\"  has been associated with code service \"%s\" and environment \"%s\"", remote, serviceLabel, name)
 			return
 		}
 	}
@@ -134,5 +136,6 @@ func Disassociate(alias string, settings *models.Settings) {
 	// DeleteBreadcrumb removes the environment from the settings.Environments
 	// array for you
 	config.DeleteBreadcrumb(alias, settings)
+	fmt.Printf("WARNING: Your existing git remote *has not* been removed.\n\n")
 	fmt.Println("Association cleared.")
 }
