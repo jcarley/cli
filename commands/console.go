@@ -25,7 +25,7 @@ func Console(serviceLabel string, command string, settings *models.Settings) {
 	helpers.SignIn(settings)
 	service := helpers.RetrieveServiceByLabel(serviceLabel, settings)
 	if service == nil {
-		fmt.Printf("Could not find a service with the label \"%s\"\n", serviceLabel)
+		fmt.Printf("Could not find a service with the name \"%s\"\n", serviceLabel)
 		os.Exit(1)
 	}
 	fmt.Printf("Opening console to %s (%s)\n", serviceLabel, service.ID)
