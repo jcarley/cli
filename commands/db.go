@@ -45,7 +45,7 @@ func Import(databaseLabel string, filePath string, mongoCollection string, mongo
 	fmt.Printf("\nEnded in status '%s'\n", task.Status)
 	helpers.DumpLogs(service, task, "backup", settings)
 	if task.Status != "finished" {
-		os.Exit(1)
+		panic(fmt.Errorf("Backup finished in an invalid status '%s'\n", status))
 	}
 	// end backup section
 	env := helpers.RetrieveEnvironment("spec", settings)

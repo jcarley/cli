@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/catalyzeio/catalyze/helpers"
 	"github.com/catalyzeio/catalyze/models"
@@ -15,8 +14,7 @@ func Redeploy(serviceLabel string, settings *models.Settings) {
 	helpers.SignIn(settings)
 	service := helpers.RetrieveServiceByLabel(serviceLabel, settings)
 	if service == nil {
-		fmt.Printf("Could not find a service with the name \"%s\"\n", serviceLabel)
-		os.Exit(1)
+		panic(fmt.Errorf("Could not find a service with the name \"%s\"\n", serviceLabel))
 	}
 	fmt.Printf("Redeploying %s (ID = %s)\n", serviceLabel, service.ID)
 	helpers.RedeployService(service.ID, settings)
