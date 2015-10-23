@@ -166,7 +166,7 @@ func (u *Updater) update() error {
 	}
 	defer old.Close()
 
-	err = u.fetchInfo()
+	err = u.FetchInfo()
 	if err != nil {
 		return err
 	}
@@ -213,7 +213,8 @@ func (u *Updater) update() error {
 	return nil
 }
 
-func (u *Updater) fetchInfo() error {
+// FetchInfo fetches and updates the info for latest CLI version available.
+func (u *Updater) FetchInfo() error {
 	r, err := fetch(u.APIURL + u.CmdName + "/" + plat + ".json")
 	if err != nil {
 		return err

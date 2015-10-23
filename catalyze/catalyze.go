@@ -293,6 +293,11 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 			commands.SupportIds(settings)
 		}
 	})
+	app.Command("update", "Checks for available updates and updates the CLI if a new update is available", func(cmd *cli.Cmd) {
+		cmd.Action = func() {
+			commands.Update()
+		}
+	})
 	app.Command("users", "Manage users who have access to the associated environment", func(cmd *cli.Cmd) {
 		cmd.Command("add", "Grant access to the associated environment for the given user", func(subCmd *cli.Cmd) {
 			usersID := subCmd.StringArg("USER_ID", "", "The Users ID to give access to the associated environment")
