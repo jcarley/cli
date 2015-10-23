@@ -1,4 +1,4 @@
-# Catalyze CLI Version 2.1.0
+# Catalyze CLI
 
 ## <a id="upgrading"></a> Upgrading from 1.X.X
 

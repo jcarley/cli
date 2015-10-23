@@ -28,7 +28,7 @@ func SetVar(variables []string, settings *models.Settings) {
 
 	envVarsMap := make(map[string]string, len(variables))
 	for _, envVar := range variables {
-		pieces := strings.Split(envVar, "=")
+		pieces := strings.SplitN(envVar, "=", 2)
 		if len(pieces) != 2 {
 			fmt.Printf("Invalid variable format. Expected <key>=<value> but got %s\n", envVar)
 			os.Exit(1)

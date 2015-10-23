@@ -94,14 +94,6 @@ type Job struct {
 	MetricsData *[]MetricsData   `json:"metrics"`
 }
 
-// EnvironmentData is the data blob inside of an Environment
-type JobData struct {
-	Name      string     `json:"name"`
-	Services  *[]Service `json:"services"`
-	Namespace string     `json:"namespace"`
-	DNSName   string     `json:"dns_name"`
-}
-
 // Service service
 type Service struct {
 	ID           string            `json:"id"`
@@ -114,8 +106,7 @@ type Service struct {
 	EnvVars      map[string]string `json:"environmentVariables"`
 	Source       string            `json:"source"`
 	LBIP         string            `json:"load_balancer_ip,omitempty"`
-	Ram          int               `json:"size":"ram"`
-	Storage      int               `json:"size":"storage"`
+	DockerImage  string            `json:"docker_image,omitempty"`
 }
 
 // ServiceSize holds size information for a service

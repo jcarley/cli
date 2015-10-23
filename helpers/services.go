@@ -151,14 +151,14 @@ func InitiateWorker(target string, settings *models.Settings) {
 }
 
 // RedeployService redeploys the associated code service
-func RedeployService(settings *models.Settings) {
+func RedeployService(serviceID string, settings *models.Settings) {
 	redeploy := map[string]string{}
 	b, err := json.Marshal(redeploy)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	httpclient.Post(b, fmt.Sprintf("%s/v1/environments/%s/services/%s/redeploy", settings.PaasHost, settings.EnvironmentID, settings.ServiceID), true, settings)
+	httpclient.Post(b, fmt.Sprintf("%s/v1/environments/%s/services/%s/redeploy", settings.PaasHost, settings.EnvironmentID, serviceID), true, settings)
 }
 
 // InitiateImport starts an import job for the given database service
