@@ -2,46 +2,60 @@ package commands
 
 import (
 	"fmt"
+	"os"
+	"text/tabwriter"
+	"time"
 
 	"github.com/catalyzeio/catalyze/helpers"
 	"github.com/catalyzeio/catalyze/models"
+	"github.com/pmylund/sortutil"
 )
 
-// Status prints out an environment healthcheck. The status of the environment
-// and every service in the environment is printed out.
+// Status prints out all of the non-utility services and their running jobs
 func Status(settings *models.Settings) {
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 0, 8, 4, '\t', 0)
+
 	helpers.SignIn(settings)
 	env := helpers.RetrieveEnvironment("pod", settings)
-	fmt.Printf("%s (environment ID = %s):\n", env.Data.Name, env.ID)
-	for _, service := range *env.Data.Services {
-		if service.Type != "utility" {
-			if service.Type == "code" {
-				switch service.Size.(type) {
-				case string:
-					printLegacySizing(&service)
-				default:
-					printNewSizing(&service)
+
+	fmt.Fprintln(w, env.Data.Name+" (environment ID = "+env.ID+"):")
+	//fmt.Fprintln(w, "ID\tLabel\tStatus\tCreated At")
+	fmt.Fprintln(w, "Label\tStatus\tCreated At")
+
+	services := *env.Data.Services
+	sortutil.AscByField(services, "Label")
+
+	for _, service := range services {
+		if service.Type != "utility" && service.Type != "" {
+			jobs := helpers.RetrieveRunningJobs(service.ID, settings)
+			//for jobID, job := range *jobs {
+			for _, job := range *jobs {
+				const dateForm = "2006-01-02T15:04:05"
+				t, _ := time.Parse(dateForm, job.CreatedAt)
+				displayType := service.Label
+				if job.Type != "deploy" {
+					displayType = fmt.Sprintf("%s (%s)", displayType, job.Type)
 				}
-			} else {
-				switch service.Size.(type) {
-				case string:
-					sizeString := service.Size.(string)
-					defer fmt.Printf("\t%s (size = %s, image = %s, status = %s) ID: %s\n", service.Label, sizeString, service.Name, service.DeployStatus, service.ID)
-				default:
-					serviceSize := service.Size.(map[string]interface{})
-					defer fmt.Printf("\t%s (ram = %.0f, storage = %.0f, behavior = %s, type = %s, cpu = %.0f, image = %s, status = %s) ID: %s\n", service.Label, serviceSize["ram"], serviceSize["storage"], serviceSize["behavior"], serviceSize["type"], serviceSize["cpu"], service.Name, service.DeployStatus, service.ID)
+				//fmt.Fprintln(w, jobID[:8]+"\t"+displayType+"\t"+job.Status+"\t"+t.Local().Format(time.Stamp))
+				fmt.Fprintln(w, displayType+"\t"+job.Status+"\t"+t.Local().Format(time.Stamp))
+			}
+			if service.Type == "code" {
+				latestBuildMap := helpers.RetrieveLatestBuildJob(service.ID, settings)
+				for latestBuildID, latestBuild := range *latestBuildMap {
+					if latestBuildID == "" {
+						fmt.Fprintln(w, "--------"+"\t"+service.Label+"\t"+"-------"+"\t"+"---------------")
+					} else if latestBuildID != "" {
+						const dateForm = "2006-01-02T15:04:05"
+						t, _ := time.Parse(dateForm, latestBuild.CreatedAt)
+						displayType := service.Label
+						displayType = fmt.Sprintf("%s (%s)", displayType, latestBuild.Type)
+						//fmt.Fprintln(w, latestBuildID[:8]+"\t"+displayType+"\t"+latestBuild.Status+"\t"+t.Local().Format(time.Stamp))
+						fmt.Fprintln(w, displayType+"\t"+latestBuild.Status+"\t"+t.Local().Format(time.Stamp))
+					}
 				}
 			}
 		}
 	}
-}
-
-func printLegacySizing(service *models.Service) {
-	sizeString := service.Size.(string)
-	fmt.Printf("\t%s (size = %s, build status = %s, deploy status = %s) ID: %s\n", service.Label, sizeString, service.BuildStatus, service.DeployStatus, service.ID)
-}
-
-func printNewSizing(service *models.Service) {
-	serviceSize := service.Size.(map[string]interface{})
-	fmt.Printf("\t%s (ram = %.0f, storage = %.0f, behavior = %s, type = %s, cpu = %.0f, build status = %s, deploy status = %s) ID: %s\n", service.Label, serviceSize["ram"], serviceSize["storage"], serviceSize["behavior"], serviceSize["type"], serviceSize["cpu"], service.BuildStatus, service.DeployStatus, service.ID)
+	w.Flush()
 }

@@ -86,7 +86,7 @@ func Associate(envLabel string, serviceLabel string, alias string, remote string
 			if len(settings.Environments) > 1 && settings.Default == "" {
 				fmt.Printf("You now have %d environments associated. Consider running \"catalyze default ENV_NAME\" to set a default\n", len(settings.Environments))
 			}
-			fmt.Printf("Your git repository \"%s\"  has been associated with code service \"%s\" and environment \"%s\"", remote, serviceLabel, name)
+			fmt.Printf("Your git repository \"%s\"  has been associated with code service \"%s\" and environment \"%s\"\n", remote, serviceLabel, name)
 			return
 		}
 	}
