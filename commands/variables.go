@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/catalyzeio/catalyze/helpers"
@@ -13,8 +14,13 @@ import (
 func ListVars(settings *models.Settings) {
 	helpers.SignIn(settings)
 	envVars := helpers.ListEnvVars(settings)
-	for key, value := range envVars {
-		fmt.Printf("%s=%s\n", key, value)
+	var keys []string
+	for k := range envVars {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		fmt.Printf("%s=%s\n", key, envVars[key])
 	}
 }
 
@@ -43,7 +49,7 @@ func SetVar(variables []string, settings *models.Settings) {
 	}
 
 	helpers.SetEnvVars(envVarsMap, settings)
-	fmt.Println("Set.")
+	fmt.Println("Set. For these environment variables to take effect, you will need to redeploy your service with \"catalyze redeploy\"")
 }
 
 // UnsetVar deletes an environment variable. Any changes to environment variables
