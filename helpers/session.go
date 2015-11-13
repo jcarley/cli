@@ -1,10 +1,13 @@
 package helpers
 
 import (
+	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"runtime"
+	"strings"
 
 	"golang.org/x/crypto/ssh/terminal"
 
@@ -56,7 +59,12 @@ func verify(settings *models.Settings) bool {
 func promptForCredentials(settings *models.Settings) {
 	var username string
 	fmt.Print("Username: ")
-	fmt.Scanln(&username)
+	in := bufio.NewReader(os.Stdin)
+	username, err := in.ReadString('\n')
+	if err != nil {
+		panic(errors.New("Invalid username"))
+	}
+	username = strings.TrimRight(username, "\n")
 	settings.Username = username
 	fmt.Print("Password: ")
 	var fd uintptr
