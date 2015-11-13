@@ -82,7 +82,7 @@ This section lists all commands the CLI offers. Help text, along with a descript
 ## <a id="associate"></a> associate
 
 ```
-Usage: catalyze associate ENV_NAME [SERVICE_NAME] [-a] [-r] [-d]
+Usage: catalyze associate ENV_NAME SERVICE_NAME [-a] [-r] [-d]
 
 Associates an environment
 
@@ -99,7 +99,7 @@ Options:
 `associate` is the entry point of the cli. You need to associate an environment before you can run most other commands. Check out [scope](#global-scope) and [aliases](#aliases) for more info on the value of the alias and default options. Here is a sample command
 
 ```
-catalyze associate My-Production-Environment -a prod -d
+catalyze associate My-Production-Environment app01 -a prod -d
 ```
 
 ## <a id="associated"></a> associated
@@ -249,7 +249,7 @@ val TEXT
 INSERT INTO mytable (id, val) values ('1', 'test');
 ```
 
-and stored it at `./db.sql` you could import this into your database service. When import data into mongo, you may specify the database and collection to import into using the `-d` and `-c` flags respectively. Regardless of a successful import or not, the logs for the import will be printed to the console when the import is finished. Here is a sample command
+and stored it at `./db.sql` you could import this into your database service. When import data into mongo, you may specify the database and collection to import into using the `-d` and `-c` flags respectively. Regardless of a successful import or not, the logs for the import will be printed to the console when the import is finished. Before an import takes place, your database is backed up automatically in case any issues arise. Here is a sample command
 
 ```
 catalyze db import db01 ./db.sql
@@ -461,15 +461,18 @@ catalyze rake db:migrate
 ## <a id="redeploy"></a> redeploy
 
 ```
-Usage: catalyze redeploy  
+Usage: catalyze redeploy SERVICE_NAME
 
 Redeploy a service without having to do a git push
+
+Arguments:
+  SERVICE_NAME=""   The name of the service to redeploy (i.e. 'app01')
 ```
 
-`redeploy` restarts your code service without having to perform a code push. Typically when you want to update your code service you make a code change, git commit, then git push catalyze master. After the build finishes and a couple minutes later your code service will be redeployed. With the redeploy command, you skip the git push and the build. The code service that is redeployed is the one that was associated when the [associate](#associate) command was run. You can see which code service ID this is with the [associated](#associated) command. Here is a sample command
+`redeploy` restarts a code service without having to perform a code push. Typically when you want to update your code service you make a code change, git commit, then git push catalyze master. After the build finishes and a couple minutes later your code service will be redeployed. With the redeploy command, you skip the git push and the build. Here is a sample command
 
 ```
-catalyze redeploy
+catalyze redeploy app01
 ```
 
 ## <a id="ssl"></a> ssl
@@ -539,6 +542,20 @@ Print out various IDs related to your associated environment to be used when con
 
 ```
 catalyze support-ids
+```
+
+## <a id="update"></a> update
+
+```
+Usage: catalyze update
+
+Checks for available updates and updates the CLI if a new update is available
+```
+
+`update` is a shortcut to update your CLI instantly. If a newer version of the CLI is available, it will be downloaded and installed automatically. This is used when you want to apply an update before the CLI automatically applies it on its own. Here is a sample command
+
+```
+catalyze update
 ```
 
 ## <a id="users"></a> users
