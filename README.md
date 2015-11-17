@@ -12,23 +12,23 @@ Once downloaded, the CLI will automatically update itself when a new version bec
 
 **PLEASE NOTE** You **must** put the CLI binary in a location for which you have write permissions. Without write permissions, the CLI will not automatically update and you will have to update manually by visiting the github repo and downloading the latest binary.
 
-## Version 2.1.4
+## Version 2.1.5
 
 ### Darwin (Apple Mac)
 
- * [catalyze\_2.1.4\_darwin\_386.zip](https://github.com/catalyzeio/cli/releases/download/2.1.4/catalyze_2.1.4_darwin_386.zip)
- * [catalyze\_2.1.4\_darwin\_amd64.zip](https://github.com/catalyzeio/cli/releases/download/2.1.4/catalyze_2.1.4_darwin_amd64.zip)
+ * [catalyze\_2.1.5\_darwin\_386.zip](https://github.com/catalyzeio/cli/releases/download/2.1.5/catalyze_2.1.5_darwin_386.zip)
+ * [catalyze\_2.1.5\_darwin\_amd64.zip](https://github.com/catalyzeio/cli/releases/download/2.1.5/catalyze_2.1.5_darwin_amd64.zip)
 
 ### Linux
 
- * [catalyze\_2.1.4\_amd64.deb](https://github.com/catalyzeio/cli/releases/download/2.1.4/catalyze_2.1.4_amd64.deb)
- * [catalyze\_2.1.4\_armhf.deb](https://github.com/catalyzeio/cli/releases/download/2.1.4/catalyze_2.1.4_armhf.deb)
- * [catalyze\_2.1.4\_i386.deb](https://github.com/catalyzeio/cli/releases/download/2.1.4/catalyze_2.1.4_i386.deb)
- * [catalyze\_2.1.4\_linux\_386.tar.gz](https://github.com/catalyzeio/cli/releases/download/2.1.4/catalyze_2.1.4_linux_386.tar.gz)
- * [catalyze\_2.1.4\_linux\_amd64.tar.gz](https://github.com/catalyzeio/cli/releases/download/2.1.4/catalyze_2.1.4_linux_amd64.tar.gz)
- * [catalyze\_2.1.4\_linux\_arm.tar.gz](https://github.com/catalyzeio/cli/releases/download/2.1.4/catalyze_2.1.4_linux_arm.tar.gz)
+ * [catalyze\_2.1.5\_amd64.deb](https://github.com/catalyzeio/cli/releases/download/2.1.5/catalyze_2.1.5_amd64.deb)
+ * [catalyze\_2.1.5\_armhf.deb](https://github.com/catalyzeio/cli/releases/download/2.1.5/catalyze_2.1.5_armhf.deb)
+ * [catalyze\_2.1.5\_i386.deb](https://github.com/catalyzeio/cli/releases/download/2.1.5/catalyze_2.1.5_i386.deb)
+ * [catalyze\_2.1.5\_linux\_386.tar.gz](https://github.com/catalyzeio/cli/releases/download/2.1.5/catalyze_2.1.5_linux_386.tar.gz)
+ * [catalyze\_2.1.5\_linux\_amd64.tar.gz](https://github.com/catalyzeio/cli/releases/download/2.1.5/catalyze_2.1.5_linux_amd64.tar.gz)
+ * [catalyze\_2.1.5\_linux\_arm.tar.gz](https://github.com/catalyzeio/cli/releases/download/2.1.5/catalyze_2.1.5_linux_arm.tar.gz)
 
 ### MS Windows
 
- * [catalyze\_2.1.4\_windows\_386.zip](https://github.com/catalyzeio/cli/releases/download/2.1.4/catalyze_2.1.4_windows_386.zip)
- * [catalyze\_2.1.4\_windows\_amd64.zip](https://github.com/catalyzeio/cli/releases/download/2.1.4/catalyze_2.1.4_windows_amd64.zip)
+ * [catalyze\_2.1.5\_windows\_386.zip](https://github.com/catalyzeio/cli/releases/download/2.1.5/catalyze_2.1.5_windows_386.zip)
+ * [catalyze\_2.1.5\_windows\_amd64.zip](https://github.com/catalyzeio/cli/releases/download/2.1.5/catalyze_2.1.5_windows_amd64.zip)

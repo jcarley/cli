@@ -9,16 +9,16 @@
 	],
 	"BuildConstraints": "linux windows darwin",
 	"ResourcesExclude": "README*",
-	"PackageVersion": "2.1.4",
+	"PackageVersion": "2.1.5",
 	"TaskSettings": {
 		"publish-github": {
+			"body": "Catalyze CLI",
 			"owner": "catalyzeio",
-			"repository": "cli",
-                        "body": "Catalyze CLI"
+			"repository": "cli"
 		},
-                "tag": {
-		        "prefix": ""
-	        }
+		"tag": {
+			"prefix": ""
+		}
 	},
 	"ConfigVersion": "0.9"
 }
