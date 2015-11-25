@@ -44,7 +44,7 @@ func Logs(queryString string, tail bool, hours int, minutes int, seconds int, se
 	}
 	appLogsIdentifier := "source"
 	appLogsValue := "app"
-	if strings.HasPrefix(domain, "pod01") {
+	if strings.HasPrefix(domain, "pod01") || strings.HasPrefix(domain, "csb01") {
 		appLogsIdentifier = "syslog_program"
 		appLogsValue = "supervisord"
 	}
