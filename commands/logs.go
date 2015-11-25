@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/catalyzeio/catalyze/config"
@@ -37,9 +38,15 @@ func Logs(queryString string, tail bool, hours int, minutes int, seconds int, se
 	helpers.SignIn(settings)
 
 	env := helpers.RetrieveEnvironment("pod", settings)
-	var domain = env.Data.DNSName
+	domain := env.Data.DNSName
 	if domain == "" {
 		domain = fmt.Sprintf("%s.catalyze.io", env.Data.Namespace)
+	}
+	appLogsIdentifier := "source"
+	appLogsValue := "app"
+	if strings.HasPrefix(domain, "pod01") {
+		appLogsIdentifier = "syslog_program"
+		appLogsValue = "supervisord"
 	}
 
 	urlString := fmt.Sprintf("https://%s/__es", domain)
@@ -48,38 +55,12 @@ func Logs(queryString string, tail bool, hours int, minutes int, seconds int, se
 	timestamp := time.Now().In(time.UTC).Add(-1 * offset)
 
 	from := 0
-	query := &models.LogQuery{
-		Fields: []string{"@timestamp", "message"},
-		Query: &models.Query{
-			Wildcard: map[string]string{
-				"message": queryString,
-			},
-		},
-		Filter: &models.FilterRange{
-			Range: &models.RangeTimestamp{
-				Timestamp: map[string]string{
-					"gt": fmt.Sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ", timestamp.Year(), timestamp.Month(), timestamp.Day(), timestamp.Hour(), timestamp.Minute(), timestamp.Second()),
-				},
-			},
-		},
-		Sort: &models.LogSort{
-			Timestamp: map[string]string{
-				"order": "asc",
-			},
-			Message: map[string]string{
-				"order": "asc",
-			},
-		},
-		From: from,
-		Size: 50,
-	}
 
 	var tr = &http.Transport{
 		TLSClientConfig: &tls.Config{
 			MinVersion: tls.VersionTLS12,
 		},
 	}
-
 	client := &http.Client{
 		Transport: tr,
 	}
@@ -89,12 +70,8 @@ func Logs(queryString string, tail bool, hours int, minutes int, seconds int, se
 
 	fmt.Println("        @timestamp       -        message")
 	for {
-		query.From = from
-		b, err := json.Marshal(*query)
-		if err != nil {
-			panic(err)
-		}
-		reader := bytes.NewReader(b)
+		queryBytes := generateQuery(queryString, appLogsIdentifier, appLogsValue, timestamp, from)
+		reader := bytes.NewReader(queryBytes)
 
 		req, _ := http.NewRequest("GET", fmt.Sprintf("%s/_search", urlString), reader)
 		req.SetBasicAuth(settings.Username, settings.Password)
@@ -120,4 +97,36 @@ func Logs(queryString string, tail bool, hours int, minutes int, seconds int, se
 		time.Sleep(2 * time.Second)
 		from += len(*logs.Hits.Hits)
 	}
+}
+
+func generateQuery(queryString, appLogsIdentifier, appLogsValue string, timestamp time.Time, from int) []byte {
+	query := `{
+	"fields": ["@timestamp", "message", "` + appLogsIdentifier + `"],
+	"query": {
+		"wildcard": {
+			"message": "` + queryString + `"
+		}
+	},
+	"filter": {
+		"bool": {
+			"must": [
+				{"term": {"` + appLogsIdentifier + `": "` + appLogsValue + `"}},
+				{"range": {"@timestamp": {"gt": "` + fmt.Sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ", timestamp.Year(), timestamp.Month(), timestamp.Day(), timestamp.Hour(), timestamp.Minute(), timestamp.Second()) + `"}}}
+			]
+		}
+	},
+	"sort": {
+		"@timestamp": {
+			"order": "asc"
+		},
+		"message": {
+			"order": "asc"
+		}
+	},
+	"from": ` + fmt.Sprintf("%d", from) + `,
+	"size": 50
+	}`
+	var buf bytes.Buffer
+	json.Compact(&buf, []byte(query))
+	return buf.Bytes()
 }

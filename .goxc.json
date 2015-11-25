@@ -1,5 +1,6 @@
 {
 	"ArtifactsDest": "builds/",
+	"OutPath": "{{.Dest}}{{.PS}}{{.Version}}{{.PS}}{{.Os}}-{{.Arch}}{{.PS}}{{.ExeName}}{{.Ext}}",
 	"Tasks": [
 		"default",
 		"publish-github"
