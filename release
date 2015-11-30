@@ -1,0 +1,67 @@
+#!/bin/bash -e
+cd /usr/local/go/src/github.com/catalyzeio/catalyze
+
+go get ./...
+go install github.com/catalyzeio/catalyze
+
+if [ "x${VERSION}" == "x" ]; then
+  echo 'You must specify the VERSION environment variable. This is the version you are upgrading to.'
+  exit 1
+fi
+
+if [ "x${OLD_VERSION}" == "x" ]; then
+  echo 'You must specify the OLD_VERSION environment variable. This is the version you are upgrading from.'
+  exit 1
+fi
+
+if [ "x${AWS_ACCESS_KEY_ID}" == "x" ]; then
+  echo 'Missing required AWS_ACCESS_KEY_ID environment variable'
+  exit 1
+fi
+if [ "x${AWS_SECRET_ACCESS_KEY}" == "x" ]; then
+  echo 'Missing required AWS_SECRET_ACCESS_KEY environment variable'
+  exit 1
+fi
+if [ "x${BUCKET}" == "x" ]; then
+  echo 'Missing required BUCKET environment variable'
+  exit 1
+fi
+
+if ! grep -q 'const VERSION = "'${VERSION}'"' config/constants.go ; then
+  echo ''${VERSION}' not found in config/constants. Please update the version in config/constants.go before proceeding'
+  exit 1
+fi
+
+if ! grep -q '"PackageVersion": "'${VERSION}'",' .goxc.json ; then
+  echo 'Incorrect version found in .goxc.json, setting to '${VERSION}''
+  goxc -wc -pv=${VERSION}
+fi
+
+echo 'Building version '${VERSION}' binaries'
+goxc validate compile
+
+mkdir -p builds/${VERSION}/binaries
+CURRENT_DIR=`pwd`
+cd builds/${VERSION}
+
+for d in * ; do
+  if [ "$d" != "binaries" ]; then
+    mv $d/catalyze* binaries/$d
+    rm -rf $d
+  fi
+done
+
+cd ${CURRENT_DIR}
+
+echo 'Syncing S3 data to the public/ directory'
+rm -rf public/*
+aws s3 sync s3://${BUCKET}/catalyze public/
+
+echo 'Building binary diffs'
+go-selfupdate builds/${VERSION}/binaries/ ${VERSION}
+
+echo 'Publishing to S3'
+aws s3 sync public/ s3://${BUCKET}/catalyze --delete
+
+echo 'Releasing to Github'
+goxc
