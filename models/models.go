@@ -221,37 +221,6 @@ type CPUData struct {
 	Load  *MinMaxAvg `json:"load"`
 }
 
-// LogQuery holds data for querying Kibana's elastic search
-type LogQuery struct {
-	Fields []string     `json:"fields"`
-	Query  *Query       `json:"query"`
-	Filter *FilterRange `json:"filter"`
-	Sort   *LogSort     `json:"sort"`
-	From   int          `json:"from"`
-	Size   int          `json:"size"`
-}
-
-// LogSort tells the LogQuery how to sort the results
-type LogSort struct {
-	Timestamp map[string]string `json:"@timestamp"`
-	Message   map[string]string `json:"message"`
-}
-
-// Query holds query terms
-type Query struct {
-	Wildcard map[string]string `json:"wildcard"`
-}
-
-// FilterRange holds query filter range
-type FilterRange struct {
-	Range *RangeTimestamp `json:"range"`
-}
-
-// RangeTimestamp holds range timestamps
-type RangeTimestamp struct {
-	Timestamp map[string]string `json:"@timestamp"`
-}
-
 // Logs hold the log values from a successful LogQuery
 type Logs struct {
 	Hits *Hits `json:"hits"`

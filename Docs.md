@@ -384,7 +384,7 @@ Usage: catalyze logs [QUERY] [(-f | -t)] [--hours] [--minutes] [--seconds]
 Show the logs in your terminal streamed from your logging dashboard
 
 Arguments:
-  QUERY="app*"   The query to send to your logging dashboard's elastic search (regex is supported)
+  QUERY="*"    The query to send to your logging dashboard's elastic search (regex is supported)
 
 Options:
   -f, --follow=false   Tail/follow the logs (Equivalent to -t)
@@ -398,6 +398,12 @@ Options:
 
 ```
 catalyze logs -f --hours=6 --minutes=30
+```
+
+The `logs` command, by default, prints out all application logs. You can filter your logs further by using the QUERY argument. This performs a wildcard search on the `message` field in your elastic search instance. Giving the value `sql*` is analogous to entering `message:sql*` in the elastic search text box. Here is a sample command using the QUERY argument
+
+```
+catalyze logs "sql*" -f --seconds=30
 ```
 
 ## <a id="logout"></a> logout

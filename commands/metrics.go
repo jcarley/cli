@@ -13,7 +13,7 @@ import (
 
 	"github.com/catalyzeio/catalyze/helpers"
 	"github.com/catalyzeio/catalyze/models"
-	ui "github.com/gizak/termui"
+	ui "gopkg.in/gizak/termui.v1"
 )
 
 // Transformer outlines an interface that takes in metrics data and transforms

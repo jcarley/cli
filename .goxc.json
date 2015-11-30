@@ -1,5 +1,6 @@
 {
 	"ArtifactsDest": "builds/",
+	"OutPath": "{{.Dest}}{{.PS}}{{.Version}}{{.PS}}{{.Os}}-{{.Arch}}{{.PS}}{{.ExeName}}{{.Ext}}",
 	"Tasks": [
 		"default",
 		"publish-github"
@@ -9,7 +10,7 @@
 	],
 	"BuildConstraints": "linux windows darwin",
 	"ResourcesExclude": "README*",
-	"PackageVersion": "2.1.5",
+	"PackageVersion": "2.1.6",
 	"TaskSettings": {
 		"publish-github": {
 			"body": "Catalyze CLI",

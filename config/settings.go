@@ -17,8 +17,20 @@ const SettingsFile = ".catalyze"
 // LocalSettingsPath stores a breadcrumb in a local git repo with an env name
 const LocalSettingsFile = "catalyze-config.json"
 
+// SettingsRetriever defines an interface for a class responsible for generating
+// a settings object used for most commands in the CLI. Some examples might be
+// for retrieving settings based on the settings file or generating a settings
+// object based on a directly entered environment ID and service ID.
+type SettingsRetriever interface {
+	GetSettings(bool, bool, string, string, string, string, string, string) *models.Settings
+}
+
+// FileSettingsRetriever reads in data from the SettingsFile and generates a
+// settings object.
+type FileSettingsRetriever struct{}
+
 // GetSettings returns a Settings object for the current context
-func GetSettings(required bool, promptForEnv bool, envName string, baasHost string, paasHost string, username string, password string) *models.Settings {
+func (s FileSettingsRetriever) GetSettings(required bool, promptForEnv bool, envName string, svcName string, baasHost string, paasHost string, username string, password string) *models.Settings {
 	HomeDir, err := homedir.Dir()
 	if err != nil {
 		fmt.Println(err.Error())
