@@ -1,6 +1,4 @@
 #!/bin/bash -e
-cd /usr/local/go/src/github.com/catalyzeio/catalyze
-
 go get ./...
 go install github.com/catalyzeio/catalyze
 
