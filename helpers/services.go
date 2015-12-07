@@ -133,7 +133,12 @@ func InitiateRakeTask(taskName string, settings *models.Settings) {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	httpclient.Post(b, fmt.Sprintf("%s/v1/environments/%s/services/%s/rake/%s", settings.PaasHost, settings.EnvironmentID, settings.ServiceID, url.QueryEscape(taskName)), true, settings)
+	encodedTaskName, err := url.Parse(taskName)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	httpclient.Post(b, fmt.Sprintf("%s/v1/environments/%s/services/%s/rake/%s", settings.PaasHost, settings.EnvironmentID, settings.ServiceID, encodedTaskName), true, settings)
 }
 
 // InitiateWorker starts a background worker for the associated code service
