@@ -230,3 +230,20 @@ func RetrieveServiceMetrics(mins int, settings *models.Settings) *models.Metrics
 	json.Unmarshal(resp, &metrics)
 	return &metrics
 }
+
+// ListServiceFiles retrieves a list of all downloadable service files for the
+// specified code service.
+func ListServiceFiles(serviceID string, settings *models.Settings) *[]models.ServiceFile {
+	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/services/%s/files", settings.PaasHost, settings.EnvironmentID, serviceID), true, settings)
+	var files []models.ServiceFile
+	json.Unmarshal(resp, &files)
+	return &files
+}
+
+// RetrieveServiceFile retrieves a service file by its ID.
+func RetrieveServiceFile(serviceID, fileID string, settings *models.Settings) *models.ServiceFile {
+	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/services/%s/files/%s", settings.PaasHost, settings.EnvironmentID, serviceID, fileID), true, settings)
+	var file models.ServiceFile
+	json.Unmarshal(resp, &file)
+	return &file
+}

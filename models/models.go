@@ -241,3 +241,14 @@ type LogHits struct {
 	Score  float64             `json:"_score"`
 	Fields map[string][]string `json:"fields"`
 }
+
+// ServiceFile is a file associated with a service
+type ServiceFile struct {
+	ID             int64  `json:"id"`
+	Contents       string `json:"contents"`
+	GID            int64  `json:"gid"`
+	Mode           string `json:"mode"`
+	Name           string `json:"name"`
+	UID            int64  `json:"uid"`
+	EnableDownload bool   `json:"enable_download"`
+}
