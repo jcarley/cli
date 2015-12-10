@@ -326,7 +326,7 @@ catalyze environments
 
 ## <a id="files"></a> files
 
-The `files` command gives access to manage service files for your environment. The files command can not be run directly but has sub commands.
+The `files` command gives access to list and view service files for your environment. Service files are the configuration files and settings for the application running inside of a Catalyze container. Some examples may include nginx site configurations, logstash settings, etc. The files command can not be run directly but has sub commands.
 
 ### <a id="files-download"></a> download
 

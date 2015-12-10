@@ -63,8 +63,7 @@ func DownloadServiceFile(serviceName, fileName, outputPath string, force bool, s
 	}
 	filePerms, err := strconv.ParseUint(file.Mode, 8, 32)
 	if err != nil {
-		fmt.Printf("Invalid file permissions specified. Please contact Catalyze support at support@catalyze.io and include the following\n Environment ID: %s\nService ID: %s\nFile Name: %s\n", settings.EnvironmentID, service.ID, fileName)
-		os.Exit(1)
+		filePerms = 0644
 	}
 
 	var wr io.Writer
