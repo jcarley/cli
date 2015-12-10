@@ -3,6 +3,7 @@ package catalyze
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/catalyzeio/catalyze/commands"
 	"github.com/catalyzeio/catalyze/config"
@@ -284,6 +285,12 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 		}
 		cmd.Spec = "SERVICE_NAME"
 	})
+	app.Command("services", "List all services for your environment", func(cmd *cli.Cmd) {
+		cmd.Action = func() {
+			settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
+			commands.ListServices(settings)
+		}
+	})
 	app.Command("ssl", "Perform operations on local certificates to verify their validity", func(cmd *cli.Cmd) {
 		cmd.Command("verify", "Verify whether a certificate chain is complete and if it matches the given private key", func(subCmd *cli.Cmd) {
 			chain := subCmd.StringArg("CHAIN", "", "The path to your full certificate chain in PEM format")
@@ -383,5 +390,14 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 }
 
 func version() {
-	fmt.Printf("version %s\n", config.VERSION)
+	archString := "other"
+	switch runtime.GOARCH {
+	case "386":
+		archString = "32-bit"
+	case "amd64":
+		archString = "64-bit"
+	case "arm":
+		archString = "arm"
+	}
+	fmt.Printf("version %s %s\n", config.VERSION, archString)
 }
