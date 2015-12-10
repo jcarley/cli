@@ -192,6 +192,17 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 		}
 	})
 	app.Command("files", "Tasks for managing service files", func(cmd *cli.Cmd) {
+		cmd.Command("download", "Download a file to your localhost with the same file permissions as on the remote host or print it to stdout", func(subCmd *cli.Cmd) {
+			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to download a file from")
+			fileName := subCmd.StringArg("FILE_NAME", "", "The name of the service file from running \"catalyze files list\"")
+			output := subCmd.StringOpt("o output", "", "The downloaded file will be saved to the given location with the same file permissions as it has on the remote host. If those file permissions cannot be applied, a warning will be printed and default 0644 permissions applied. If no output is specified, stdout is used.")
+			force := subCmd.BoolOpt("f force", false, "If the specified output file already exists, automatically overwrite it")
+			subCmd.Action = func() {
+				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
+				commands.DownloadServiceFile(*serviceName, *fileName, *output, *force, settings)
+			}
+			subCmd.Spec = "SERVICE_NAME FILE_NAME [-o] [-f]"
+		})
 		cmd.Command("list", "List all files available for a given service", func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to list files for")
 			subCmd.Action = func() {
@@ -199,17 +210,6 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 				commands.ListServiceFiles(*serviceName, settings)
 			}
 			subCmd.Spec = "SERVICE_NAME"
-		})
-		cmd.Command("download", "Download a file to your localhost with the same file permissions as on the remote host or print it to stdout", func(subCmd *cli.Cmd) {
-			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to download a file from")
-			fileID := subCmd.StringArg("FILE_ID", "", "The ID of the service file to download")
-			output := subCmd.StringOpt("o output", "", "The downloaded file will be saved to the given location with the same file permissions as it has on the remote host. If those file permissions cannot be applied, a warning will be printed and default 0644 permissions applied. If no output is specified, stdout is used.")
-			force := subCmd.BoolOpt("f force", false, "If the specified output file already exists, automatically overwrite it")
-			subCmd.Action = func() {
-				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				commands.DownloadServiceFile(*serviceName, *fileID, *output, *force, settings)
-			}
-			subCmd.Spec = "SERVICE_NAME FILE_ID [-o] [-f]"
 		})
 	})
 	app.Command("invites", "Manage invitations for your environments", func(cmd *cli.Cmd) {

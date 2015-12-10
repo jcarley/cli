@@ -241,8 +241,8 @@ func ListServiceFiles(serviceID string, settings *models.Settings) *[]models.Ser
 }
 
 // RetrieveServiceFile retrieves a service file by its ID.
-func RetrieveServiceFile(serviceID, fileID string, settings *models.Settings) *models.ServiceFile {
-	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/services/%s/files/%s", settings.PaasHost, settings.EnvironmentID, serviceID, fileID), true, settings)
+func RetrieveServiceFile(serviceID string, fileID int64, settings *models.Settings) *models.ServiceFile {
+	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/services/%s/files/%d", settings.PaasHost, settings.EnvironmentID, serviceID, fileID), true, settings)
 	var file models.ServiceFile
 	json.Unmarshal(resp, &file)
 	return &file

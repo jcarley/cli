@@ -25,9 +25,9 @@ func ListServiceFiles(serviceName string, settings *models.Settings) {
 		fmt.Println("No service files found")
 		return
 	}
-	fmt.Println("ID\t\t\tNAME")
+	fmt.Println("NAME")
 	for _, sf := range *files {
-		fmt.Printf("%d\t\t\t%s\n", sf.ID, sf.Name)
+		fmt.Println(sf.Name)
 	}
 }
 
@@ -36,7 +36,7 @@ func ListServiceFiles(serviceName string, settings *models.Settings) {
 // If those permissions cannot be applied, the default 0644 permissions are
 // applied. If not output file is specified, the file and permissions are
 // printed to stdout.
-func DownloadServiceFile(serviceName, fileID, outputPath string, force bool, settings *models.Settings) {
+func DownloadServiceFile(serviceName, fileName, outputPath string, force bool, settings *models.Settings) {
 	helpers.SignIn(settings)
 	service := helpers.RetrieveServiceByLabel(serviceName, settings)
 	if service == nil {
@@ -49,10 +49,21 @@ func DownloadServiceFile(serviceName, fileID, outputPath string, force bool, set
 			os.Exit(1)
 		}
 	}
-	file := helpers.RetrieveServiceFile(service.ID, fileID, settings)
+	var file *models.ServiceFile
+	files := helpers.ListServiceFiles(service.ID, settings)
+	for _, f := range *files {
+		if f.Name == fileName {
+			file = helpers.RetrieveServiceFile(service.ID, f.ID, settings)
+			break
+		}
+	}
+	if file == nil {
+		fmt.Printf("File with name %s does not exist. Try listing files again by running \"catalyze files list\"\n", fileName)
+		os.Exit(1)
+	}
 	filePerms, err := strconv.ParseUint(file.Mode, 8, 32)
 	if err != nil {
-		fmt.Printf("Invalid file permissions specified. Please contact Catalyze support at support@catalyze.io and include the following\n Environment ID: %s\nService ID: %s\nFile ID: %s\n", settings.EnvironmentID, service.ID, fileID)
+		fmt.Printf("Invalid file permissions specified. Please contact Catalyze support at support@catalyze.io and include the following\n Environment ID: %s\nService ID: %s\nFile Name: %s\n", settings.EnvironmentID, service.ID, fileName)
 		os.Exit(1)
 	}
 
@@ -73,7 +84,7 @@ func DownloadServiceFile(serviceName, fileID, outputPath string, force bool, set
 		defer outFile.Close()
 		wr = outFile
 	} else {
-		fmt.Printf("%s\n\n", fileModeToRWXString(filePerms))
+		fmt.Printf("Mode: %s\n\nContent:\n", fileModeToRWXString(filePerms))
 		wr = os.Stdout
 	}
 	wr.Write([]byte(file.Contents))
