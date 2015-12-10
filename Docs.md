@@ -524,6 +524,20 @@ Arguments:
 catalyze redeploy app01
 ```
 
+## <a id="services"></a> services
+
+```
+Usage: catalyze services
+
+List all services for your environment
+```
+
+`services` prints out a list of all services in your environment. The names of these services can be used with a variety of other commands including the [files](#files) commands. Here is a sample command
+
+```
+catalyze services
+```
+
 ## <a id="ssl"></a> ssl
 
 ### <a id="ssl-verify"></a> verify
