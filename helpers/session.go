@@ -14,7 +14,6 @@ import (
 	"github.com/catalyzeio/catalyze/config"
 	"github.com/catalyzeio/catalyze/httpclient"
 	"github.com/catalyzeio/catalyze/models"
-	"github.com/docker/docker/pkg/term"
 )
 
 // SignIn signs in the user and retrieves a session. The passed in Settings
@@ -65,14 +64,12 @@ func promptForCredentials(settings *models.Settings) {
 		panic(errors.New("Invalid username"))
 	}
 	username = strings.TrimRight(username, "\n")
+	if runtime.GOOS == "windows" {
+		username = strings.TrimRight(username, "\r")
+	}
 	settings.Username = username
 	fmt.Print("Password: ")
-	var fd uintptr
-	if runtime.GOOS == "windows" {
-		stdIn, _, _ := term.StdStreams()
-		fd, _ = term.GetFdInfo(stdIn)
-	}
-	bytes, _ := terminal.ReadPassword(int(fd))
+	bytes, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
 	fmt.Println("")
 	settings.Password = string(bytes)
 }
