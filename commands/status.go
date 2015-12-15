@@ -20,7 +20,6 @@ func Status(settings *models.Settings) {
 	env := helpers.RetrieveEnvironment("pod", settings)
 
 	fmt.Fprintln(w, env.Data.Name+" (environment ID = "+env.ID+"):")
-	//fmt.Fprintln(w, "ID\tLabel\tStatus\tCreated At")
 	fmt.Fprintln(w, "Label\tStatus\tCreated At")
 
 	services := *env.Data.Services
@@ -29,15 +28,23 @@ func Status(settings *models.Settings) {
 	for _, service := range services {
 		if service.Type != "utility" && service.Type != "" {
 			jobs := helpers.RetrieveRunningJobs(service.ID, settings)
-			//for jobID, job := range *jobs {
-			for _, job := range *jobs {
-				const dateForm = "2006-01-02T15:04:05"
-				t, _ := time.Parse(dateForm, job.CreatedAt)
+			for jobID, job := range *jobs {
 				displayType := service.Label
 				if job.Type != "deploy" {
-					displayType = fmt.Sprintf("%s (%s)", displayType, job.Type)
+					displayType = fmt.Sprintf("%s (%s)", service.Label, job.Type)
+					if job.Type == "worker" {
+						// fetch the worker separately to get the procfile target run
+						workerJob := helpers.RetrieveJob(jobID, service.ID, settings)
+						if workerJob.Spec != nil && workerJob.Spec.Payload != nil && workerJob.Spec.Payload.Environment != nil {
+							if target, contains := workerJob.Spec.Payload.Environment["PROCFILE_TARGET"]; contains {
+								displayType = fmt.Sprintf("%s (%s: target=%s)", service.Label, job.Type, target)
+							}
+						}
+					}
 				}
-				//fmt.Fprintln(w, jobID[:8]+"\t"+displayType+"\t"+job.Status+"\t"+t.Local().Format(time.Stamp))
+
+				const dateForm = "2006-01-02T15:04:05"
+				t, _ := time.Parse(dateForm, job.CreatedAt)
 				fmt.Fprintln(w, displayType+"\t"+job.Status+"\t"+t.Local().Format(time.Stamp))
 			}
 			if service.Type == "code" {
@@ -50,7 +57,6 @@ func Status(settings *models.Settings) {
 						t, _ := time.Parse(dateForm, latestBuild.CreatedAt)
 						displayType := service.Label
 						displayType = fmt.Sprintf("%s (%s)", displayType, latestBuild.Type)
-						//fmt.Fprintln(w, latestBuildID[:8]+"\t"+displayType+"\t"+latestBuild.Status+"\t"+t.Local().Format(time.Stamp))
 						fmt.Fprintln(w, displayType+"\t"+latestBuild.Status+"\t"+t.Local().Format(time.Stamp))
 					}
 				}

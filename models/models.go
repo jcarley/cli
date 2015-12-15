@@ -92,6 +92,17 @@ type Job struct {
 	Restore     *EncryptionStore `json:"restore,omitempty"`
 	CreatedAt   string           `json:"created_at"`
 	MetricsData *[]MetricsData   `json:"metrics"`
+	Spec        *Spec            `json:"spec"`
+}
+
+// Spec is a job specification
+type Spec struct {
+	Payload *Payload `json:"payload"`
+}
+
+// Payload is the payload of a job
+type Payload struct {
+	Environment map[string]string `json:"environment"`
 }
 
 // Service service
