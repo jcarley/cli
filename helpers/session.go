@@ -35,7 +35,7 @@ func SignIn(settings *models.Settings) {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	resp := httpclient.Post(b, fmt.Sprintf("%s/v2/auth/signin", settings.BaasHost), true, settings)
+	resp := httpclient.Post(b, fmt.Sprintf("%s%s/auth/signin", settings.BaasHost, config.BaasHostVersion), true, settings)
 	var user models.User
 	json.Unmarshal(resp, &user)
 	settings.SessionToken = user.SessionToken
@@ -45,7 +45,7 @@ func SignIn(settings *models.Settings) {
 
 // verify tests whether or not the given session token is still valid
 func verify(settings *models.Settings) bool {
-	resp := httpclient.Get(fmt.Sprintf("%s/v2/auth/verify", settings.BaasHost), false, settings)
+	resp := httpclient.Get(fmt.Sprintf("%s%s/auth/verify", settings.BaasHost, config.BaasHostVersion), false, settings)
 	m := make(map[string]string)
 	json.Unmarshal(resp, &m)
 	// the verify route returns userId and not usersId like everything else...

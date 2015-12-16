@@ -148,11 +148,20 @@ type Settings struct {
 	Password        string                   `json:"-"`
 	EnvironmentID   string                   `json:"-"` // the id of the environment used for the current command
 	ServiceID       string                   `json:"-"` // the id of the service used for the current command
+	Pod             string                   `json:"-"` // the pod used for the current command
 	EnvironmentName string                   `json:"-"` // the name of the environment used for the current command
 	SessionToken    string                   `json:"token"`
 	UsersID         string                   `json:"user_id"`
 	Environments    map[string]AssociatedEnv `json:"environments"`
 	Default         string                   `json:"default"`
+	Pods            []string                 `json:"pods"`
+}
+
+// Pod is a pod returned from the pod router
+type Pod struct {
+	Name                 string `json:"name"`
+	PHISafe              bool   `json:"phiSafe"`
+	ImportRequiresLength bool   `json:"importRequiresLength"`
 }
 
 // AssociatedEnv holds information about an associated environment
@@ -161,6 +170,7 @@ type AssociatedEnv struct {
 	ServiceID     string `json:"serviceId"`
 	Directory     string `json:"dir"`
 	Name          string `json:"name"`
+	Pod           string `json:"pod"`
 }
 
 // Breadcrumb is stored in a local git repo to make a link back to the

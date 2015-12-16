@@ -34,6 +34,7 @@ func setHeaders(req *http.Request, settings *models.Settings) {
 		"X-Api-Key":     {config.APIKey},
 		"Authorization": {fmt.Sprintf("Bearer %s", settings.SessionToken)},
 		"X-CLI-Version": {config.VERSION},
+		"X-Pod-ID":      {settings.Pod},
 	}
 }
 

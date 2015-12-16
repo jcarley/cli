@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/catalyzeio/catalyze/config"
 	"github.com/catalyzeio/catalyze/httpclient"
 	"github.com/catalyzeio/catalyze/models"
 )
 
 // ListEnvironmentInvites lists all invites for the associated environment.
 func ListEnvironmentInvites(settings *models.Settings) *[]models.Invite {
-	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/invites", settings.PaasHost, settings.EnvironmentID), true, settings)
+	resp := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/invites", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID), true, settings)
 	var invites []models.Invite
 	json.Unmarshal(resp, &invites)
 	return &invites
@@ -27,7 +28,7 @@ func CreateInvite(email string, settings *models.Settings) *models.Invite {
 	if err != nil {
 		panic(err)
 	}
-	resp := httpclient.Post(b, fmt.Sprintf("%s/v1/environments/%s/invites", settings.PaasHost, settings.EnvironmentID), true, settings)
+	resp := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/invites", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID), true, settings)
 	var invite models.Invite
 	json.Unmarshal(resp, &invite)
 	return &invite
@@ -38,5 +39,5 @@ func CreateInvite(email string, settings *models.Settings) *models.Invite {
 // their access. This DeleteInvite method would be used if you typed the email
 // incorrectly and wanted to revoke the invitation.
 func DeleteInvite(inviteID string, settings *models.Settings) {
-	httpclient.Delete(fmt.Sprintf("%s/v1/environments/%s/invites/%s", settings.PaasHost, settings.EnvironmentID, inviteID), true, settings)
+	httpclient.Delete(fmt.Sprintf("%s%s/environments/%s/invites/%s", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, inviteID), true, settings)
 }

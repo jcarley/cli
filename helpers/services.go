@@ -6,13 +6,14 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/catalyzeio/catalyze/config"
 	"github.com/catalyzeio/catalyze/httpclient"
 	"github.com/catalyzeio/catalyze/models"
 )
 
 // RetrieveService returns a service model for the associated ServiceID
 func RetrieveService(settings *models.Settings) *models.Service {
-	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/services/%s", settings.PaasHost, settings.EnvironmentID, settings.ServiceID), true, settings)
+	resp := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services/%s", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, settings.ServiceID), true, settings)
 	var service models.Service
 	json.Unmarshal(resp, &service)
 	return &service
@@ -36,7 +37,7 @@ func RetrieveServiceByLabel(label string, settings *models.Settings) *models.Ser
 // existing database backup job. These URLs are signed and only valid for a
 // short period of time.
 func RetrieveTempURL(backupID string, serviceID string, settings *models.Settings) *models.TempURL {
-	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/services/%s/backup/%s/url", settings.PaasHost, settings.EnvironmentID, serviceID, backupID), true, settings)
+	resp := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services/%s/backup/%s/url", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, serviceID, backupID), true, settings)
 	var tempURL models.TempURL
 	json.Unmarshal(resp, &tempURL)
 	return &tempURL
@@ -46,7 +47,7 @@ func RetrieveTempURL(backupID string, serviceID string, settings *models.Setting
 // logs for a 'finished' Backup/Restore/Import/Export job. These URLs are
 // signed and only valid for a short period of time.
 func RetrieveTempLogsURL(jobID string, jobType string, serviceID string, settings *models.Settings) *models.TempURL {
-	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/services/%s/%s/%s/logs/url", settings.PaasHost, settings.EnvironmentID, serviceID, jobType, jobID), true, settings)
+	resp := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services/%s/%s/%s/logs/url", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, serviceID, jobType, jobID), true, settings)
 	var tempURL models.TempURL
 	json.Unmarshal(resp, &tempURL)
 	return &tempURL
@@ -56,7 +57,7 @@ func RetrieveTempLogsURL(jobID string, jobType string, serviceID string, setting
 // a file for an Import job. These URLs are signed and only valid for a short
 // period of time.
 func RetrieveTempUploadURL(serviceID string, settings *models.Settings) *models.TempURL {
-	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/services/%s/restore/url", settings.PaasHost, settings.EnvironmentID, serviceID), true, settings)
+	resp := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services/%s/restore/url", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, serviceID), true, settings)
 	var tempURL models.TempURL
 	json.Unmarshal(resp, &tempURL)
 	return &tempURL
@@ -64,7 +65,7 @@ func RetrieveTempUploadURL(serviceID string, settings *models.Settings) *models.
 
 // ListEnvVars returns all env vars for the associated Service
 func ListEnvVars(settings *models.Settings) map[string]string {
-	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/services/%s/env", settings.PaasHost, settings.EnvironmentID, settings.ServiceID), true, settings)
+	resp := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services/%s/env", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, settings.ServiceID), true, settings)
 	var envVars map[string]string
 	json.Unmarshal(resp, &envVars)
 	return envVars
@@ -73,7 +74,7 @@ func ListEnvVars(settings *models.Settings) map[string]string {
 // ListBackups returns a list of all backups regardless of their status for a
 // given service
 func ListBackups(serviceID string, page int, pageSize int, settings *models.Settings) *[]models.Job {
-	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/services/%s/backup?pageNum=%d&pageSize=%d", settings.PaasHost, settings.EnvironmentID, serviceID, page, pageSize), true, settings)
+	resp := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services/%s/backup?pageNum=%d&pageSize=%d", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, serviceID, page, pageSize), true, settings)
 	var jobsMap map[string]models.Job
 	json.Unmarshal(resp, &jobsMap)
 	var jobs []models.Job
@@ -96,7 +97,7 @@ func CreateBackup(serviceID string, settings *models.Settings) *models.Task {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	resp := httpclient.Post(b, fmt.Sprintf("%s/v1/environments/%s/services/%s/backup", settings.PaasHost, settings.EnvironmentID, serviceID), true, settings)
+	resp := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/backup", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, serviceID), true, settings)
 	var m map[string]string
 	json.Unmarshal(resp, &m)
 	return &models.Task{
@@ -116,7 +117,7 @@ func RestoreBackup(serviceID string, backupID string, settings *models.Settings)
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	resp := httpclient.Post(b, fmt.Sprintf("%s/v1/environments/%s/services/%s/restore/%s", settings.PaasHost, settings.EnvironmentID, serviceID, backupID), true, settings)
+	resp := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/restore/%s", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, serviceID, backupID), true, settings)
 	var m map[string]string
 	json.Unmarshal(resp, &m)
 	return &models.Task{
@@ -138,7 +139,7 @@ func InitiateRakeTask(taskName string, settings *models.Settings) {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	httpclient.Post(b, fmt.Sprintf("%s/v1/environments/%s/services/%s/rake/%s", settings.PaasHost, settings.EnvironmentID, settings.ServiceID, encodedTaskName), true, settings)
+	httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/rake/%s", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, settings.ServiceID, encodedTaskName), true, settings)
 }
 
 // InitiateWorker starts a background worker for the associated code service
@@ -152,7 +153,7 @@ func InitiateWorker(target string, settings *models.Settings) {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	httpclient.Post(b, fmt.Sprintf("%s/v1/environments/%s/services/%s/background", settings.PaasHost, settings.EnvironmentID, settings.ServiceID), true, settings)
+	httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/background", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, settings.ServiceID), true, settings)
 }
 
 // RedeployService redeploys the associated code service
@@ -163,7 +164,7 @@ func RedeployService(serviceID string, settings *models.Settings) {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	httpclient.Post(b, fmt.Sprintf("%s/v1/environments/%s/services/%s/redeploy", settings.PaasHost, settings.EnvironmentID, serviceID), true, settings)
+	httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/redeploy", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, serviceID), true, settings)
 }
 
 // InitiateImport starts an import job for the given database service
@@ -181,7 +182,7 @@ func InitiateImport(tempURL string, filePath string, key string, iv string, opti
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	resp := httpclient.Post(b, fmt.Sprintf("%s/v1/environments/%s/services/%s/db/import", settings.PaasHost, settings.EnvironmentID, serviceID), true, settings)
+	resp := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/db/import", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, serviceID), true, settings)
 	var task models.Task
 	json.Unmarshal(resp, &task)
 	return &task
@@ -199,7 +200,7 @@ func RequestConsole(command string, serviceID string, settings *models.Settings)
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	resp := httpclient.Post(b, fmt.Sprintf("%s/v1/environments/%s/services/%s/console", settings.PaasHost, settings.EnvironmentID, serviceID), true, settings)
+	resp := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/console", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, serviceID), true, settings)
 	var m map[string]string
 	json.Unmarshal(resp, &m)
 	return &models.Task{
@@ -211,7 +212,7 @@ func RequestConsole(command string, serviceID string, settings *models.Settings)
 // console service. The console service must already be ready and awaiting a
 // connection.
 func RetrieveConsoleTokens(jobID string, serviceID string, settings *models.Settings) *models.ConsoleCredentials {
-	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/services/%s/console/token/%s", settings.PaasHost, settings.EnvironmentID, serviceID, jobID), true, settings)
+	resp := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services/%s/console/token/%s", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, serviceID, jobID), true, settings)
 	var credentials models.ConsoleCredentials
 	json.Unmarshal(resp, &credentials)
 	return &credentials
@@ -219,13 +220,13 @@ func RetrieveConsoleTokens(jobID string, serviceID string, settings *models.Sett
 
 // DestroyConsole properly shuts down a console service
 func DestroyConsole(jobID string, serviceID string, settings *models.Settings) {
-	httpclient.Delete(fmt.Sprintf("%s/v1/environments/%s/services/%s/console/%s", settings.PaasHost, settings.EnvironmentID, serviceID, jobID), true, settings)
+	httpclient.Delete(fmt.Sprintf("%s%s/environments/%s/services/%s/console/%s", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, serviceID, jobID), true, settings)
 }
 
 // RetrieveServiceMetrics fetches metrics for a single service for a specified
 // number of minutes.
 func RetrieveServiceMetrics(mins int, settings *models.Settings) *models.Metrics {
-	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/metrics/%s?mins=%d", settings.PaasHost, settings.EnvironmentID, settings.ServiceID, mins), true, settings)
+	resp := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/metrics/%s?mins=%d", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, settings.ServiceID, mins), true, settings)
 	var metrics models.Metrics
 	json.Unmarshal(resp, &metrics)
 	return &metrics
@@ -234,7 +235,7 @@ func RetrieveServiceMetrics(mins int, settings *models.Settings) *models.Metrics
 // ListServiceFiles retrieves a list of all downloadable service files for the
 // specified code service.
 func ListServiceFiles(serviceID string, settings *models.Settings) *[]models.ServiceFile {
-	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/services/%s/files", settings.PaasHost, settings.EnvironmentID, serviceID), true, settings)
+	resp := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services/%s/files", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, serviceID), true, settings)
 	var files []models.ServiceFile
 	json.Unmarshal(resp, &files)
 	return &files
@@ -242,7 +243,7 @@ func ListServiceFiles(serviceID string, settings *models.Settings) *[]models.Ser
 
 // RetrieveServiceFile retrieves a service file by its ID.
 func RetrieveServiceFile(serviceID string, fileID int64, settings *models.Settings) *models.ServiceFile {
-	resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/services/%s/files/%d", settings.PaasHost, settings.EnvironmentID, serviceID, fileID), true, settings)
+	resp := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services/%s/files/%d", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, serviceID, fileID), true, settings)
 	var file models.ServiceFile
 	json.Unmarshal(resp, &file)
 	return &file

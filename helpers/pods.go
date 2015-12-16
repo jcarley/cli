@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/catalyzeio/catalyze/config"
 	"github.com/catalyzeio/catalyze/httpclient"
 	"github.com/catalyzeio/catalyze/models"
 )
 
 // RetrievePodMetadata retrieves information about a certain Pod API
 func RetrievePodMetadata(podID string, settings *models.Settings) *models.PodMetadata {
-	resp := httpclient.Get(fmt.Sprintf("%s/v1/pods/metadata", settings.PaasHost), true, settings)
+	resp := httpclient.Get(fmt.Sprintf("%s%s/pods/metadata", settings.PaasHost, config.PaasHostVersion), true, settings)
 	var pods []models.PodMetadata
 	json.Unmarshal(resp, &pods)
 	var pod models.PodMetadata
@@ -26,4 +27,12 @@ func RetrievePodMetadata(podID string, settings *models.Settings) *models.PodMet
 		os.Exit(1)
 	}
 	return &pod
+}
+
+// ListPods lists all pods available from the pod-router.
+func ListPods(settings *models.Settings) *[]models.Pod {
+	resp := httpclient.Get(fmt.Sprintf("%s%s/pods", settings.PaasHost, config.PaasHostVersion), true, settings)
+	var pods []models.Pod
+	json.Unmarshal(resp, &pods)
+	return &pods
 }

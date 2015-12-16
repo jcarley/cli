@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/catalyzeio/catalyze/helpers"
 	"github.com/catalyzeio/catalyze/models"
 	"github.com/mitchellh/go-homedir"
 )
@@ -88,6 +89,11 @@ func (s FileSettingsRetriever) GetSettings(required bool, promptForEnv bool, env
 	settings.PaasHost = paasHost
 	settings.Username = username
 	settings.Password = password
+
+	if len(settings.Pods) == 0 {
+		settings.Pods = helpers.ListPods(settings)
+	}
+
 	return &settings
 }
 
@@ -142,6 +148,7 @@ func setGivenEnv(envName string, settings *models.Settings) {
 		if eName == envName {
 			settings.EnvironmentID = e.EnvironmentID
 			settings.ServiceID = e.ServiceID
+			settings.Pod = e.Pod
 			settings.EnvironmentName = envName
 		}
 	}
@@ -182,6 +189,7 @@ func setFirstAssociatedEnv(required bool, promptForEnv bool, settings *models.Se
 	for envName, e := range settings.Environments {
 		settings.EnvironmentID = e.EnvironmentID
 		settings.ServiceID = e.ServiceID
+		settings.Pod = e.Pod
 		settings.EnvironmentName = e.Name
 		if promptForEnv {
 			defaultEnvPrompt(envName)

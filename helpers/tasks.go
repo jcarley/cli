@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/catalyzeio/catalyze/config"
 	"github.com/catalyzeio/catalyze/httpclient"
 	"github.com/catalyzeio/catalyze/models"
 )
@@ -16,7 +17,7 @@ func PollTaskStatus(taskID string, ch chan string, settings *models.Settings) {
 	var task models.Task
 poll:
 	for {
-		resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/tasks/%s", settings.PaasHost, settings.EnvironmentID, taskID), true, settings)
+		resp := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/tasks/%s", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, taskID), true, settings)
 		json.Unmarshal(resp, &task)
 		switch task.Status {
 		case "scheduled", "queued", "started", "running":
@@ -37,7 +38,7 @@ func PollConsoleJob(taskID string, serviceID string, ch chan string, settings *m
 	job := make(map[string]string)
 poll:
 	for {
-		resp := httpclient.Get(fmt.Sprintf("%s/v1/environments/%s/services/%s/console/status/%s", settings.PaasHost, settings.EnvironmentID, serviceID, taskID), true, settings)
+		resp := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services/%s/console/status/%s", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, serviceID, taskID), true, settings)
 		json.Unmarshal(resp, &job)
 		if jobID, ok := job["jobId"]; ok && jobID != "" {
 			break poll
