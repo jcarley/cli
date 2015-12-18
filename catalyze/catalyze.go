@@ -3,6 +3,7 @@ package catalyze
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/catalyzeio/catalyze/commands"
 	"github.com/catalyzeio/catalyze/config"
@@ -191,6 +192,27 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 			commands.Environments(settings)
 		}
 	})
+	app.Command("files", "Tasks for managing service files", func(cmd *cli.Cmd) {
+		cmd.Command("download", "Download a file to your localhost with the same file permissions as on the remote host or print it to stdout", func(subCmd *cli.Cmd) {
+			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to download a file from")
+			fileName := subCmd.StringArg("FILE_NAME", "", "The name of the service file from running \"catalyze files list\"")
+			output := subCmd.StringOpt("o output", "", "The downloaded file will be saved to the given location with the same file permissions as it has on the remote host. If those file permissions cannot be applied, a warning will be printed and default 0644 permissions applied. If no output is specified, stdout is used.")
+			force := subCmd.BoolOpt("f force", false, "If the specified output file already exists, automatically overwrite it")
+			subCmd.Action = func() {
+				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
+				commands.DownloadServiceFile(*serviceName, *fileName, *output, *force, settings)
+			}
+			subCmd.Spec = "SERVICE_NAME FILE_NAME [-o] [-f]"
+		})
+		cmd.Command("list", "List all files available for a given service", func(subCmd *cli.Cmd) {
+			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to list files for")
+			subCmd.Action = func() {
+				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
+				commands.ListServiceFiles(*serviceName, settings)
+			}
+			subCmd.Spec = "SERVICE_NAME"
+		})
+	})
 	app.Command("invites", "Manage invitations for your environments", func(cmd *cli.Cmd) {
 		cmd.Command("list", "List all pending environment invitations", func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
@@ -262,6 +284,12 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 			commands.Redeploy(*serviceName, settings)
 		}
 		cmd.Spec = "SERVICE_NAME"
+	})
+	app.Command("services", "List all services for your environment", func(cmd *cli.Cmd) {
+		cmd.Action = func() {
+			settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
+			commands.ListServices(settings)
+		}
 	})
 	app.Command("ssl", "Perform operations on local certificates to verify their validity", func(cmd *cli.Cmd) {
 		cmd.Command("verify", "Verify whether a certificate chain is complete and if it matches the given private key", func(subCmd *cli.Cmd) {
@@ -362,5 +390,14 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 }
 
 func version() {
-	fmt.Printf("version %s\n", config.VERSION)
+	archString := "other"
+	switch runtime.GOARCH {
+	case "386":
+		archString = "32-bit"
+	case "amd64":
+		archString = "64-bit"
+	case "arm":
+		archString = "arm"
+	}
+	fmt.Printf("version %s %s\n", config.VERSION, archString)
 }

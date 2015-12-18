@@ -324,6 +324,49 @@ List all environments you have access to
 catalyze environments
 ```
 
+## <a id="files"></a> files
+
+The `files` command gives access to list and view service files for your environment. Service files are the configuration files and settings for the application running inside of a Catalyze container. Some examples may include nginx site configurations, logstash settings, etc. The files command can not be run directly but has sub commands.
+
+### <a id="files-download"></a> download
+
+```
+Usage: catalyze files download SERVICE_NAME FILE_NAME [-o] [-f]
+
+Download a file to your localhost with the same file permissions as on the remote host or print it to stdout
+
+Arguments:
+  SERVICE_NAME=""   The name of the service to download a file from
+  FILE_NAME=""      The name of the service file from running "catalyze files list"
+
+Options:
+  -o, --output=""     The downloaded file will be saved to the given location with the same file permissions as it has on the remote host. If those file permissions cannot be applied, a warning will be printed and default 0644 permissions applied. If no output is specified, stdout is used.
+  -f, --force=false   If the specified output file already exists, automatically overwrite it
+```
+
+`files download` downloads a service file to your local machine. The output flag is optional. If given, the file will be downloaded to the given path and the same permissions applied to that file as they are on the remote host. If the output flag is omitted, the file permissions are printed to stdout as well as the contents of the file. Here is a sample command
+
+```
+catalyze files download service_proxy /etc/nginx/sites-enabled/catalyze.io -o catalyze.io -f
+```
+
+### <a id="files-list"></a> list
+
+```
+Usage: catalyze files list SERVICE_NAME
+
+List all files available for a given service
+
+Arguments:
+  SERVICE_NAME=""   The name of the service to list files for
+```
+
+`files list` lists all downloadable files for the given service. The output of this command is intended to be used with the [files download](#files-download) command. Here is a sample command
+
+```
+catalyze files list service_proxy
+```
+
 ## <a id="invites"></a> invites
 
 The `invites` command gives access to environment invitations. You can invite new users by email and manage pending invites through the CLI. You cannot call the `invites` command directly, but must call one of its subcommands.
@@ -479,6 +522,20 @@ Arguments:
 
 ```
 catalyze redeploy app01
+```
+
+## <a id="services"></a> services
+
+```
+Usage: catalyze services
+
+List all services for your environment
+```
+
+`services` prints out a list of all services in your environment. The names of these services can be used with a variety of other commands including the [files](#files) commands. Here is a sample command
+
+```
+catalyze services
 ```
 
 ## <a id="ssl"></a> ssl

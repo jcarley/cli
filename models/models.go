@@ -92,6 +92,17 @@ type Job struct {
 	Restore     *EncryptionStore `json:"restore,omitempty"`
 	CreatedAt   string           `json:"created_at"`
 	MetricsData *[]MetricsData   `json:"metrics"`
+	Spec        *Spec            `json:"spec"`
+}
+
+// Spec is a job specification
+type Spec struct {
+	Payload *Payload `json:"payload"`
+}
+
+// Payload is the payload of a job
+type Payload struct {
+	Environment map[string]string `json:"environment"`
 }
 
 // Service service
@@ -240,4 +251,15 @@ type LogHits struct {
 	ID     string              `json:"_id"`
 	Score  float64             `json:"_score"`
 	Fields map[string][]string `json:"fields"`
+}
+
+// ServiceFile is a file associated with a service
+type ServiceFile struct {
+	ID             int64  `json:"id"`
+	Contents       string `json:"contents"`
+	GID            int64  `json:"gid"`
+	Mode           string `json:"mode"`
+	Name           string `json:"name"`
+	UID            int64  `json:"uid"`
+	EnableDownload bool   `json:"enable_download"`
 }
