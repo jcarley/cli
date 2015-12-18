@@ -19,10 +19,10 @@ func Status(settings *models.Settings) {
 	helpers.SignIn(settings)
 	env := helpers.RetrieveEnvironment("pod", settings)
 
-	fmt.Fprintln(w, env.Data.Name+" (environment ID = "+env.ID+"):")
+	fmt.Fprintln(w, env.Name+" (environment ID = "+env.ID+"):")
 	fmt.Fprintln(w, "Label\tStatus\tCreated At")
 
-	services := *env.Data.Services
+	services := *env.Services
 	sortutil.AscByField(services, "Label")
 
 	for _, service := range services {

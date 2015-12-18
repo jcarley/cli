@@ -7,6 +7,7 @@ import (
 
 	"github.com/catalyzeio/catalyze/commands"
 	"github.com/catalyzeio/catalyze/config"
+	"github.com/catalyzeio/catalyze/helpers"
 	"github.com/catalyzeio/catalyze/updater"
 	"github.com/jawher/mow.cli"
 )
@@ -82,6 +83,11 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 		defaultEnv := cmd.BoolOpt("d default", false, "Specifies whether or not the associated environment will be the default")
 		cmd.Action = func() {
 			settings := r.GetSettings(false, false, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
+			// TODO this should be checked globablly and not just here
+			if settings.Pods == nil || len(*settings.Pods) == 0 {
+				settings.Pods = helpers.ListPods(settings)
+				fmt.Println(settings.Pods)
+			}
 			commands.Associate(*envName, *serviceName, *alias, *remote, *defaultEnv, settings)
 		}
 		cmd.Spec = "ENV_NAME SERVICE_NAME [-a] [-r] [-d]"
@@ -189,6 +195,10 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 	app.Command("environments", "List all environments you have access to", func(cmd *cli.Cmd) {
 		cmd.Action = func() {
 			settings := r.GetSettings(false, false, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
+			if settings.Pods == nil || len(*settings.Pods) == 0 {
+				settings.Pods = helpers.ListPods(settings)
+				fmt.Println(settings.Pods)
+			}
 			commands.Environments(settings)
 		}
 	})

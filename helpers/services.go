@@ -25,7 +25,7 @@ func RetrieveService(settings *models.Settings) *models.Service {
 // is found, nil is returned.
 func RetrieveServiceByLabel(label string, settings *models.Settings) *models.Service {
 	env := RetrieveEnvironment("pod", settings)
-	for _, service := range *env.Data.Services {
+	for _, service := range *env.Services {
 		if service.Label == label {
 			return &service
 		}

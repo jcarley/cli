@@ -20,9 +20,15 @@ func Associate(envLabel string, serviceLabel string, alias string, remote string
 	}
 	helpers.SignIn(settings)
 	fmt.Printf("Existing git remotes named \"%s\" will be overwritten\n", remote)
-	envs := helpers.ListEnvironments("pod", settings)
+	envs := helpers.ListEnvironments(settings)
+	fmt.Printf("envs %+v\n", envs)
 	for _, env := range *envs {
-		if env.Data.Name == envLabel {
+		fmt.Printf("\n\nassociate env %+v\n\n", env)
+		if env.Name == envLabel {
+			settings.EnvironmentID = env.ID
+			settings.Pod = env.Pod
+			env = *helpers.RetrieveEnvironment("pod", settings)
+			env.Pod = settings.Pod
 			if env.State == "defined" {
 				fmt.Printf("Your environment is not yet provisioned. Please visit https://dashboard.catalyze.io/environments/update/%s to finish provisioning your environment\n", env.ID)
 				return
@@ -31,7 +37,7 @@ func Associate(envLabel string, serviceLabel string, alias string, remote string
 			var chosenService models.Service
 			if serviceLabel != "" {
 				labels := []string{}
-				for _, service := range *env.Data.Services {
+				for _, service := range *env.Services {
 					if service.Type == "code" {
 						labels = append(labels, service.Label)
 						if service.Label == serviceLabel {
@@ -45,7 +51,7 @@ func Associate(envLabel string, serviceLabel string, alias string, remote string
 					os.Exit(1)
 				}
 			} else {
-				for _, service := range *env.Data.Services {
+				for _, service := range *env.Services {
 					if service.Type == "code" {
 						chosenService = service
 						break
@@ -77,6 +83,7 @@ func Associate(envLabel string, serviceLabel string, alias string, remote string
 				ServiceID:     chosenService.ID,
 				Directory:     dir,
 				Name:          envLabel,
+				Pod:           env.Pod,
 			}
 			if defaultEnv {
 				settings.Default = name
@@ -103,7 +110,8 @@ func Associated(settings *models.Settings) {
     Service ID:       %s
     Associated at:    %s
     Default:          %v
-`, envAlias, env.EnvironmentID, env.Name, env.ServiceID, env.Directory, settings.Default == envAlias)
+    Pod:              %s
+`, envAlias, env.EnvironmentID, env.Name, env.ServiceID, env.Directory, settings.Default == envAlias, env.Pod)
 	}
 	if len(settings.Environments) == 0 {
 		fmt.Println("No environments have been associated")

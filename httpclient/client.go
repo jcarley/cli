@@ -18,7 +18,8 @@ import (
 func getClient() *http.Client {
 	var tr = &http.Transport{
 		TLSClientConfig: &tls.Config{
-			MinVersion: tls.VersionTLS12,
+			MinVersion:         tls.VersionTLS12,
+			InsecureSkipVerify: true,
 		},
 	}
 

@@ -32,7 +32,7 @@ func RetrievePodMetadata(podID string, settings *models.Settings) *models.PodMet
 // ListPods lists all pods available from the pod-router.
 func ListPods(settings *models.Settings) *[]models.Pod {
 	resp := httpclient.Get(fmt.Sprintf("%s%s/pods", settings.PaasHost, config.PaasHostVersion), true, settings)
-	var pods []models.Pod
-	json.Unmarshal(resp, &pods)
-	return &pods
+	var podWrapper models.PodWrapper
+	json.Unmarshal(resp, &podWrapper)
+	return podWrapper.Pods
 }

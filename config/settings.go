@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/catalyzeio/catalyze/helpers"
 	"github.com/catalyzeio/catalyze/models"
 	"github.com/mitchellh/go-homedir"
 )
@@ -89,10 +88,6 @@ func (s FileSettingsRetriever) GetSettings(required bool, promptForEnv bool, env
 	settings.PaasHost = paasHost
 	settings.Username = username
 	settings.Password = password
-
-	if len(settings.Pods) == 0 {
-		settings.Pods = helpers.ListPods(settings)
-	}
 
 	return &settings
 }

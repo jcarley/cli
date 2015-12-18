@@ -12,7 +12,7 @@ func ListServices(settings *models.Settings) {
 	helpers.SignIn(settings)
 	env := helpers.RetrieveEnvironment("pod", settings)
 	fmt.Println("NAME")
-	for _, s := range *env.Data.Services {
+	for _, s := range *env.Services {
 		fmt.Printf("%s\n", s.Label)
 	}
 }

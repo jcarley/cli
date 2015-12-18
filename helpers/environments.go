@@ -12,12 +12,30 @@ import (
 
 // ListEnvironments returns a list of all environments the authorized
 // user has access to
-func ListEnvironments(source string, settings *models.Settings) *[]models.Environment {
+func ListEnvironments(settings *models.Settings) *[]models.Environment {
+	var allEnvs []models.Environment
+	fmt.Printf("pods %+v\n", settings.Pods)
+	for _, pod := range *settings.Pods {
+		settings.Pod = pod.Name
+		resp := httpclient.Get(fmt.Sprintf("%s%s/environments", settings.PaasHost, config.PaasHostVersion), true, settings)
+		var envs []models.Environment
+		json.Unmarshal(resp, &envs)
+		for i := 0; i < len(envs); i++ {
+			envs[i].Pod = pod.Name
+			fmt.Printf("e %+v\n", envs[i])
+		}
+		allEnvs = append(allEnvs, envs...)
+	}
+	fmt.Printf("all envs %+v\n", allEnvs)
+	return &allEnvs
+}
+
+/*func ListEnvironments(source string, settings *models.Settings) *[]models.Environment {
 	resp := httpclient.Get(fmt.Sprintf("%s%s/environments?pageSize=1000&source=%s", settings.PaasHost, config.PaasHostVersion, source), true, settings)
 	var envs []models.Environment
 	json.Unmarshal(resp, &envs)
 	return &envs
-}
+}*/
 
 // ListEnvironmentUsers returns a list of all users who have access to the
 // associated environment

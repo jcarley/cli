@@ -38,9 +38,9 @@ func Logs(queryString string, tail bool, hours int, minutes int, seconds int, se
 	helpers.SignIn(settings)
 
 	env := helpers.RetrieveEnvironment("pod", settings)
-	domain := env.Data.DNSName
+	domain := env.DNSName
 	if domain == "" {
-		domain = fmt.Sprintf("%s.catalyze.io", env.Data.Namespace)
+		domain = fmt.Sprintf("%s.catalyze.io", env.Namespace)
 	}
 	appLogsIdentifier := "source"
 	appLogsValue := "app"

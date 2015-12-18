@@ -76,11 +76,16 @@ type EnvironmentUsers struct {
 
 // Environment environment
 type Environment struct {
-	ID    string           `json:"environmentId"`
-	State string           `json:"state"`
-	Data  *EnvironmentData `json:"data"`
-	PodID string           `json:"podId"`
-	Name  string           `json:"name"`
+	ID    string `json:"id"`
+	State string `json:"state"`
+	//Data  *EnvironmentData `json:"data"`
+	PodID string `json:"podId"`
+	Name  string `json:"name"`
+	Pod   string `json:"pod"`
+
+	Services  *[]Service `json:"services"`
+	Namespace string     `json:"namespace"`
+	DNSName   string     `json:"dns_name"`
 }
 
 // Job job
@@ -154,7 +159,12 @@ type Settings struct {
 	UsersID         string                   `json:"user_id"`
 	Environments    map[string]AssociatedEnv `json:"environments"`
 	Default         string                   `json:"default"`
-	Pods            []string                 `json:"pods"`
+	Pods            *[]Pod                   `json:"pods"`
+}
+
+// PodWrapper pod wrapper
+type PodWrapper struct {
+	Pods *[]Pod `json:"pods"`
 }
 
 // Pod is a pod returned from the pod router
