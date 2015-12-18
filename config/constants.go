@@ -1,7 +1,7 @@
 package config
 
 // current cli version
-const VERSION = "2.1.7"
+const VERSION = "2.2.0"
 
 // alternate BaaS URL
 const BaasHost = "https://api.catalyze.io"

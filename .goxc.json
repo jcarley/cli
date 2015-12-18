@@ -10,7 +10,7 @@
 	],
 	"BuildConstraints": "linux windows darwin",
 	"ResourcesExclude": "README*",
-	"PackageVersion": "2.1.7",
+	"PackageVersion": "2.2.0",
 	"TaskSettings": {
 		"publish-github": {
 			"body": "Catalyze CLI",
