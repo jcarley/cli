@@ -10,9 +10,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/catalyzeio/catalyze/config"
-	"github.com/catalyzeio/catalyze/models"
-	"github.com/catalyzeio/catalyze/updater"
+	"github.com/catalyzeio/cli/config"
+	"github.com/catalyzeio/cli/models"
+	"github.com/catalyzeio/cli/updater"
 )
 
 func getClient() *http.Client {

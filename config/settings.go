@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/catalyzeio/catalyze/models"
+	"github.com/catalyzeio/cli/models"
 	"github.com/mitchellh/go-homedir"
 )
 

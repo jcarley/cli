@@ -11,9 +11,9 @@ import (
 
 	"golang.org/x/crypto/ssh/terminal"
 
-	"github.com/catalyzeio/catalyze/config"
-	"github.com/catalyzeio/catalyze/httpclient"
-	"github.com/catalyzeio/catalyze/models"
+	"github.com/catalyzeio/cli/config"
+	"github.com/catalyzeio/cli/httpclient"
+	"github.com/catalyzeio/cli/models"
 )
 
 // SignIn signs in the user and retrieves a session. The passed in Settings

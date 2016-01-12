@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/catalyzeio/catalyze/models"
+	"github.com/catalyzeio/cli/models"
 )
 
 // DumpLogs dumps logs from a Backup/Restore/Import/Export job to the console

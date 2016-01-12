@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/catalyzeio/catalyze/config"
-	"github.com/catalyzeio/catalyze/httpclient"
-	"github.com/catalyzeio/catalyze/models"
+	"github.com/catalyzeio/cli/config"
+	"github.com/catalyzeio/cli/httpclient"
+	"github.com/catalyzeio/cli/models"
 )
 
 // RetrieveJob fetches a Job model by its ID

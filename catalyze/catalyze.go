@@ -3,12 +3,34 @@ package catalyze
 import (
 	"fmt"
 	"os"
-	"runtime"
 
-	"github.com/catalyzeio/catalyze/commands"
-	"github.com/catalyzeio/catalyze/config"
-	"github.com/catalyzeio/catalyze/helpers"
-	"github.com/catalyzeio/catalyze/updater"
+	"github.com/catalyzeio/cli/associate"
+	"github.com/catalyzeio/cli/associated"
+	"github.com/catalyzeio/cli/config"
+	"github.com/catalyzeio/cli/console"
+	"github.com/catalyzeio/cli/dashboard"
+	"github.com/catalyzeio/cli/db"
+	"github.com/catalyzeio/cli/defaultcmd"
+	"github.com/catalyzeio/cli/disassociate"
+	"github.com/catalyzeio/cli/environments"
+	"github.com/catalyzeio/cli/files"
+	"github.com/catalyzeio/cli/helpers"
+	"github.com/catalyzeio/cli/invites"
+	"github.com/catalyzeio/cli/logout"
+	"github.com/catalyzeio/cli/logs"
+	"github.com/catalyzeio/cli/metrics"
+	"github.com/catalyzeio/cli/rake"
+	"github.com/catalyzeio/cli/redeploy"
+	"github.com/catalyzeio/cli/services"
+	"github.com/catalyzeio/cli/ssl"
+	"github.com/catalyzeio/cli/status"
+	"github.com/catalyzeio/cli/supportids"
+	"github.com/catalyzeio/cli/update"
+	"github.com/catalyzeio/cli/updater"
+	"github.com/catalyzeio/cli/vars"
+	"github.com/catalyzeio/cli/version"
+	"github.com/catalyzeio/cli/whoami"
+	"github.com/catalyzeio/cli/worker"
 	"github.com/jawher/mow.cli"
 )
 
@@ -60,14 +82,14 @@ func Run() {
 		// just to make this function like a normal CLI, if specifying
 		// catalyze --version, output version and quit
 		if *versionFlag {
-			version()
+			version.Version()
 		} else {
 			app.PrintHelp()
 		}
 	}
 
 	app.Command("version", "Output the version and quit", func(cmd *cli.Cmd) {
-		cmd.Action = version
+		cmd.Action = version.Version
 	})
 
 	app.Run(os.Args)
@@ -88,14 +110,14 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 				settings.Pods = helpers.ListPods(settings)
 				fmt.Println(settings.Pods)
 			}
-			commands.Associate(*envName, *serviceName, *alias, *remote, *defaultEnv, settings)
+			associate.Associate(*envName, *serviceName, *alias, *remote, *defaultEnv, settings)
 		}
 		cmd.Spec = "ENV_NAME SERVICE_NAME [-a] [-r] [-d]"
 	})
 	app.Command("associated", "Lists all associated environments", func(cmd *cli.Cmd) {
 		cmd.Action = func() {
 			settings := r.GetSettings(false, false, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			commands.Associated(settings)
+			associated.Associated(settings)
 		}
 	})
 	app.Command("console", "Open a secure console to a service", func(cmd *cli.Cmd) {
@@ -103,12 +125,12 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 		command := cmd.StringArg("COMMAND", "", "An optional command to run when the console becomes available")
 		cmd.Action = func() {
 			settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			commands.Console(*serviceName, *command, settings)
+			console.Console(*serviceName, *command, settings)
 		}
 		cmd.Spec = "SERVICE_NAME [COMMAND]"
 	})
 	app.Command("dashboard", "Open the Catalyze Dashboard in your default browser", func(cmd *cli.Cmd) {
-		cmd.Action = commands.Dashboard
+		cmd.Action = dashboard.Dashboard
 	})
 	app.Command("db", "Tasks for databases", func(cmd *cli.Cmd) {
 		cmd.Command("backup", "Create a new backup", func(subCmd *cli.Cmd) {
@@ -116,7 +138,7 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 			skipPoll := subCmd.BoolOpt("s skip-poll", false, "Whether or not to wait for the backup to finish")
 			subCmd.Action = func() {
 				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				commands.CreateBackup(*serviceName, *skipPoll, settings)
+				db.CreateBackup(*serviceName, *skipPoll, settings)
 			}
 			subCmd.Spec = "SERVICE_NAME [-s]"
 		})
@@ -127,7 +149,7 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 			force := subCmd.BoolOpt("f force", false, "If a file previously exists at \"filepath\", overwrite it and download the backup")
 			subCmd.Action = func() {
 				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				commands.DownloadBackup(*serviceName, *backupID, *filePath, *force, settings)
+				db.DownloadBackup(*serviceName, *backupID, *filePath, *force, settings)
 			}
 			subCmd.Spec = "SERVICE_NAME BACKUP_ID FILEPATH [-f]"
 		})
@@ -137,7 +159,7 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 			force := subCmd.BoolOpt("f force", false, "If a file previously exists at `filepath`, overwrite it and export data")
 			subCmd.Action = func() {
 				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				commands.Export(*databaseName, *filePath, *force, settings)
+				db.Export(*databaseName, *filePath, *force, settings)
 			}
 			subCmd.Spec = "DATABASE_NAME FILEPATH [-f]"
 		})
@@ -149,8 +171,8 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 			//wipeFirst := subCmd.BoolOpt("w wipe-first", false, "Whether or not to wipe the database before processing the import file")
 			subCmd.Action = func() {
 				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				//commands.Import(*databaseName, *filePath, *mongoCollection, *mongoDatabase, *wipeFirst, settings)
-				commands.Import(*databaseName, *filePath, *mongoCollection, *mongoDatabase, false, settings)
+				//db.Import(*databaseName, *filePath, *mongoCollection, *mongoDatabase, *wipeFirst, settings)
+				db.Import(*databaseName, *filePath, *mongoCollection, *mongoDatabase, false, settings)
 			}
 			//subCmd.Spec = "DATABASE_NAME FILEPATH [-w] [-d [-c]]"
 			subCmd.Spec = "DATABASE_NAME FILEPATH [-d [-c]]"
@@ -161,7 +183,7 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 			pageSize := subCmd.IntOpt("n page-size", 10, "The number of items to show per page")
 			subCmd.Action = func() {
 				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				commands.ListBackups(*serviceName, *page, *pageSize, settings)
+				db.ListBackups(*serviceName, *page, *pageSize, settings)
 			}
 			subCmd.Spec = "SERVICE_NAME [-p] [-n]"
 		})
@@ -171,7 +193,7 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 			skipPoll := subCmd.BoolOpt("s skip-poll", false, "Whether or not to wait for the restore to finish")
 			subCmd.Action = func() {
 				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				commands.RestoreBackup(*serviceName, *backupID, *skipPoll, settings)
+				db.RestoreBackup(*serviceName, *backupID, *skipPoll, settings)
 			}
 			subCmd.Spec = "SERVICE_NAME BACKUP_ID [-s]"
 		})*/
@@ -180,7 +202,7 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 		envAlias := cmd.StringArg("ENV_ALIAS", "", "The alias of an already associated environment to set as the default")
 		cmd.Action = func() {
 			settings := r.GetSettings(true, false, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			commands.SetDefault(*envAlias, settings)
+			defaultcmd.SetDefault(*envAlias, settings)
 		}
 		cmd.Spec = "ENV_ALIAS"
 	})
@@ -188,7 +210,7 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 		envAlias := cmd.StringArg("ENV_ALIAS", "", "The alias of an already associated environment to disassociate")
 		cmd.Action = func() {
 			settings := r.GetSettings(true, false, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			commands.Disassociate(*envAlias, settings)
+			disassociate.Disassociate(*envAlias, settings)
 		}
 		cmd.Spec = "ENV_ALIAS"
 	})
@@ -199,7 +221,7 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 				settings.Pods = helpers.ListPods(settings)
 				fmt.Println(settings.Pods)
 			}
-			commands.Environments(settings)
+			environments.Environments(settings)
 		}
 	})
 	app.Command("files", "Tasks for managing service files", func(cmd *cli.Cmd) {
@@ -210,7 +232,7 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 			force := subCmd.BoolOpt("f force", false, "If the specified output file already exists, automatically overwrite it")
 			subCmd.Action = func() {
 				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				commands.DownloadServiceFile(*serviceName, *fileName, *output, *force, settings)
+				files.DownloadServiceFile(*serviceName, *fileName, *output, *force, settings)
 			}
 			subCmd.Spec = "SERVICE_NAME FILE_NAME [-o] [-f]"
 		})
@@ -218,7 +240,7 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to list files for")
 			subCmd.Action = func() {
 				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				commands.ListServiceFiles(*serviceName, settings)
+				files.ListServiceFiles(*serviceName, settings)
 			}
 			subCmd.Spec = "SERVICE_NAME"
 		})
@@ -227,14 +249,14 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 		cmd.Command("list", "List all pending environment invitations", func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
 				settings := r.GetSettings(false, false, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				commands.ListInvites(settings)
+				invites.ListInvites(settings)
 			}
 		})
 		cmd.Command("rm", "Remove a pending environment invitation", func(subCmd *cli.Cmd) {
 			inviteID := subCmd.StringArg("INVITE_ID", "", "The ID of an invitation to remove")
 			subCmd.Action = func() {
 				settings := r.GetSettings(false, false, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				commands.RmInvite(*inviteID, settings)
+				invites.RmInvite(*inviteID, settings)
 			}
 			subCmd.Spec = "INVITE_ID"
 		})
@@ -242,7 +264,7 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 			email := subCmd.StringArg("EMAIL", "", "The email of a user to invite to the associated environment. This user does not need to have a Catalyze account prior to sending the invitation")
 			subCmd.Action = func() {
 				settings := r.GetSettings(false, false, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				commands.InviteUser(*email, settings)
+				invites.InviteUser(*email, settings)
 			}
 			subCmd.Spec = "EMAIL"
 		})
@@ -256,14 +278,14 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 		secs := cmd.IntOpt("seconds", 0, "The number of seconds before now (in combination with hours and minutes) to retrieve logs")
 		cmd.Action = func() {
 			settings := r.GetSettings(false, false, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			commands.Logs(*query, *tail || *follow, *hours, *mins, *secs, settings)
+			logs.Logs(*query, *tail || *follow, *hours, *mins, *secs, settings)
 		}
 		cmd.Spec = "[QUERY] [(-f | -t)] [--hours] [--minutes] [--seconds]"
 	})
 	app.Command("logout", "Clear the stored user information from your local machine", func(cmd *cli.Cmd) {
 		cmd.Action = func() {
 			settings := r.GetSettings(false, false, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			commands.Logout(settings)
+			logout.Logout(settings)
 		}
 	})
 	app.Command("metrics", "Print service and environment metrics in your local time zone", func(cmd *cli.Cmd) {
@@ -275,7 +297,7 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 		mins := cmd.IntOpt("m mins", 1, "How many minutes worth of logs to retrieve.")
 		cmd.Action = func() {
 			settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			commands.Metrics(*serviceName, *json, *csv, *spark, *stream, *mins, settings)
+			metrics.Metrics(*serviceName, *json, *csv, *spark, *stream, *mins, settings)
 		}
 		cmd.Spec = "[SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]"
 	})
@@ -283,7 +305,7 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 		taskName := cmd.StringArg("TASK_NAME", "", "The name of the rake task to run")
 		cmd.Action = func() {
 			settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			commands.Rake(*taskName, settings)
+			rake.Rake(*taskName, settings)
 		}
 		cmd.Spec = "TASK_NAME"
 	})
@@ -291,14 +313,14 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 		serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to redeploy (i.e. 'app01')")
 		cmd.Action = func() {
 			settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			commands.Redeploy(*serviceName, settings)
+			redeploy.Redeploy(*serviceName, settings)
 		}
 		cmd.Spec = "SERVICE_NAME"
 	})
 	app.Command("services", "List all services for your environment", func(cmd *cli.Cmd) {
 		cmd.Action = func() {
 			settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			commands.ListServices(settings)
+			services.ListServices(settings)
 		}
 	})
 	app.Command("ssl", "Perform operations on local certificates to verify their validity", func(cmd *cli.Cmd) {
@@ -308,7 +330,7 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 			hostname := subCmd.StringArg("HOSTNAME", "", "The hostname that should match your certificate (i.e. \"*.catalyze.io\")")
 			selfSigned := subCmd.BoolOpt("s self-signed", false, "Whether or not the certificate is self signed. If set, chain verification is skipped")
 			subCmd.Action = func() {
-				commands.VerifyChain(*chain, *privateKey, *hostname, *selfSigned)
+				ssl.VerifyChain(*chain, *privateKey, *hostname, *selfSigned)
 			}
 			subCmd.Spec = "CHAIN PRIVATE_KEY HOSTNAME [-s]"
 		})
@@ -316,49 +338,25 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 	app.Command("status", "Get quick readout of the current status of your associated environment and all of its services", func(cmd *cli.Cmd) {
 		cmd.Action = func() {
 			settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			commands.Status(settings)
+			status.Status(settings)
 		}
 	})
 	app.Command("support-ids", "Print out various IDs related to your associated environment to be used when contacting Catalyze support", func(cmd *cli.Cmd) {
 		cmd.Action = func() {
 			settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			commands.SupportIds(settings)
+			supportids.SupportIds(settings)
 		}
 	})
 	app.Command("update", "Checks for available updates and updates the CLI if a new update is available", func(cmd *cli.Cmd) {
 		cmd.Action = func() {
-			commands.Update()
+			update.Update()
 		}
-	})
-	app.Command("users", "Manage users who have access to the associated environment", func(cmd *cli.Cmd) {
-		cmd.Command("add", "Grant access to the associated environment for the given user", func(subCmd *cli.Cmd) {
-			usersID := subCmd.StringArg("USER_ID", "", "The Users ID to give access to the associated environment")
-			subCmd.Action = func() {
-				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				commands.AddUser(*usersID, settings)
-			}
-			subCmd.Spec = "USER_ID"
-		})
-		cmd.Command("list", "List all users who have access to the associated environment", func(subCmd *cli.Cmd) {
-			subCmd.Action = func() {
-				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				commands.ListUsers(settings)
-			}
-		})
-		cmd.Command("rm", "Revoke access to the associated environment for the given user", func(subCmd *cli.Cmd) {
-			usersID := subCmd.StringArg("USER_ID", "", "The Users ID to revoke access from for the associated environment")
-			subCmd.Action = func() {
-				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				commands.RmUser(*usersID, settings)
-			}
-			subCmd.Spec = "USER_ID"
-		})
 	})
 	app.Command("vars", "Interaction with environment variables for the associated environment", func(cmd *cli.Cmd) {
 		cmd.Command("list", "List all environment variables", func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
 				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				commands.ListVars(settings)
+				vars.ListVars(settings)
 			}
 		})
 		cmd.Command("set", "Set one or more new environment variables or update the values of existing ones", func(subCmd *cli.Cmd) {
@@ -370,7 +368,7 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 			})
 			subCmd.Action = func() {
 				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				commands.SetVar(*variables, settings)
+				vars.SetVar(*variables, settings)
 			}
 			subCmd.Spec = "-v..."
 		})
@@ -378,7 +376,7 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 			variable := subCmd.StringArg("VARIABLE", "", "The name of the environment variable to unset")
 			subCmd.Action = func() {
 				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				commands.UnsetVar(*variable, settings)
+				vars.UnsetVar(*variable, settings)
 			}
 			subCmd.Spec = "VARIABLE"
 		})
@@ -386,28 +384,15 @@ func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, p
 	app.Command("whoami", "Retrieve your user ID", func(cmd *cli.Cmd) {
 		cmd.Action = func() {
 			settings := r.GetSettings(false, false, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			commands.WhoAmI(settings)
+			whoami.WhoAmI(settings)
 		}
 	})
 	app.Command("worker", "Start a background worker", func(cmd *cli.Cmd) {
 		target := cmd.StringArg("TARGET", "", "The name of the Procfile target to invoke as a worker")
 		cmd.Action = func() {
 			settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			commands.Worker(*target, settings)
+			worker.Worker(*target, settings)
 		}
 		cmd.Spec = "TARGET"
 	})
-}
-
-func version() {
-	archString := "other"
-	switch runtime.GOARCH {
-	case "386":
-		archString = "32-bit"
-	case "amd64":
-		archString = "64-bit"
-	case "arm":
-		archString = "arm"
-	}
-	fmt.Printf("version %s %s\n", config.VERSION, archString)
 }

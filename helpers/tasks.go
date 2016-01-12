@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/catalyzeio/catalyze/config"
-	"github.com/catalyzeio/catalyze/httpclient"
-	"github.com/catalyzeio/catalyze/models"
+	"github.com/catalyzeio/cli/config"
+	"github.com/catalyzeio/cli/httpclient"
+	"github.com/catalyzeio/cli/models"
 )
 
 // PollTaskStatus polls a task until its status is not `scheduled`, `queued`,

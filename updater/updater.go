@@ -53,10 +53,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/catalyzeio/catalyze/config"
-	"github.com/kardianos/osext"
-	"github.com/kr/binarydist"
 	"gopkg.in/inconshreveable/go-update.v0"
+
+	"github.com/bugsnag/osext"
+	"github.com/catalyzeio/cli/config"
+	"github.com/kr/binarydist"
 )
 
 const (
