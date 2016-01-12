@@ -22,7 +22,7 @@ const LocalSettingsFile = "catalyze-config.json"
 // for retrieving settings based on the settings file or generating a settings
 // object based on a directly entered environment ID and service ID.
 type SettingsRetriever interface {
-	GetSettings(bool, bool, string, string, string, string, string, string) *models.Settings
+	GetSettings(string, string, string, string, string, string) *models.Settings
 }
 
 // FileSettingsRetriever reads in data from the SettingsFile and generates a
@@ -30,7 +30,7 @@ type SettingsRetriever interface {
 type FileSettingsRetriever struct{}
 
 // GetSettings returns a Settings object for the current context
-func (s FileSettingsRetriever) GetSettings(required bool, promptForEnv bool, envName string, svcName string, baasHost string, paasHost string, username string, password string) *models.Settings {
+func (s FileSettingsRetriever) GetSettings(envName string, svcName string, baasHost string, paasHost string, username string, password string) *models.Settings {
 	HomeDir, err := homedir.Dir()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -64,7 +64,7 @@ func (s FileSettingsRetriever) GetSettings(required bool, promptForEnv bool, env
 
 	// if no env name was given, try and fetch the local env
 	if settings.EnvironmentID == "" || settings.ServiceID == "" {
-		setLocalEnv(required, &settings)
+		setLocalEnv(&settings)
 	}
 
 	// if its not there, fetch the default
@@ -75,14 +75,14 @@ func (s FileSettingsRetriever) GetSettings(required bool, promptForEnv bool, env
 	// if no default, fetch the first associated env and print warning
 	if settings.EnvironmentID == "" || settings.ServiceID == "" {
 		// warn and ask
-		setFirstAssociatedEnv(required, promptForEnv, &settings)
+		setFirstAssociatedEnv(&settings)
 	}
 
-	// if no env found, warn and quit
+	/*// if no env found, warn and quit
 	if required && (settings.EnvironmentID == "" || settings.ServiceID == "") {
 		fmt.Println("No Catalyze environment has been associated. Run \"catalyze associate\" from a local git repo first")
 		os.Exit(1)
-	}
+	}*/
 
 	settings.BaasHost = baasHost
 	settings.PaasHost = paasHost
@@ -152,19 +152,19 @@ func setGivenEnv(envName string, settings *models.Settings) {
 // setLocalEnv searches .git/catalyze-config.json for an associated env and
 // searches for it in the given settings object. It then populates the
 // EnvironmentID and ServiceID on the settings object with appropriate values.
-func setLocalEnv(required bool, settings *models.Settings) {
+func setLocalEnv(settings *models.Settings) {
 	file, err := os.Open(filepath.Join(".git", LocalSettingsFile))
 	defer file.Close()
 	if err == nil {
 		var breadcrumb models.Breadcrumb
 		json.NewDecoder(file).Decode(&breadcrumb)
-		if breadcrumb.EnvironmentID != "" && required {
+		/*if breadcrumb.EnvironmentID != "" { //}&& required {
 			// we found an old config file, try and translate it
 			//convertSettings(&breadcrumb, settings)
 			// or punt
 			fmt.Println("Please reassociate your environment and then run this command again")
 			os.Exit(1)
-		}
+		}*/
 		setGivenEnv(breadcrumb.EnvName, settings)
 	}
 }
@@ -180,15 +180,15 @@ func setDefaultEnv(settings *models.Settings) {
 // were found locally or from the default flag, then the first one in the list
 // of environments in the given settings object is used to populate
 // EnvironmentID and ServiceID with appropriate values.
-func setFirstAssociatedEnv(required bool, promptForEnv bool, settings *models.Settings) {
-	for envName, e := range settings.Environments {
+func setFirstAssociatedEnv(settings *models.Settings) {
+	for _, e := range settings.Environments {
 		settings.EnvironmentID = e.EnvironmentID
 		settings.ServiceID = e.ServiceID
 		settings.Pod = e.Pod
 		settings.EnvironmentName = e.Name
-		if promptForEnv {
+		/*if promptForEnv {
 			defaultEnvPrompt(envName)
-		}
+		}*/
 		break
 	}
 }

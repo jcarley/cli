@@ -1,5 +1,14 @@
 package models
 
+import "github.com/jawher/mow.cli"
+
+type Command struct {
+	Name      string
+	ShortHelp string
+	LongHelp  string
+	CmdFunc   func(settings *Settings) func(cmd *cli.Cmd)
+}
+
 // Errors is a wrapper around an array of errors from the API
 type Errors struct {
 	ReportedErrors *[]ReportedError `json:"errors"`

@@ -8,53 +8,50 @@ import (
 	"os"
 
 	"github.com/catalyzeio/cli/helpers"
-	"github.com/catalyzeio/cli/models"
 )
 
-// DownloadBackup an existing backup to the local machine. The backup is encrypted
+// Download an existing backup to the local machine. The backup is encrypted
 // throughout the entire journey and then decrypted once it is stored locally.
-func DownloadBackup(serviceLabel string, backupID string, filePath string, force bool, settings *models.Settings) {
-	helpers.PHIPrompt()
-	helpers.SignIn(settings)
-	if !force {
-		if _, err := os.Stat(filePath); err == nil {
-			fmt.Printf("File already exists at path '%s'. Specify `--force` to overwrite\n", filePath)
-			os.Exit(1)
+func (d *SDb) Download() error {
+	err := d.Prompts.PHI()
+	if err != nil {
+		return err
+	}
+	if !d.Force {
+		if _, err := os.Stat(d.FilePath); err == nil {
+			return fmt.Errorf("File already exists at path '%s'. Specify `--force` to overwrite\n", d.FilePath)
 		}
 	} else {
-		os.Remove(filePath)
+		os.Remove(d.FilePath)
 	}
-	service := helpers.RetrieveServiceByLabel(serviceLabel, settings)
+	service := helpers.RetrieveServiceByLabel(d.DatabaseName, d.Settings)
 	if service == nil {
-		fmt.Printf("Could not find a service with the label \"%s\"\n", serviceLabel)
-		os.Exit(1)
+		return fmt.Errorf("Could not find a service with the label \"%s\"\n", d.DatabaseName)
 	}
-	job := helpers.RetrieveJob(backupID, service.ID, settings)
+	job := helpers.RetrieveJob(d.BackupID, service.ID, d.Settings)
 	if job.Type != "backup" || job.Status != "finished" {
 		fmt.Println("Only 'finished' 'backup' jobs may be downloaded")
 	}
-	fmt.Printf("Downloading backup %s\n", backupID)
-	tempURL := helpers.RetrieveTempURL(backupID, service.ID, settings)
+	fmt.Printf("Downloading backup %s\n", d.BackupID)
+	tempURL := helpers.RetrieveTempURL(d.BackupID, service.ID, d.Settings)
 	dir, dirErr := ioutil.TempDir("", "")
 	if dirErr != nil {
-		fmt.Println(dirErr.Error())
-		os.Exit(1)
+		return dirErr
 	}
 	defer os.Remove(dir)
 	tmpFile, tmpFileErr := ioutil.TempFile(dir, "")
 	if tmpFileErr != nil {
-		fmt.Println(tmpFileErr.Error())
-		os.Exit(1)
+		return tmpFileErr
 	}
 	resp, respErr := http.Get(tempURL.URL)
 	if respErr != nil {
-		fmt.Println(respErr.Error())
-		os.Exit(1)
+		return respErr
 	}
 	defer resp.Body.Close()
 	io.Copy(tmpFile, resp.Body)
 	tmpFile.Close()
 	fmt.Println("Decrypting...")
-	helpers.DecryptFile(tmpFile.Name(), job.Backup.Key, job.Backup.IV, filePath)
-	fmt.Printf("%s backup downloaded successfully to %s\n", serviceLabel, filePath)
+	helpers.DecryptFile(tmpFile.Name(), job.Backup.Key, job.Backup.IV, d.FilePath)
+	fmt.Printf("%s backup downloaded successfully to %s\n", d.DatabaseName, d.FilePath)
+	return nil
 }

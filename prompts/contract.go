@@ -10,6 +10,11 @@ type IPrompts interface {
 // SPrompts is a concrete implementation of IPrompts
 type SPrompts struct{}
 
+// New returns a new instance of IPrompts
+func New() IPrompts {
+	return &SPrompts{}
+}
+
 // UsernamePassword prompts a user to enter their username and password.
 func (p *SPrompts) UsernamePassword() (string, string, error) {
 	return "", "", nil

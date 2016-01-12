@@ -19,8 +19,8 @@ type SAuth struct {
 	Prompts  prompts.IPrompts
 }
 
-func New(settings *models.Settings, prompts prompts.IPrompts) SAuth {
-	return SAuth{
+func New(settings *models.Settings, prompts prompts.IPrompts) IAuth {
+	return &SAuth{
 		Settings: settings,
 		Prompts:  prompts,
 	}

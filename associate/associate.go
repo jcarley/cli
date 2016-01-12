@@ -7,20 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/catalyzeio/cli/auth"
 	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/environments"
 	"github.com/catalyzeio/cli/models"
 )
-
-// move most functionality into this command method
-func Run(i IAssociate, auth auth.IAuth, environments environments.IEnvironments) error {
-	_, err := auth.Signin()
-	if err != nil {
-		return err
-	}
-	return i.Associate()
-}
 
 // Associate an environment so that commands can be run against it. This command
 // no longer adds a git remote. See commands.AddRemote().

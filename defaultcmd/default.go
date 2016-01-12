@@ -2,28 +2,26 @@ package defaultcmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/models"
 )
 
-// SetDefault sets the default environment. This environment must already be
+// Set sets the default environment. This environment must already be
 // associated. Any commands run outside of a git directory will use the default
 // environment for context.
-func SetDefault(alias string, settings *models.Settings) {
+func (d *SDefault) Set() error {
 	var found bool
-	for name := range settings.Environments {
-		if name == alias {
+	for name := range d.Settings.Environments {
+		if name == d.Alias {
 			found = true
 			break
 		}
 	}
 	if !found {
-		fmt.Printf("No environment with an alias of \"%s\" has been associated. Please run \"catalyze associate\" first\n", alias)
-		os.Exit(1)
+		return fmt.Errorf("No environment with an alias of \"%s\" has been associated. Please run \"catalyze associate\" first\n", d.Alias)
 	}
-	settings.Default = alias
-	config.SaveSettings(settings)
-	fmt.Printf("%s is now the default environment\n", alias)
+	d.Settings.Default = d.Alias
+	config.SaveSettings(d.Settings)
+	fmt.Printf("%s is now the default environment\n", d.Alias)
+	return nil
 }

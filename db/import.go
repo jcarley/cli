@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/catalyzeio/cli/helpers"
-	"github.com/catalyzeio/cli/models"
 )
 
 // Import imports data into a database service. The import is accomplished
@@ -19,62 +18,61 @@ import (
 // PostgreSQL and MySQL, this should be a single `.sql` file. For Mongo, this
 // should be a single tar'ed, gzipped archive (`.tar.gz`) of the database dump
 // that you want to import.
-func Import(databaseLabel string, filePath string, mongoCollection string, mongoDatabase string, wipeFirst bool, settings *models.Settings) {
-	helpers.SignIn(settings)
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		fmt.Printf("A file does not exist at path '%s'\n", filePath)
-		os.Exit(1)
+func (d *SDb) Import() error {
+	if _, err := os.Stat(d.FilePath); os.IsNotExist(err) {
+		return fmt.Errorf("A file does not exist at path '%s'\n", d.FilePath)
 	}
-	service := helpers.RetrieveServiceByLabel(databaseLabel, settings)
+	service := helpers.RetrieveServiceByLabel(d.DatabaseName, d.Settings)
 	if service == nil {
-		fmt.Printf("Could not find a service with the label \"%s\"\n", databaseLabel)
-		os.Exit(1)
+		return fmt.Errorf("Could not find a service with the label \"%s\"\n", d.DatabaseName)
 	}
 	// backup before we do an import. so we can be safe
-	fmt.Printf("Backing up \"%s\" before performing the import\n", databaseLabel)
-	task := helpers.CreateBackup(service.ID, settings)
+	fmt.Printf("Backing up \"%s\" before performing the import\n", d.DatabaseName)
+	task := helpers.CreateBackup(service.ID, d.Settings)
 	fmt.Printf("Backup started (task ID = %s)\n", task.ID)
 	fmt.Print("Polling until backup finishes.")
 	ch := make(chan string, 1)
-	go helpers.PollTaskStatus(task.ID, ch, settings)
+	go helpers.PollTaskStatus(task.ID, ch, d.Settings)
 	status := <-ch
 	task.Status = status
 	fmt.Printf("\nEnded in status '%s'\n", task.Status)
-	helpers.DumpLogs(service, task, "backup", settings)
+	helpers.DumpLogs(service, task, "backup", d.Settings)
 	if task.Status != "finished" {
-		panic(fmt.Errorf("Backup finished in an invalid status '%s'\n", status))
+		return fmt.Errorf("Backup finished in an invalid status '%s'\n", status)
 	}
 	// end backup section
-	env := helpers.RetrieveEnvironment("spec", settings)
-	pod := helpers.RetrievePodMetadata(env.PodID, settings)
-	fmt.Printf("Importing '%s' into %s (ID = %s)\n", filePath, databaseLabel, service.ID)
+	env := helpers.RetrieveEnvironment("spec", d.Settings)
+	pod := helpers.RetrievePodMetadata(env.PodID, d.Settings)
+	fmt.Printf("Importing '%s' into %s (ID = %s)\n", d.FilePath, d.DatabaseName, service.ID)
 	key := make([]byte, 32)
 	iv := make([]byte, aes.BlockSize)
 	rand.Read(key)
 	rand.Read(iv)
 	fmt.Println("Encrypting...")
-	encrFilePath := helpers.EncryptFile(filePath, key, iv, pod.ImportRequiresLength)
+	encrFilePath := helpers.EncryptFile(d.FilePath, key, iv, pod.ImportRequiresLength)
 	defer os.Remove(encrFilePath)
 	options := map[string]string{}
-	if mongoCollection != "" {
-		options["mongoCollection"] = mongoCollection
+	if d.MongoCollection != "" {
+		options["mongoCollection"] = d.MongoCollection
 	}
-	if mongoDatabase != "" {
-		options["mongoDatabase"] = mongoDatabase
+	if d.MongoDatabase != "" {
+		options["mongoDatabase"] = d.MongoDatabase
 	}
 	fmt.Println("Uploading...")
-	tempURL := helpers.RetrieveTempUploadURL(service.ID, settings)
+	tempURL := helpers.RetrieveTempUploadURL(service.ID, d.Settings)
 
-	task = helpers.InitiateImport(tempURL.URL, encrFilePath, string(helpers.Base64Encode(helpers.Hex(key))), string(helpers.Base64Encode(helpers.Hex(iv))), options, wipeFirst, service.ID, settings)
+	wipeFirst := false
+	task = helpers.InitiateImport(tempURL.URL, encrFilePath, string(helpers.Base64Encode(helpers.Hex(key))), string(helpers.Base64Encode(helpers.Hex(iv))), options, wipeFirst, service.ID, d.Settings)
 	fmt.Printf("Processing import... (task ID = %s)\n", task.ID)
 
 	ch = make(chan string, 1)
-	go helpers.PollTaskStatus(task.ID, ch, settings)
+	go helpers.PollTaskStatus(task.ID, ch, d.Settings)
 	status = <-ch
 	task.Status = status
 	fmt.Printf("\nImport complete (end status = '%s')\n", task.Status)
-	helpers.DumpLogs(service, task, "restore", settings)
+	helpers.DumpLogs(service, task, "restore", d.Settings)
 	if task.Status != "finished" {
-		os.Exit(1)
+		return fmt.Errorf("Finished with invalid status %s\n", task.Status)
 	}
+	return nil
 }

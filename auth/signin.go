@@ -9,9 +9,13 @@ import (
 	"github.com/catalyzeio/cli/models"
 )
 
+func (a *SAuth) Signin() ([]byte, error) {
+	return nil, nil
+}
+
 // Signin signs in a user and returns the representative user model. If an
 // error occurs, nil is returned for the user and the error field is populated.
-func (a *SAuth) Signin() (*models.User, error) {
+func (a *SAuth) Signin2() (*models.User, error) {
 	// if we're already signed in with a valid session, don't sign in again
 	if a.Verify() == nil {
 		return &models.User{

@@ -12,3 +12,10 @@ type IEnvironments interface {
 type SEnvironments struct {
 	Settings *models.Settings
 }
+
+// New generates a new instance of IEnvironments
+func New(settings *models.Settings) IEnvironments {
+	return &SEnvironments{
+		Settings: settings,
+	}
+}

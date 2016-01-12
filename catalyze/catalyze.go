@@ -3,6 +3,7 @@ package catalyze
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/catalyzeio/cli/associate"
 	"github.com/catalyzeio/cli/associated"
@@ -19,6 +20,7 @@ import (
 	"github.com/catalyzeio/cli/logout"
 	"github.com/catalyzeio/cli/logs"
 	"github.com/catalyzeio/cli/metrics"
+	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/rake"
 	"github.com/catalyzeio/cli/redeploy"
 	"github.com/catalyzeio/cli/services"
@@ -28,7 +30,6 @@ import (
 	"github.com/catalyzeio/cli/update"
 	"github.com/catalyzeio/cli/updater"
 	"github.com/catalyzeio/cli/vars"
-	"github.com/catalyzeio/cli/version"
 	"github.com/catalyzeio/cli/whoami"
 	"github.com/catalyzeio/cli/worker"
 	"github.com/jawher/mow.cli"
@@ -68,144 +69,51 @@ func Run() {
 		EnvVar:    "CATALYZE_ENV",
 		HideValue: true,
 	})
+	var settings *models.Settings
 
-	emptyString := ""
-	InitCLI(app, baasHost, paasHost, username, password, givenEnvName, &emptyString, config.FileSettingsRetriever{})
-
-	versionFlag := app.Bool(cli.BoolOpt{
-		Name:      "version",
-		Desc:      "CLI Version",
-		HideValue: true,
-	})
-
-	app.Action = func() {
-		// just to make this function like a normal CLI, if specifying
-		// catalyze --version, output version and quit
-		if *versionFlag {
-			version.Version()
-		} else {
-			app.PrintHelp()
-		}
+	app.Before = func() {
+		// TODO auth
+		r := config.FileSettingsRetriever{}
+		emptyString := ""
+		settings = r.GetSettings(givenEnvName, &emptyString, baasHost, paasHost, username, password)
 	}
 
+	InitCLI(app, settings)
+
+	archString := "other"
+	switch runtime.GOARCH {
+	case "386":
+		archString = "32-bit"
+	case "amd64":
+		archString = "64-bit"
+	case "arm":
+		archString = "arm"
+	}
+	versionString := fmt.Sprintf("version %s %s\n", config.VERSION, archString)
+	app.Version("v version", versionString)
 	app.Command("version", "Output the version and quit", func(cmd *cli.Cmd) {
-		cmd.Action = version.Version
+		cmd.Action = app.PrintVersion
 	})
 
 	app.Run(os.Args)
 }
 
 // InitCLI adds arguments and commands to the given cli instance
-func InitCLI(app *cli.Cli, baasHost string, paasHost string, username *string, password *string, givenEnvName *string, givenSvcName *string, r config.SettingsRetriever) {
-	app.Command("associate", "Associates an environment", func(cmd *cli.Cmd) {
-		envName := cmd.StringArg("ENV_NAME", "", "The name of your environment")
-		serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the primary code service to associate with this environment (i.e. 'app01')")
-		alias := cmd.StringOpt("a alias", "", "A shorter name to reference your environment by for local commands")
-		remote := cmd.StringOpt("r remote", "catalyze", "The name of the remote")
-		defaultEnv := cmd.BoolOpt("d default", false, "Specifies whether or not the associated environment will be the default")
-		cmd.Action = func() {
-			settings := r.GetSettings(false, false, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			// TODO this should be checked globablly and not just here
-			if settings.Pods == nil || len(*settings.Pods) == 0 {
-				settings.Pods = helpers.ListPods(settings)
-				fmt.Println(settings.Pods)
-			}
-			associate.Associate(*envName, *serviceName, *alias, *remote, *defaultEnv, settings)
-		}
-		cmd.Spec = "ENV_NAME SERVICE_NAME [-a] [-r] [-d]"
-	})
-	app.Command("associated", "Lists all associated environments", func(cmd *cli.Cmd) {
-		cmd.Action = func() {
-			settings := r.GetSettings(false, false, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			associated.Associated(settings)
-		}
-	})
-	app.Command("console", "Open a secure console to a service", func(cmd *cli.Cmd) {
-		serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to open up a console for")
-		command := cmd.StringArg("COMMAND", "", "An optional command to run when the console becomes available")
-		cmd.Action = func() {
-			settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			console.Console(*serviceName, *command, settings)
-		}
-		cmd.Spec = "SERVICE_NAME [COMMAND]"
-	})
-	app.Command("dashboard", "Open the Catalyze Dashboard in your default browser", func(cmd *cli.Cmd) {
-		cmd.Action = dashboard.Dashboard
-	})
-	app.Command("db", "Tasks for databases", func(cmd *cli.Cmd) {
-		cmd.Command("backup", "Create a new backup", func(subCmd *cli.Cmd) {
-			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the database service to create a backup for (i.e. 'db01')")
-			skipPoll := subCmd.BoolOpt("s skip-poll", false, "Whether or not to wait for the backup to finish")
-			subCmd.Action = func() {
-				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				db.CreateBackup(*serviceName, *skipPoll, settings)
-			}
-			subCmd.Spec = "SERVICE_NAME [-s]"
-		})
-		cmd.Command("download", "Download a previously created backup", func(subCmd *cli.Cmd) {
-			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the database service which was backed up (i.e. 'db01')")
-			backupID := subCmd.StringArg("BACKUP_ID", "", "The ID of the backup to download (found from \"catalyze backup list\")")
-			filePath := subCmd.StringArg("FILEPATH", "", "The location to save the downloaded backup to. This location must NOT already exist unless -f is specified")
-			force := subCmd.BoolOpt("f force", false, "If a file previously exists at \"filepath\", overwrite it and download the backup")
-			subCmd.Action = func() {
-				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				db.DownloadBackup(*serviceName, *backupID, *filePath, *force, settings)
-			}
-			subCmd.Spec = "SERVICE_NAME BACKUP_ID FILEPATH [-f]"
-		})
-		cmd.Command("export", "Export data from a database", func(subCmd *cli.Cmd) {
-			databaseName := subCmd.StringArg("DATABASE_NAME", "", "The name of the database to export data from (i.e. 'db01')")
-			filePath := subCmd.StringArg("FILEPATH", "", "The location to save the exported data. This location must NOT already exist unless -f is specified")
-			force := subCmd.BoolOpt("f force", false, "If a file previously exists at `filepath`, overwrite it and export data")
-			subCmd.Action = func() {
-				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				db.Export(*databaseName, *filePath, *force, settings)
-			}
-			subCmd.Spec = "DATABASE_NAME FILEPATH [-f]"
-		})
-		cmd.Command("import", "Import data to a database", func(subCmd *cli.Cmd) {
-			databaseName := subCmd.StringArg("DATABASE_NAME", "", "The name of the database to import data to (i.e. 'db01')")
-			filePath := subCmd.StringArg("FILEPATH", "", "The location of the file to import to the database")
-			mongoCollection := subCmd.StringOpt("c mongo-collection", "", "If importing into a mongo service, the name of the collection to import into")
-			mongoDatabase := subCmd.StringOpt("d mongo-database", "", "If importing into a mongo service, the name of the database to import into")
-			//wipeFirst := subCmd.BoolOpt("w wipe-first", false, "Whether or not to wipe the database before processing the import file")
-			subCmd.Action = func() {
-				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				//db.Import(*databaseName, *filePath, *mongoCollection, *mongoDatabase, *wipeFirst, settings)
-				db.Import(*databaseName, *filePath, *mongoCollection, *mongoDatabase, false, settings)
-			}
-			//subCmd.Spec = "DATABASE_NAME FILEPATH [-w] [-d [-c]]"
-			subCmd.Spec = "DATABASE_NAME FILEPATH [-d [-c]]"
-		})
-		cmd.Command("list", "List created backups", func(subCmd *cli.Cmd) {
-			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the database service to list backups for (i.e. 'db01')")
-			page := subCmd.IntOpt("p page", 1, "The page to view")
-			pageSize := subCmd.IntOpt("n page-size", 10, "The number of items to show per page")
-			subCmd.Action = func() {
-				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				db.ListBackups(*serviceName, *page, *pageSize, settings)
-			}
-			subCmd.Spec = "SERVICE_NAME [-p] [-n]"
-		})
-		/*cmd.Command("restore", "Restore from a previously created backup", func(subCmd *cli.Cmd) {
-			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the database service to restore (i.e. 'db01')")
-			backupID := subCmd.StringArg("BACKUP_ID", "", "The ID of the backup to restore (found from `catalyze backup list`)")
-			skipPoll := subCmd.BoolOpt("s skip-poll", false, "Whether or not to wait for the restore to finish")
-			subCmd.Action = func() {
-				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				db.RestoreBackup(*serviceName, *backupID, *skipPoll, settings)
-			}
-			subCmd.Spec = "SERVICE_NAME BACKUP_ID [-s]"
-		})*/
-	})
-	app.Command("default", "Set the default associated environment", func(cmd *cli.Cmd) {
-		envAlias := cmd.StringArg("ENV_ALIAS", "", "The alias of an already associated environment to set as the default")
-		cmd.Action = func() {
-			settings := r.GetSettings(true, false, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-			defaultcmd.SetDefault(*envAlias, settings)
-		}
-		cmd.Spec = "ENV_ALIAS"
-	})
+func InitCLI(app *cli.Cli, settings *models.Settings) {
+
+	// TODO ideally, we want to upgrade the mow.cli and use the precommand hook to take care
+	// of authentication. that way we can create the settings object here and then
+	// the commands dont need anyhting but the settings object. then they just have
+	// to check if the serviceID or environmentID on the settings object is empty.
+	// if required and empty, prompt or throw error as appropriate.
+
+	app.Command(associate.Cmd.Name, associate.Cmd.ShortHelp, associate.Cmd.CmdFunc(settings))
+	app.Command(associated.Cmd.Name, associated.Cmd.ShortHelp, associate.Cmd.CmdFunc(settings))
+	app.Command(console.Cmd.Name, console.Cmd.ShortHelp, console.Cmd.CmdFunc(settings))
+	app.Command(dashboard.Cmd.Name, dashboard.Cmd.ShortHelp, dashboard.Cmd.CmdFunc(settings))
+	app.Command(db.Cmd.Name, db.Cmd.ShortHelp, db.Cmd.CmdFunc(settings))
+	app.Command(defaultcmd.Cmd.Name, defaultcmd.Cmd.ShortHelp, defaultcmd.Cmd.CmdFunc(settings))
+
 	app.Command("disassociate", "Remove the association with an environment", func(cmd *cli.Cmd) {
 		envAlias := cmd.StringArg("ENV_ALIAS", "", "The alias of an already associated environment to disassociate")
 		cmd.Action = func() {

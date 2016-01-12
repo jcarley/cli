@@ -12,31 +12,28 @@ import (
 	"golang.org/x/net/websocket"
 
 	"github.com/catalyzeio/cli/helpers"
-	"github.com/catalyzeio/cli/models"
 	"github.com/docker/docker/pkg/term"
 )
 
-// Console opens a secure console to a code or database service. For code
+// Open opens a secure console to a code or database service. For code
 // services, a command is required. This command is executed as root in the
 // context of the application root directory. For database services, no command
 // is needed - instead, the appropriate command for the database type is run.
 // For example, for a postgres database, psql is run.
-func Console(serviceLabel string, command string, settings *models.Settings) {
-	helpers.SignIn(settings)
-	service := helpers.RetrieveServiceByLabel(serviceLabel, settings)
+func (c *SConsole) Open() error {
+	service := helpers.RetrieveServiceByLabel(c.SvcName, c.Settings)
 	if service == nil {
-		fmt.Printf("Could not find a service with the name \"%s\"\n", serviceLabel)
-		os.Exit(1)
+		return fmt.Errorf("Could not find a service with the name \"%s\"\n", c.SvcName)
 	}
-	fmt.Printf("Opening console to %s (%s)\n", serviceLabel, service.ID)
-	task := helpers.RequestConsole(command, service.ID, settings)
+	fmt.Printf("Opening console to %s (%s)\n", c.SvcName, service.ID)
+	task := helpers.RequestConsole(c.Command, service.ID, c.Settings)
 	fmt.Print("Waiting for the console to be ready. This might take a minute.")
 
 	ch := make(chan string, 1)
-	go helpers.PollConsoleJob(task.ID, service.ID, ch, settings)
+	go helpers.PollConsoleJob(task.ID, service.ID, ch, c.Settings)
 	jobID := <-ch
-	defer helpers.DestroyConsole(jobID, service.ID, settings)
-	creds := helpers.RetrieveConsoleTokens(jobID, service.ID, settings)
+	defer helpers.DestroyConsole(jobID, service.ID, c.Settings)
+	creds := helpers.RetrieveConsoleTokens(jobID, service.ID, c.Settings)
 
 	creds.URL = strings.Replace(creds.URL, "http", "ws", 1)
 	fmt.Println("Connecting...")
@@ -49,7 +46,7 @@ func Console(serviceLabel string, command string, settings *models.Settings) {
 	config.Header["X-Console-Token"] = []string{creds.Token}
 	ws, err := websocket.DialConfig(config)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer ws.Close()
 	fmt.Println("Connection opened")
@@ -57,11 +54,11 @@ func Console(serviceLabel string, command string, settings *models.Settings) {
 	stdin, stdout, _ := term.StdStreams()
 	fdIn, isTermIn := term.GetFdInfo(stdin)
 	if !isTermIn {
-		panic(errors.New("StdIn is not a terminal"))
+		return errors.New("StdIn is not a terminal")
 	}
 	oldState, err := term.SetRawTerminal(fdIn)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer term.RestoreTerminal(fdIn, oldState)
 
@@ -72,6 +69,7 @@ func Console(serviceLabel string, command string, settings *models.Settings) {
 	go readStdin(stdin, ws, done)
 
 	<-done
+	return nil
 }
 
 // Reads incoming data from the websocket and forwards it to stdout.

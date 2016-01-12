@@ -10,3 +10,8 @@ type IGit interface {
 
 // SGit is an implementor of IGit
 type SGit struct{}
+
+// New creates a new instance of IGit
+func New() IGit {
+	return &SGit{}
+}
