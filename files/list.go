@@ -9,11 +9,10 @@ import (
 	"github.com/catalyzeio/cli/models"
 )
 
-// ListServiceFiles lists all service files that are able to be downloaded
+// CmdList lists all service files that are able to be downloaded
 // by a member of the environment. Typically service files of interest
 // will be on the service_proxy.
-func ListServiceFiles(serviceName string, settings *models.Settings) {
-	helpers.SignIn(settings)
+func CmdList(ifiles IFiles) error {
 	service := helpers.RetrieveServiceByLabel(serviceName, settings)
 	if service == nil {
 		fmt.Printf("Could not find a service with the name \"%s\"\n", serviceName)
@@ -51,4 +50,8 @@ func fileModeToRWXString(perms uint64) string {
 	}
 	permissionString = "-" + permissionString // we don't store folders
 	return permissionString
+}
+
+func (f *SFiles) List() (*[]models.ServiceFile, error) {
+	return nil, nil
 }

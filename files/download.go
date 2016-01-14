@@ -10,25 +10,27 @@ import (
 	"github.com/catalyzeio/cli/models"
 )
 
-// DownloadServiceFile downloads a service file by its ID (take from listing
+// CmdDownload downloads a service file by its name (taken from listing
 // service files) to the local machine matching the file's assigned permissions.
 // If those permissions cannot be applied, the default 0644 permissions are
 // applied. If not output file is specified, the file and permissions are
 // printed to stdout.
-func DownloadServiceFile(serviceName, fileName, outputPath string, force bool, settings *models.Settings) {
-	helpers.SignIn(settings)
-	service := helpers.RetrieveServiceByLabel(serviceName, settings)
+func CmdDownload(ifiles IFiles, is services.IService) error {
+	service, err := is.RetrieveByLabel()
+	if err != nil {
+		return err
+	}
+	//service := helpers.RetrieveServiceByLabel(serviceName, settings)
 	if service == nil {
-		fmt.Printf("Could not find a service with the name \"%s\"\n", serviceName)
-		os.Exit(1)
+		return fmt.Errorf("Could not find a service with the name \"%s\"\n", serviceName)
 	}
 	if outputPath != "" && !force {
 		if _, err := os.Stat(outputPath); err == nil {
-			fmt.Printf("File already exists at path '%s'. Specify `--force` to overwrite\n", outputPath)
-			os.Exit(1)
+			return fmt.Errorf("File already exists at path '%s'. Specify `--force` to overwrite\n", outputPath)
 		}
 	}
 	var file *models.ServiceFile
+	files, err := ifiles.List()
 	files := helpers.ListServiceFiles(service.ID, settings)
 	for _, f := range *files {
 		if f.Name == fileName {
@@ -66,4 +68,8 @@ func DownloadServiceFile(serviceName, fileName, outputPath string, force bool, s
 		wr = os.Stdout
 	}
 	wr.Write([]byte(file.Contents))
+}
+
+func (f *SFiles) Retrieve() (*models.ServiceFile, error) {
+	return nil, nil
 }

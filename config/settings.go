@@ -30,7 +30,7 @@ type SettingsRetriever interface {
 type FileSettingsRetriever struct{}
 
 // GetSettings returns a Settings object for the current context
-func (s FileSettingsRetriever) GetSettings(envName string, svcName string, baasHost string, paasHost string, username string, password string) *models.Settings {
+func (s FileSettingsRetriever) GetSettings(envName, svcName, baasHost, paasHost, username, password string) *models.Settings {
 	HomeDir, err := homedir.Dir()
 	if err != nil {
 		fmt.Println(err.Error())

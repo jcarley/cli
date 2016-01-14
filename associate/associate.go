@@ -14,7 +14,7 @@ import (
 // Associate an environment so that commands can be run against it. This command
 // no longer adds a git remote. See commands.AddRemote().
 func (s *SAssociate) Associate() error {
-	if s.Git.Exists() {
+	if !s.Git.Exists() {
 		return errors.New("No git repo found in the current directory")
 	}
 	fmt.Printf("Existing git remotes named \"%s\" will be overwritten\n", s.Remote)

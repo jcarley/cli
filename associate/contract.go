@@ -53,11 +53,12 @@ type SAssociate struct {
 	Settings     *models.Settings
 	Git          git.IGit
 	Environments environments.IEnvironments
-	EnvLabel     string
-	SvcLabel     string
-	Alias        string
-	Remote       string
-	DefaultEnv   bool
+
+	EnvLabel   string
+	SvcLabel   string
+	Alias      string
+	Remote     string
+	DefaultEnv bool
 }
 
 func New(settings *models.Settings, git git.IGit, environments environments.IEnvironments, envLabel, svcLabel, alias, remote string, defaultEnv bool) IAssociate {
