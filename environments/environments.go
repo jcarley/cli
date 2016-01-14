@@ -26,6 +26,6 @@ func (e *SEnvironments) List() (*[]models.Environment, error) {
 	return nil, nil
 }
 
-func (e *SEnvironments) Retrieve() (*models.Environment, error) {
+func (e *SEnvironments) Retrieve(envID string) (*models.Environment, error) {
 	return nil, nil
 }

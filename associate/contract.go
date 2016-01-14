@@ -32,7 +32,7 @@ var Cmd = models.Command{
 					fmt.Println(settings.Pods)
 				}
 				ia := New(settings, git.New(), environments.New(settings), *envName, *serviceName, *alias, *remote, *defaultEnv)
-				err := ia.Associate()
+				err := CmdAssociate(*envName, *serviceName, *alias, *remote, *defaultEnv, ia, ig, ie)
 				if err != nil {
 					fmt.Println(err.Error())
 					os.Exit(1)

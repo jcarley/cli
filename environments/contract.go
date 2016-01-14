@@ -31,7 +31,9 @@ var Cmd = models.Command{
 // IEnvironments is an interface for interacting with environments
 type IEnvironments interface {
 	List() (*[]models.Environment, error)
-	Retrieve() (*models.Environment, error)
+	//Retrieve() (*models.Environment, error)
+
+	Retrieve(envID string) (*models.Environment, error)
 }
 
 // SEnvironments is a concrete implementation of IEnvironments

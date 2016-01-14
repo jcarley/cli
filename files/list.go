@@ -2,31 +2,37 @@ package files
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 
-	"github.com/catalyzeio/cli/helpers"
 	"github.com/catalyzeio/cli/models"
+	"github.com/catalyzeio/cli/services"
 )
 
 // CmdList lists all service files that are able to be downloaded
 // by a member of the environment. Typically service files of interest
 // will be on the service_proxy.
-func CmdList(ifiles IFiles) error {
-	service := helpers.RetrieveServiceByLabel(serviceName, settings)
-	if service == nil {
-		fmt.Printf("Could not find a service with the name \"%s\"\n", serviceName)
-		os.Exit(1)
+func CmdList(ifiles IFiles, is services.IServices) error {
+	service, err := is.RetrieveByLabel()
+	if err != nil {
+		return err
 	}
-	files := helpers.ListServiceFiles(service.ID, settings)
+	if service == nil {
+		// TODO return fmt.Errorf("Could not find a service with the name \"%s\"\n", serviceName)
+		return fmt.Errorf("Could not find a service with the specified name")
+	}
+	files, err := ifiles.List()
+	if err != nil {
+		return err
+	}
 	if len(*files) == 0 {
 		fmt.Println("No service files found")
-		return
+		return nil
 	}
 	fmt.Println("NAME")
 	for _, sf := range *files {
 		fmt.Println(sf.Name)
 	}
+	return nil
 }
 
 func fileModeToRWXString(perms uint64) string {
@@ -53,5 +59,6 @@ func fileModeToRWXString(perms uint64) string {
 }
 
 func (f *SFiles) List() (*[]models.ServiceFile, error) {
+	// TODO this
 	return nil, nil
 }

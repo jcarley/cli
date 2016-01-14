@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/catalyzeio/cli/models"
+	"github.com/catalyzeio/cli/services"
 	"github.com/jawher/mow.cli"
 )
 
@@ -33,8 +34,9 @@ var DownloadSubCmd = models.Command{
 			output := subCmd.StringOpt("o output", "", "The downloaded file will be saved to the given location with the same file permissions as it has on the remote host. If those file permissions cannot be applied, a warning will be printed and default 0644 permissions applied. If no output is specified, stdout is used.")
 			force := subCmd.BoolOpt("f force", false, "If the specified output file already exists, automatically overwrite it")
 			subCmd.Action = func() {
+				is := services.New(settings, "", *serviceName)
 				ifiles := New(settings, *serviceName, *fileName, *output, *force)
-				err := CmdDownload(ifiles)
+				err := CmdDownload(ifiles, is)
 				if err != nil {
 					fmt.Println(err.Error())
 					os.Exit(1)
@@ -53,8 +55,9 @@ var ListSubCmd = models.Command{
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to list files for")
 			subCmd.Action = func() {
-				ifiles := New(settings, *serviceName, *fileName, *output, *force)
-				err := CmdList(ifiles)
+				is := services.New(settings, "", *serviceName)
+				ifiles := New(settings, *serviceName, "", "", false)
+				err := CmdList(ifiles, is)
 				if err != nil {
 					fmt.Println(err.Error())
 					os.Exit(1)
@@ -69,12 +72,12 @@ var ListSubCmd = models.Command{
 type IFiles interface {
 	List() (*[]models.ServiceFile, error)
 	Retrieve() (*models.ServiceFile, error)
+	Save(*models.ServiceFile) error
 }
 
 // SFiles is a concrete implementation of IFiles
 type SFiles struct {
 	Settings *models.Settings
-	Services services.IService
 
 	SvcName  string
 	FileName string
@@ -83,10 +86,9 @@ type SFiles struct {
 }
 
 // New generates a new instance of IFiles
-func New(settings *models.Settings, services services.IService, svcName, fileName, output string, force bool) IFiles {
+func New(settings *models.Settings, svcName, fileName, output string, force bool) IFiles {
 	return &SFiles{
 		Settings: settings,
-		Services: services,
 
 		SvcName:  svcName,
 		FileName: fileName,
