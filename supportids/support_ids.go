@@ -1,18 +1,21 @@
 package supportids
 
-import (
-	"fmt"
+import "fmt"
 
-	"github.com/catalyzeio/cli/helpers"
-	"github.com/catalyzeio/cli/models"
-)
-
-// SupportIds prints out various IDs related to the associated environment to be
-// used when contacting Catalyze support at support@catalyze.io.
-func SupportIds(settings *models.Settings) {
-	helpers.SignIn(settings)
+func CmdSupportIDs(is ISupportIDs) error {
+	envID, usersID, svcID, err := is.SupportIDs()
+	if err != nil {
+		return err
+	}
 	fmt.Printf(`EnvironmentID:  %s
 UsersID:        %s
 ServiceID:      %s
-`, settings.EnvironmentID, settings.UsersID, settings.ServiceID)
+`, envID, usersID, svcID)
+	return nil
+}
+
+// SupportIDs prints out various IDs related to the associated environment to be
+// used when contacting Catalyze support at support@catalyze.io.
+func (s *SSupportIDs) SupportIDs() (string, string, string, error) {
+	return s.Settings.EnvironmentID, s.Settings.UsersID, s.Settings.ServiceID, nil
 }

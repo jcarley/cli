@@ -24,7 +24,13 @@ import (
 	"github.com/catalyzeio/cli/redeploy"
 	"github.com/catalyzeio/cli/services"
 	"github.com/catalyzeio/cli/ssl"
+	"github.com/catalyzeio/cli/status"
+	"github.com/catalyzeio/cli/supportids"
+	"github.com/catalyzeio/cli/update"
 	"github.com/catalyzeio/cli/updater"
+	"github.com/catalyzeio/cli/vars"
+	"github.com/catalyzeio/cli/whoami"
+	"github.com/catalyzeio/cli/worker"
 	"github.com/jawher/mow.cli"
 )
 
@@ -74,6 +80,9 @@ func Run() {
 			fmt.Println(settings.Pods)
 		}*/
 	}
+	app.After = func() {
+		// TODO save the settings
+	}
 
 	InitCLI(app, settings)
 
@@ -121,65 +130,10 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.Command(redeploy.Cmd.Name, redeploy.Cmd.ShortHelp, redeploy.Cmd.CmdFunc(settings))
 	app.Command(services.Cmd.Name, services.Cmd.ShortHelp, services.Cmd.CmdFunc(settings))
 	app.Command(ssl.Cmd.Name, ssl.Cmd.ShortHelp, ssl.Cmd.CmdFunc(settings))
-	/*
-		app.Command("status", "Get quick readout of the current status of your associated environment and all of its services", func(cmd *cli.Cmd) {
-			cmd.Action = func() {
-				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				status.Status(settings)
-			}
-		})
-		app.Command("support-ids", "Print out various IDs related to your associated environment to be used when contacting Catalyze support", func(cmd *cli.Cmd) {
-			cmd.Action = func() {
-				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				supportids.SupportIds(settings)
-			}
-		})
-		app.Command("update", "Checks for available updates and updates the CLI if a new update is available", func(cmd *cli.Cmd) {
-			cmd.Action = func() {
-				update.Update()
-			}
-		})
-		app.Command("vars", "Interaction with environment variables for the associated environment", func(cmd *cli.Cmd) {
-			cmd.Command("list", "List all environment variables", func(subCmd *cli.Cmd) {
-				subCmd.Action = func() {
-					settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-					vars.ListVars(settings)
-				}
-			})
-			cmd.Command("set", "Set one or more new environment variables or update the values of existing ones", func(subCmd *cli.Cmd) {
-				variables := subCmd.Strings(cli.StringsOpt{
-					Name:      "v variable",
-					Value:     []string{},
-					Desc:      "The env variable to set or update in the form \"<key>=<value>\"",
-					HideValue: true,
-				})
-				subCmd.Action = func() {
-					settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-					vars.SetVar(*variables, settings)
-				}
-				subCmd.Spec = "-v..."
-			})
-			cmd.Command("unset", "Unset (delete) an existing environment variable", func(subCmd *cli.Cmd) {
-				variable := subCmd.StringArg("VARIABLE", "", "The name of the environment variable to unset")
-				subCmd.Action = func() {
-					settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-					vars.UnsetVar(*variable, settings)
-				}
-				subCmd.Spec = "VARIABLE"
-			})
-		})
-		app.Command("whoami", "Retrieve your user ID", func(cmd *cli.Cmd) {
-			cmd.Action = func() {
-				settings := r.GetSettings(false, false, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				whoami.WhoAmI(settings)
-			}
-		})
-		app.Command("worker", "Start a background worker", func(cmd *cli.Cmd) {
-			target := cmd.StringArg("TARGET", "", "The name of the Procfile target to invoke as a worker")
-			cmd.Action = func() {
-				settings := r.GetSettings(true, true, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				worker.Worker(*target, settings)
-			}
-			cmd.Spec = "TARGET"
-		})*/
+	app.Command(status.Cmd.Name, status.Cmd.ShortHelp, status.Cmd.CmdFunc(settings))
+	app.Command(supportids.Cmd.Name, supportids.Cmd.ShortHelp, supportids.Cmd.CmdFunc(settings))
+	app.Command(update.Cmd.Name, update.Cmd.ShortHelp, update.Cmd.CmdFunc(settings))
+	app.Command(vars.Cmd.Name, vars.Cmd.ShortHelp, vars.Cmd.CmdFunc(settings))
+	app.Command(whoami.Cmd.Name, whoami.Cmd.ShortHelp, whoami.Cmd.CmdFunc(settings))
+	app.Command(worker.Cmd.Name, worker.Cmd.ShortHelp, worker.Cmd.CmdFunc(settings))
 }

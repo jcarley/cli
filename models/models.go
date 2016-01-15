@@ -9,12 +9,11 @@ type Command struct {
 	CmdFunc   func(settings *Settings) func(cmd *cli.Cmd)
 }
 
-// Errors is a wrapper around an array of errors from the API
-type Errors struct {
-	ReportedErrors *[]ReportedError `json:"errors"`
-	Title          string           `json:"title"`
-	Description    string           `json:"description"`
-	Code           int              `json:"code"`
+// Error is a wrapper around an array of errors from the API
+type Error struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Code        int    `json:"code"`
 }
 
 // ReportedError is the standard error model sent back from the API
@@ -156,8 +155,13 @@ type PodMetadata struct {
 // `json:"-"` are never persisted to disk but used in memory for the current
 // command.
 type Settings struct {
-	BaasHost        string                   `json:"-"`
-	PaasHost        string                   `json:"-"`
+	BaasHost        string `json:"-"`
+	PaasHost        string `json:"-"`
+	BaasHostVersion string `json:"-"`
+	PaasHostVersion string `json:"-"`
+	APIKey          string `json:"-"`
+	Version         string `json:"-"`
+
 	Username        string                   `json:"-"`
 	Password        string                   `json:"-"`
 	EnvironmentID   string                   `json:"-"` // the id of the environment used for the current command
