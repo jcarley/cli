@@ -8,8 +8,8 @@ import (
 )
 
 // CmdServices lists the names of all services for an environment.
-func CmdServices(envID, pod string, is IServices) error {
-	svcs, err := is.List(envID, pod)
+func CmdServices(is IServices) error {
+	svcs, err := is.List()
 	if err != nil {
 		return err
 	}
@@ -20,9 +20,9 @@ func CmdServices(envID, pod string, is IServices) error {
 	return nil
 }
 
-func (s *SServices) List(envID, pod string) (*[]models.Service, error) {
-	headers := httpclient.GetHeaders(s.Settings.APIKey, s.Settings.SessionToken, s.Settings.Version, pod)
-	resp, statusCode, err := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services", s.Settings.PaasHost, s.Settings.PaasHostVersion, envID), headers)
+func (s *SServices) List() (*[]models.Service, error) {
+	headers := httpclient.GetHeaders(s.Settings.APIKey, s.Settings.SessionToken, s.Settings.Version, s.Settings.Pod)
+	resp, statusCode, err := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services", s.Settings.PaasHost, s.Settings.PaasHostVersion, s.Settings.EnvironmentID), headers)
 	if err != nil {
 		return nil, err
 	}
@@ -34,9 +34,9 @@ func (s *SServices) List(envID, pod string) (*[]models.Service, error) {
 	return &services, nil
 }
 
-func (s *SServices) Retrieve(envID, svcID, pod string) (*models.Service, error) {
-	headers := httpclient.GetHeaders(s.Settings.APIKey, s.Settings.SessionToken, s.Settings.Version, pod)
-	resp, statusCode, err := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services/%s", s.Settings.PaasHost, s.Settings.PaasHostVersion, envID, svcID), headers)
+func (s *SServices) Retrieve(svcID string) (*models.Service, error) {
+	headers := httpclient.GetHeaders(s.Settings.APIKey, s.Settings.SessionToken, s.Settings.Version, s.Settings.Pod)
+	resp, statusCode, err := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services/%s", s.Settings.PaasHost, s.Settings.PaasHostVersion, s.Settings.EnvironmentID, s.Settings.ServiceID), headers)
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +48,8 @@ func (s *SServices) Retrieve(envID, svcID, pod string) (*models.Service, error) 
 	return &service, nil
 }
 
-func (s *SServices) RetrieveByLabel(label, envID, pod string) (*models.Service, error) {
-	services, err := s.List(envID, pod)
+func (s *SServices) RetrieveByLabel(label string) (*models.Service, error) {
+	services, err := s.List()
 	if err != nil {
 		return nil, err
 	}

@@ -17,7 +17,7 @@ var Cmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {
-				err := CmdServices(settings.EnvironmentID, settings.Pod, New(settings))
+				err := CmdServices(New(settings))
 				if err != nil {
 					fmt.Println(err.Error())
 					os.Exit(1)
@@ -29,9 +29,9 @@ var Cmd = models.Command{
 
 // IServices
 type IServices interface {
-	List(envID, pod string) (*[]models.Service, error)
-	Retrieve(envID, svcID, pod string) (*models.Service, error)
-	RetrieveByLabel(label, envID, pod string) (*models.Service, error)
+	List() (*[]models.Service, error)
+	Retrieve(svcID string) (*models.Service, error)
+	RetrieveByLabel(label string) (*models.Service, error)
 }
 
 // SServices is a concrete implementation of IServices

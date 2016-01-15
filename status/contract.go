@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/catalyzeio/cli/environments"
+	"github.com/catalyzeio/cli/jobs"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -18,7 +19,7 @@ var Cmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {
-				err := CmdStatus(settings.EnvironmentID, New(settings), environments.New(settings))
+				err := CmdStatus(settings.EnvironmentID, New(settings, jobs.New(settings)), environments.New(settings))
 				if err != nil {
 					fmt.Println(err.Error())
 					os.Exit(1)
@@ -36,11 +37,13 @@ type IStatus interface {
 // SStatus is a concrete implementation of IStatus
 type SStatus struct {
 	Settings *models.Settings
+	Jobs     jobs.IJobs
 }
 
 // New returns an instance of IStatus
-func New(settings *models.Settings) IStatus {
+func New(settings *models.Settings, ij jobs.IJobs) IStatus {
 	return &SStatus{
 		Settings: settings,
+		Jobs:     ij,
 	}
 }

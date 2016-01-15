@@ -1,9 +1,10 @@
 package worker
 
 import (
+	"encoding/json"
 	"fmt"
 
-	"github.com/catalyzeio/cli/helpers"
+	"github.com/catalyzeio/cli/httpclient"
 )
 
 func CmdWorker(target, svcID string, iw IWorker) error {
@@ -19,6 +20,17 @@ func CmdWorker(target, svcID string, iw IWorker) error {
 // Start starts a Procfile target as a worker. Worker containers are intended
 // to be short-lived, one-off tasks.
 func (w *SWorker) Start(target string) error {
-	helpers.InitiateWorker(target, w.Settings)
-	return nil
+	worker := map[string]string{
+		"target": target,
+	}
+	b, err := json.Marshal(worker)
+	if err != nil {
+		return err
+	}
+	headers := httpclient.GetHeaders(w.Settings.APIKey, w.Settings.SessionToken, w.Settings.Version, w.Settings.Pod)
+	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/background", w.Settings.PaasHost, w.Settings.PaasHostVersion, w.Settings.EnvironmentID, w.Settings.ServiceID), headers)
+	if err != nil {
+		return err
+	}
+	return httpclient.ConvertResp(resp, statusCode, nil)
 }

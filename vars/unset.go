@@ -3,7 +3,7 @@ package vars
 import (
 	"fmt"
 
-	"github.com/catalyzeio/cli/helpers"
+	"github.com/catalyzeio/cli/httpclient"
 )
 
 func CmdUnset(key string, iv IVars) error {
@@ -19,6 +19,10 @@ func CmdUnset(key string, iv IVars) error {
 // will not take effect until the service is redeployed by pushing new code
 // or via `catalyze redeploy`.
 func (v *SVars) Unset(variable string) error {
-	helpers.UnsetEnvVar(variable, v.Settings)
-	return nil
+	headers := httpclient.GetHeaders(v.Settings.APIKey, v.Settings.SessionToken, v.Settings.Version, v.Settings.Pod)
+	resp, statusCode, err := httpclient.Delete(fmt.Sprintf("%s%s/environments/%s/services/%s/env/%s", v.Settings.PaasHost, v.Settings.PaasHostVersion, v.Settings.EnvironmentID, v.Settings.ServiceID, variable), headers)
+	if err != nil {
+		return err
+	}
+	return httpclient.ConvertResp(resp, statusCode, nil)
 }

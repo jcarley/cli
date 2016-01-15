@@ -2,27 +2,116 @@ package logs
 
 import (
 	"bytes"
-	"crypto/tls"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/helpers"
+	"github.com/catalyzeio/cli/environments"
+	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
+	"github.com/catalyzeio/cli/prompts"
 )
+
+const size = 50
 
 // CmdLogs is a way to stream logs from Kibana to your local terminal. This is
 // useful because Kibana is hard to look at because it splits every single
 // log statement into a separate block that spans multiple lines so it's
 // not very cohesive. This is intended to be similar to the `heroku logs`
 // command.
-func CmdLogs(queryString string, tail bool, hours, minutes, seconds int, il ILogs) error {
-	return il.Output(queryString, tail, hours, minutes, seconds)
+func CmdLogs(queryString string, follow bool, hours, minutes, seconds int, envID string, il ILogs, ip prompts.IPrompts, ie environments.IEnvironments) error {
+	// TODO make these consts
+	username := os.Getenv("CATALYZE_USERNAME")
+	password := os.Getenv("CATALYZE_PASSWORD")
+	if username == "" || password == "" {
+		fmt.Println("Your dashboard credentials are required to fetch logs")
+		u, p, err := ip.UsernamePassword()
+		if err != nil {
+			return err
+		}
+		username = u
+		password = p
+	}
+	env, err := ie.Retrieve(envID)
+	if err != nil {
+		return err
+	}
+	from := 0
+	offset := time.Duration(hours)*time.Hour + time.Duration(minutes)*time.Minute + time.Duration(seconds)*time.Second
+	timestamp := time.Now().In(time.UTC).Add(-1 * offset)
+	from, timestamp, err = il.Output(queryString, username, password, follow, hours, minutes, seconds, from, timestamp, time.Now(), env)
+	if err != nil {
+		return err
+	}
+	if follow {
+		return il.Stream(queryString, username, password, follow, hours, minutes, seconds, from, timestamp, env)
+	}
+	return nil
+}
+
+func (l *SLogs) Output(queryString, username, password string, follow bool, hours, minutes, seconds, from int, startTimestamp, endTimestamp time.Time, env *models.Environment) (int, time.Time, error) {
+	domain := env.DNSName
+	if domain == "" {
+		domain = fmt.Sprintf("%s.catalyze.io", env.Namespace)
+	}
+	appLogsIdentifier := "source"
+	appLogsValue := "app"
+	if strings.HasPrefix(domain, "pod01") || strings.HasPrefix(domain, "csb01") {
+		appLogsIdentifier = "syslog_program"
+		appLogsValue = "supervisord"
+	}
+
+	urlString := fmt.Sprintf("https://%s/__es", domain)
+
+	basicAuth := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
+	headers := map[string][]string{"Authorization": {"Basic " + basicAuth}}
+
+	fmt.Println("        @timestamp       -        message")
+	for {
+		queryBytes := generateQuery(queryString, appLogsIdentifier, appLogsValue, startTimestamp, from)
+
+		resp, statusCode, err := httpclient.Get(queryBytes, fmt.Sprintf("%s/_search", urlString), headers)
+		if err != nil {
+			return from, startTimestamp, err
+		}
+		var logs models.Logs
+		err = httpclient.ConvertResp(resp, statusCode, &logs)
+		if err != nil {
+			return from, startTimestamp, err
+		}
+
+		end := time.Time{}
+		for _, lh := range *logs.Hits.Hits {
+			fmt.Printf("%s - %s\n", lh.Fields["@timestamp"][0], lh.Fields["message"][0])
+			// 2016-01-15T22:56:12.921Z
+			end, _ = time.Parse(time.RFC3339Nano, lh.Fields["@timestamp"][0])
+		}
+		amount := len(*logs.Hits.Hits)
+
+		from += len(*logs.Hits.Hits)
+		// TODO this will infinite loop if it always retrieves `size` hits
+		// and it fails to parse the end timestamp. very small window of opportunity.
+		if amount < size || end.After(endTimestamp) {
+			break
+		}
+		time.Sleep(2 * time.Second)
+	}
+	return from, startTimestamp, nil
+}
+
+func (l *SLogs) Stream(queryString, username, password string, follow bool, hours, minutes, seconds, from int, timestamp time.Time, env *models.Environment) error {
+	for {
+		f, t, err := l.Output(queryString, username, password, follow, hours, minutes, seconds, from, timestamp, time.Now(), env)
+		if err != nil {
+			return err
+		}
+		from = f
+		timestamp = t
+		time.Sleep(2 * time.Second)
+	}
 }
 
 func generateQuery(queryString, appLogsIdentifier, appLogsValue string, timestamp time.Time, from int) []byte {
@@ -50,92 +139,9 @@ func generateQuery(queryString, appLogsIdentifier, appLogsValue string, timestam
 		}
 	},
 	"from": ` + fmt.Sprintf("%d", from) + `,
-	"size": 50
+	"size": ` + fmt.Sprintf("%d", size) + `
 	}`
 	var buf bytes.Buffer
 	json.Compact(&buf, []byte(query))
 	return buf.Bytes()
-}
-
-func (l *SLogs) Output(queryString string, tail bool, hours, minutes, seconds int) error {
-	if l.Settings.Username == "" || l.Settings.Password == "" {
-		// sometimes this will be filled in from env variables
-		// if it is, just use that and don't prompt them
-		l.Settings.Username = ""
-		l.Settings.Password = ""
-		fmt.Println("Please enter your logging dashboard credentials")
-	}
-	// if we remove the session token, the CLI will prompt for the
-	// username/password normally. It will also set the username/password
-	// on the settings object.
-	sessionToken := l.Settings.SessionToken
-	l.Settings.SessionToken = ""
-
-	helpers.SignIn(l.Settings)
-
-	env := helpers.RetrieveEnvironment("pod", l.Settings)
-	domain := env.DNSName
-	if domain == "" {
-		domain = fmt.Sprintf("%s.catalyze.io", env.Namespace)
-	}
-	appLogsIdentifier := "source"
-	appLogsValue := "app"
-	if strings.HasPrefix(domain, "pod01") || strings.HasPrefix(domain, "csb01") {
-		appLogsIdentifier = "syslog_program"
-		appLogsValue = "supervisord"
-	}
-
-	urlString := fmt.Sprintf("https://%s/__es", domain)
-
-	offset := time.Duration(hours)*time.Hour + time.Duration(minutes)*time.Minute + time.Duration(seconds)*time.Second
-	timestamp := time.Now().In(time.UTC).Add(-1 * offset)
-
-	from := 0
-
-	var tr = &http.Transport{
-		TLSClientConfig: &tls.Config{
-			MinVersion: tls.VersionTLS12,
-		},
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
-
-	l.Settings.SessionToken = sessionToken
-	config.SaveSettings(l.Settings)
-
-	fmt.Println("        @timestamp       -        message")
-	for {
-		queryBytes := generateQuery(queryString, appLogsIdentifier, appLogsValue, timestamp, from)
-		reader := bytes.NewReader(queryBytes)
-
-		req, _ := http.NewRequest("GET", fmt.Sprintf("%s/_search", urlString), reader)
-		req.SetBasicAuth(l.Settings.Username, l.Settings.Password)
-
-		resp, err := client.Do(req)
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-		respBody, _ := ioutil.ReadAll(resp.Body)
-		resp.Body.Close()
-		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-			fmt.Println(fmt.Errorf("%d %s", resp.StatusCode, string(respBody)).Error())
-			os.Exit(1)
-		}
-		var logs models.Logs
-		json.Unmarshal(respBody, &logs)
-		for _, lh := range *logs.Hits.Hits {
-			fmt.Printf("%s - %s\n", lh.Fields["@timestamp"][0], lh.Fields["message"][0])
-		}
-		if !tail {
-			break
-		}
-		time.Sleep(2 * time.Second)
-		from += len(*logs.Hits.Hits)
-	}
-	return nil
-}
-
-func (l *SLogs) Stream() error {
-	return nil
 }

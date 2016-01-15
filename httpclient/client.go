@@ -60,8 +60,9 @@ func ConvertResp(b []byte, statusCode int, s interface{}) error {
 }
 
 // Get performs a GET request
-func Get(url string, headers map[string][]string) ([]byte, int, error) {
-	return MakeRequest("GET", url, nil, headers)
+func Get(body []byte, url string, headers map[string][]string) ([]byte, int, error) {
+	reader := bytes.NewReader(body)
+	return MakeRequest("GET", url, reader, headers)
 }
 
 // Post performs a POST request
@@ -98,8 +99,9 @@ func Put(body []byte, url string, headers map[string][]string) ([]byte, int, err
 }
 
 // Delete performs a DELETE request
-func Delete(url string, headers map[string][]string) ([]byte, int, error) {
-	return MakeRequest("DELETE", url, nil, headers)
+func Delete(body []byte, url string, headers map[string][]string) ([]byte, int, error) {
+	reader := bytes.NewReader(body)
+	return MakeRequest("DELETE", url, reader, headers)
 }
 
 // MakeRequest is a generic HTTP runner that performs a request and returns

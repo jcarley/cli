@@ -1,10 +1,11 @@
 package vars
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
-	"github.com/catalyzeio/cli/helpers"
+	"github.com/catalyzeio/cli/httpclient"
 )
 
 func CmdSet(variables []string, iv IVars) error {
@@ -43,6 +44,14 @@ func CmdSet(variables []string, iv IVars) error {
 // effect until the service is redeployed by pushing new code or via
 // `catalyze redeploy`.
 func (v *SVars) Set(envVarsMap map[string]string) error {
-	helpers.SetEnvVars(envVarsMap, v.Settings)
-	return nil
+	b, err := json.Marshal(envVarsMap)
+	if err != nil {
+		return err
+	}
+	headers := httpclient.GetHeaders(v.Settings.APIKey, v.Settings.SessionToken, v.Settings.Version, v.Settings.Pod)
+	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/env", v.Settings.PaasHost, v.Settings.PaasHostVersion, v.Settings.EnvironmentID, v.Settings.ServiceID), headers)
+	if err != nil {
+		return err
+	}
+	return httpclient.ConvertResp(resp, statusCode, nil)
 }

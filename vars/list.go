@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/catalyzeio/cli/helpers"
+	"github.com/catalyzeio/cli/httpclient"
 )
 
 func CmdList(iv IVars) error {
@@ -25,5 +25,15 @@ func CmdList(iv IVars) error {
 
 // List lists all environment variables.
 func (v *SVars) List() (map[string]string, error) {
-	return helpers.ListEnvVars(v.Settings), nil
+	headers := httpclient.GetHeaders(v.Settings.APIKey, v.Settings.SessionToken, v.Settings.Version, v.Settings.Pod)
+	resp, statusCode, err := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services/%s/env", v.Settings.PaasHost, v.Settings.PaasHostVersion, v.Settings.EnvironmentID, v.Settings.ServiceID), headers)
+	if err != nil {
+		return nil, err
+	}
+	var envVars map[string]string
+	err = httpclient.ConvertResp(resp, statusCode, &envVars)
+	if err != nil {
+		return nil, err
+	}
+	return envVars, nil
 }

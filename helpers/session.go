@@ -1,15 +1,9 @@
 package helpers
 
 import (
-	"bufio"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
-	"runtime"
-	"strings"
-
-	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/httpclient"
@@ -53,23 +47,4 @@ func verify(settings *models.Settings) bool {
 		settings.UsersID = m["userId"]
 	}
 	return m["userId"] != ""
-}
-
-func promptForCredentials(settings *models.Settings) {
-	var username string
-	fmt.Print("Username: ")
-	in := bufio.NewReader(os.Stdin)
-	username, err := in.ReadString('\n')
-	if err != nil {
-		panic(errors.New("Invalid username"))
-	}
-	username = strings.TrimRight(username, "\n")
-	if runtime.GOOS == "windows" {
-		username = strings.TrimRight(username, "\r")
-	}
-	settings.Username = username
-	fmt.Print("Password: ")
-	bytes, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
-	fmt.Println("")
-	settings.Password = string(bytes)
 }

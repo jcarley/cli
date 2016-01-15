@@ -23,11 +23,13 @@ var Cmd = models.Command{
 			stream := cmd.BoolOpt("stream", false, "Repeat calls once per minute until this process is interrupted.")
 			mins := cmd.IntOpt("m mins", 1, "How many minutes worth of logs to retrieve.")
 			cmd.Action = func() {
-				err := CmdMetrics(*serviceName, *json, *csv, *spark, *stream, *mins, New(settings))
+				/*err := CmdMetrics(*serviceName, *json, *csv, *spark, *stream, *mins, New(settings))
 				if err != nil {
 					fmt.Println(err.Error())
 					os.Exit(1)
-				}
+				}*/
+				fmt.Println("shits broke yo")
+				os.Exit(1)
 			}
 			cmd.Spec = "[SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]"
 		}

@@ -3,35 +3,12 @@ package helpers
 import (
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"os"
 
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
-
-// RetrieveService returns a service model for the associated ServiceID
-func RetrieveService(settings *models.Settings) *models.Service {
-	resp := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services/%s", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, settings.ServiceID), true, settings)
-	var service models.Service
-	json.Unmarshal(resp, &service)
-	return &service
-}
-
-// RetrieveServiceByLabel returns a Service object given its label by fetching
-// the associated environment, looping through its services, and returning
-// the first one matching the given label. If no service with the given label
-// is found, nil is returned.
-func RetrieveServiceByLabel(label string, settings *models.Settings) *models.Service {
-	env := RetrieveEnvironment("pod", settings)
-	for _, service := range *env.Services {
-		if service.Label == label {
-			return &service
-		}
-	}
-	return nil
-}
 
 // RetrieveTempURL fetches a temporary URL that can be used for downloading an
 // existing database backup job. These URLs are signed and only valid for a
@@ -61,14 +38,6 @@ func RetrieveTempUploadURL(serviceID string, settings *models.Settings) *models.
 	var tempURL models.TempURL
 	json.Unmarshal(resp, &tempURL)
 	return &tempURL
-}
-
-// ListEnvVars returns all env vars for the associated Service
-func ListEnvVars(settings *models.Settings) map[string]string {
-	resp := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services/%s/env", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, settings.ServiceID), true, settings)
-	var envVars map[string]string
-	json.Unmarshal(resp, &envVars)
-	return envVars
 }
 
 // ListBackups returns a list of all backups regardless of their status for a
@@ -123,48 +92,6 @@ func RestoreBackup(serviceID string, backupID string, settings *models.Settings)
 	return &models.Task{
 		ID: m["taskId"],
 	}
-}
-
-// InitiateRakeTask kicks off a rake task for the associated code service. The
-// logs for the rake task are viewable in the environments logging server.
-func InitiateRakeTask(taskName string, settings *models.Settings) {
-	rakeTask := map[string]string{}
-	b, err := json.Marshal(rakeTask)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-	encodedTaskName, err := url.Parse(taskName)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-	httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/rake/%s", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, settings.ServiceID, encodedTaskName), true, settings)
-}
-
-// InitiateWorker starts a background worker for the associated code service
-// for the given Procfile target.
-func InitiateWorker(target string, settings *models.Settings) {
-	worker := map[string]string{
-		"target": target,
-	}
-	b, err := json.Marshal(worker)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-	httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/background", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, settings.ServiceID), true, settings)
-}
-
-// RedeployService redeploys the associated code service
-func RedeployService(serviceID string, settings *models.Settings) {
-	redeploy := map[string]string{}
-	b, err := json.Marshal(redeploy)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-	httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/redeploy", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, serviceID), true, settings)
 }
 
 // InitiateImport starts an import job for the given database service

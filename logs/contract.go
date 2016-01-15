@@ -3,8 +3,11 @@ package logs
 import (
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/catalyzeio/cli/environments"
 	"github.com/catalyzeio/cli/models"
+	"github.com/catalyzeio/cli/prompts"
 	"github.com/jawher/mow.cli"
 )
 
@@ -23,7 +26,7 @@ var Cmd = models.Command{
 			mins := cmd.IntOpt("minutes", 1, "The number of minutes before now (in combination with hours and seconds) to retrieve logs")
 			secs := cmd.IntOpt("seconds", 0, "The number of seconds before now (in combination with hours and minutes) to retrieve logs")
 			cmd.Action = func() {
-				err := CmdLogs(*query, *follow || *tail, *hours, *mins, *secs, New(settings))
+				err := CmdLogs(*query, *follow || *tail, *hours, *mins, *secs, settings.EnvironmentID, New(settings), prompts.New(), environments.New(settings))
 				if err != nil {
 					fmt.Println(err.Error())
 					os.Exit(1)
@@ -36,8 +39,8 @@ var Cmd = models.Command{
 
 // ILogs
 type ILogs interface {
-	Output(queryString string, tail bool, hours, minutes, seconds int) error
-	Stream() error
+	Output(queryString, username, password string, follow bool, hours, minutes, seconds, from int, startTimestamp time.Time, endTimestamp time.Time, env *models.Environment) (int, time.Time, error)
+	Stream(queryString, username, password string, follow bool, hours, minutes, seconds, from int, timestamp time.Time, env *models.Environment) error
 }
 
 // SLogs is a concrete implementation of ILogs

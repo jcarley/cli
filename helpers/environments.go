@@ -73,21 +73,6 @@ func RemoveUserFromEnvironment(usersID string, settings *models.Settings) {
 	httpclient.Delete(fmt.Sprintf("%s%s/environments/%s/users/%s", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, usersID), true, settings)
 }
 
-// SetEnvVars adds new env vars or updates the values of existing ones
-func SetEnvVars(envVars map[string]string, settings *models.Settings) {
-	b, err := json.Marshal(envVars)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-	httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/env", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, settings.ServiceID), true, settings)
-}
-
-// UnsetEnvVar deletes an env var from the associated code service
-func UnsetEnvVar(envVar string, settings *models.Settings) {
-	httpclient.Delete(fmt.Sprintf("%s%s/environments/%s/services/%s/env/%s", settings.PaasHost, config.PaasHostVersion, settings.EnvironmentID, settings.ServiceID, envVar), true, settings)
-}
-
 // RetrieveEnvironmentMetrics fetches metrics for an entire environment for a
 // specified number of minutes.
 func RetrieveEnvironmentMetrics(mins int, settings *models.Settings) *[]models.Metrics {
