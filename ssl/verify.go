@@ -11,9 +11,7 @@ import (
 	"time"
 )
 
-// VerifyChain takes a chain and ensures it is a full chain optionally ensuring
-// the given private key matches that chain.
-func VerifyChain(chainPath string, privateKeyPath string, hostname string, selfSigned bool) {
+func CmdVerify(chainPath, privateKeyPath, hostname string, selfSigned bool, is ISSL) error {
 	if _, err := os.Stat(chainPath); os.IsNotExist(err) {
 		fmt.Printf("A cert does not exist at path '%s'\n", chainPath)
 		os.Exit(1)
@@ -22,6 +20,17 @@ func VerifyChain(chainPath string, privateKeyPath string, hostname string, selfS
 		fmt.Printf("A private key does not exist at path '%s'\n", chainPath)
 		os.Exit(1)
 	}
+	err := is.Verify(chainPath, privateKeyPath, hostname, selfSigned)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Certificate chain and key are valid")
+	return nil
+}
+
+// Verify takes a chain and ensures it is a full chain optionally ensuring
+// the given private key matches that chain.
+func (s *SSSL) Verify(chainPath, privateKeyPath, hostname string, selfSigned bool) error {
 	cert, err := tls.LoadX509KeyPair(chainPath, privateKeyPath)
 	if err != nil {
 		panic(err)
@@ -53,7 +62,7 @@ func VerifyChain(chainPath string, privateKeyPath string, hostname string, selfS
 		outputCertInfo(x509Cert)
 		warnOnExpired(x509Cert)
 	}
-	fmt.Println("Certificate chain and key are valid")
+	return nil
 }
 
 func outputCertInfo(cert *x509.Certificate) {

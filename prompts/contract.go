@@ -5,6 +5,7 @@ package prompts
 type IPrompts interface {
 	UsernamePassword() (string, string, error)
 	PHI() error
+	YesNo(msg string) error
 }
 
 // SPrompts is a concrete implementation of IPrompts
@@ -23,5 +24,11 @@ func (p *SPrompts) UsernamePassword() (string, string, error) {
 // PHI prompts a user to accept liability for downloading PHI to their local
 // machine.
 func (p *SPrompts) PHI() error {
+	return nil
+}
+
+// PHI prompts a user to accept liability for downloading PHI to their local
+// machine.
+func (p *SPrompts) YesNo(msg string) error {
 	return nil
 }

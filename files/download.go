@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/catalyzeio/cli/helpers"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/services"
 )
@@ -15,24 +16,27 @@ import (
 // If those permissions cannot be applied, the default 0644 permissions are
 // applied. If not output file is specified, the file and permissions are
 // printed to stdout.
-func CmdDownload(ifiles IFiles, is services.IServices) error {
-	service, err := is.RetrieveByLabel()
+func CmdDownload(svcName, fileName, output string, force bool, ifiles IFiles, is services.IServices) error {
+	if output != "" && !force {
+		if _, err := os.Stat(output); err == nil {
+			return fmt.Errorf("File already exists at path '%s'. Specify `--force` to overwrite\n", output)
+		}
+	}
+	service, err := is.RetrieveByLabel(svcName)
 	if err != nil {
 		return err
 	}
 	if service == nil {
-		// TODO return fmt.Errorf("Could not find a service with the name \"%s\"\n", serviceName)
-		return fmt.Errorf("Could not find a service with the specified name")
+		return fmt.Errorf("Could not find a service with the name \"%s\"\n", svcName)
 	}
-	file, err := ifiles.Retrieve()
+	file, err := ifiles.Retrieve(fileName, service)
 	if err != nil {
 		return err
 	}
 	if file == nil {
-		// TODO return fmt.Errorf("File with name %s does not exist. Try listing files again by running \"catalyze files list\"\n", fileName)
-		return fmt.Errorf("File with the specified name does not exist. Try listing files again by running \"catalyze files list\"")
+		return fmt.Errorf("File with name %s does not exist. Try listing files again by running \"catalyze files list\"\n", fileName)
 	}
-	err = ifiles.Save(file)
+	err = ifiles.Save(output, force, file)
 	if err != nil {
 		return err
 	}
@@ -88,28 +92,38 @@ func CmdDownload(ifiles IFiles, is services.IServices) error {
 	wr.Write([]byte(file.Contents))*/
 }
 
-func (f *SFiles) Retrieve() (*models.ServiceFile, error) {
-	// TODO this
-	return nil, nil
+func (f *SFiles) Retrieve(fileName string, service *models.Service) (*models.ServiceFile, error) {
+	var file *models.ServiceFile
+	files, err := f.List()
+	if err != nil {
+		return nil, err
+	}
+	for _, ff := range *files {
+		if ff.Name == fileName {
+			file = helpers.RetrieveServiceFile(service.ID, ff.ID, f.Settings)
+			break
+		}
+	}
+	return file, nil
 }
 
-func (f *SFiles) Save(file *models.ServiceFile) error {
+func (f *SFiles) Save(output string, force bool, file *models.ServiceFile) error {
 	filePerms, err := strconv.ParseUint(file.Mode, 8, 32)
 	if err != nil {
 		filePerms = 0644
 	}
 
 	var wr io.Writer
-	if f.Output != "" {
-		if f.Force {
-			os.Remove(f.Output)
+	if output != "" {
+		if force {
+			os.Remove(output)
 		}
-		outFile, err := os.OpenFile(f.Output, os.O_CREATE|os.O_RDWR, os.FileMode(filePerms))
+		outFile, err := os.OpenFile(output, os.O_CREATE|os.O_RDWR, os.FileMode(filePerms))
 		if err != nil {
 			fmt.Printf("Warning! Could not apply %s file permissions. Attempting to apply defaults %s\n", fileModeToRWXString(filePerms), fileModeToRWXString(uint64(0644)))
-			outFile, err = os.OpenFile(f.Output, os.O_CREATE|os.O_RDWR, 0644)
+			outFile, err = os.OpenFile(output, os.O_CREATE|os.O_RDWR, 0644)
 			if err != nil {
-				return fmt.Errorf("Could not open %s for writing: %s\n", f.Output, err.Error())
+				return fmt.Errorf("Could not open %s for writing: %s\n", output, err.Error())
 			}
 		}
 		defer outFile.Close()

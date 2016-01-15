@@ -11,14 +11,13 @@ import (
 // CmdList lists all service files that are able to be downloaded
 // by a member of the environment. Typically service files of interest
 // will be on the service_proxy.
-func CmdList(ifiles IFiles, is services.IServices) error {
-	service, err := is.RetrieveByLabel()
+func CmdList(svcName string, ifiles IFiles, is services.IServices) error {
+	service, err := is.RetrieveByLabel(svcName)
 	if err != nil {
 		return err
 	}
 	if service == nil {
-		// TODO return fmt.Errorf("Could not find a service with the name \"%s\"\n", serviceName)
-		return fmt.Errorf("Could not find a service with the specified name")
+		return fmt.Errorf("Could not find a service with the name \"%s\"\n", svcName)
 	}
 	files, err := ifiles.List()
 	if err != nil {

@@ -1,14 +1,13 @@
 package logout
 
-import (
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/models"
-)
+func CmdLogout(il ILogout) error {
+	return il.Logout()
+}
 
 // Logout clears the stored user information from the local machine. This does
 // not remove environment data.
-func Logout(settings *models.Settings) {
-	settings.SessionToken = ""
-	settings.UsersID = ""
-	config.SaveSettings(settings)
+func (l *SLogout) Logout() error {
+	l.Settings.SessionToken = ""
+	l.Settings.UsersID = ""
+	return nil
 }
