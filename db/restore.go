@@ -1,15 +1,7 @@
 package db
 
-import (
-	"fmt"
-	"os"
-
-	"github.com/catalyzeio/cli/helpers"
-	"github.com/catalyzeio/cli/models"
-)
-
 // RestoreBackup a database service from an existing backup
-func RestoreBackup(serviceLabel string, backupID string, skipPoll bool, settings *models.Settings) {
+/*func RestoreBackup(serviceLabel string, backupID string, skipPoll bool, settings *models.Settings) {
 	helpers.SignIn(settings)
 	service := helpers.RetrieveServiceByLabel(serviceLabel, settings)
 	if service == nil {
@@ -30,4 +22,4 @@ func RestoreBackup(serviceLabel string, backupID string, skipPoll bool, settings
 			os.Exit(1)
 		}
 	}
-}
+}*/

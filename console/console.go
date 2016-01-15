@@ -12,21 +12,30 @@ import (
 	"golang.org/x/net/websocket"
 
 	"github.com/catalyzeio/cli/helpers"
+	"github.com/catalyzeio/cli/models"
+	"github.com/catalyzeio/cli/services"
 	"github.com/docker/docker/pkg/term"
 )
+
+func CmdConsole(svcName, command string, ic IConsole, is services.IServices) error {
+	service, err := is.RetrieveByLabel(svcName)
+	if err != nil {
+		return err
+	}
+	if service == nil {
+		return fmt.Errorf("Could not find a service with the name \"%s\"\n", svcName)
+	}
+	return ic.Open(command, service)
+}
 
 // Open opens a secure console to a code or database service. For code
 // services, a command is required. This command is executed as root in the
 // context of the application root directory. For database services, no command
 // is needed - instead, the appropriate command for the database type is run.
 // For example, for a postgres database, psql is run.
-func (c *SConsole) Open() error {
-	service := helpers.RetrieveServiceByLabel(c.SvcName, c.Settings)
-	if service == nil {
-		return fmt.Errorf("Could not find a service with the name \"%s\"\n", c.SvcName)
-	}
-	fmt.Printf("Opening console to %s (%s)\n", c.SvcName, service.ID)
-	task := helpers.RequestConsole(c.Command, service.ID, c.Settings)
+func (c *SConsole) Open(command string, service *models.Service) error {
+	fmt.Printf("Opening console to %s (%s)\n", service.Name, service.ID)
+	task := helpers.RequestConsole(command, service.ID, c.Settings)
 	fmt.Print("Waiting for the console to be ready. This might take a minute.")
 
 	ch := make(chan string, 1)

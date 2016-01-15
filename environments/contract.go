@@ -17,8 +17,7 @@ var Cmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {
-				ie := New(settings, "")
-				err := CmdEnvironments(ie)
+				err := CmdEnvironments(New(settings))
 				if err != nil {
 					fmt.Println(err.Error())
 					os.Exit(1)
@@ -31,23 +30,17 @@ var Cmd = models.Command{
 // IEnvironments is an interface for interacting with environments
 type IEnvironments interface {
 	List() (*[]models.Environment, error)
-	//Retrieve() (*models.Environment, error)
-
 	Retrieve(envID string) (*models.Environment, error)
 }
 
 // SEnvironments is a concrete implementation of IEnvironments
 type SEnvironments struct {
 	Settings *models.Settings
-
-	EnvID string
 }
 
 // New generates a new instance of IEnvironments
-func New(settings *models.Settings, envID string) IEnvironments {
+func New(settings *models.Settings) IEnvironments {
 	return &SEnvironments{
 		Settings: settings,
-
-		EnvID: envID,
 	}
 }

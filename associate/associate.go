@@ -13,12 +13,11 @@ import (
 	"github.com/catalyzeio/cli/models"
 )
 
-func CmdAssociate(ia IAssociate, ig git.IGit, ie environments.IEnvironments) error {
-	if !s.Git.Exists() {
+func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia IAssociate, ig git.IGit, ie environments.IEnvironments) error {
+	if !ig.Exists() {
 		return errors.New("No git repo found in the current directory")
 	}
-	// TODO fmt.Printf("Existing git remotes named \"%s\" will be overwritten\n", s.Remote)
-	fmt.Printf("Existing git remotes will be overwritten\n", s.Remote)
+	fmt.Printf("Existing git remotes named \"%s\" will be overwritten\n", remote)
 	envs, err := ie.List()
 	if err != nil {
 		return err
@@ -26,7 +25,7 @@ func CmdAssociate(ia IAssociate, ig git.IGit, ie environments.IEnvironments) err
 	var e *models.Environment
 	for _, env := range *envs {
 		fmt.Printf("\n\nassociate env %+v\n\n", env)
-		if env.Name == s.EnvLabel {
+		if env.Name == envLabel {
 			pod := env.Pod
 			e, err = ie.Retrieve(env.ID)
 			if err != nil {
@@ -40,61 +39,67 @@ func CmdAssociate(ia IAssociate, ig git.IGit, ie environments.IEnvironments) err
 		}
 	}
 	if e == nil {
-		// TODO return fmt.Errorf("No environment with label \"%s\" found\n", s.EnvLabel)
-		return fmt.Errorf("No environment with given name was found")
+		return fmt.Errorf("No environment with label \"%s\" found\n", envLabel)
 	}
 
-	var chosenService models.Service
+	var chosenService *models.Service
 	availableCodeServices := []string{}
 	for _, service := range *e.Services {
 		if service.Type == "code" {
-			if service.Label == s.SvcLabel {
-				chosenService = service
+			if service.Label == svcLabel {
+				chosenService = &service
 				break
 			}
 			availableCodeServices = append(availableCodeServices, service.Label)
 		}
 	}
-	if chosenService.Type == "" {
-		return fmt.Errorf("No code service found with name '%s'. Code services found: %s\n", s.SvcLabel, strings.Join(availableCodeServices, ", "))
+	if chosenService == nil {
+		return fmt.Errorf("No code service found with name '%s'. Code services found: %s\n", svcLabel, strings.Join(availableCodeServices, ", "))
 	}
-	remotes, err := s.Git.List()
+	remotes, err := ig.List()
 	if err != nil {
 		return err
 	}
 	for _, r := range remotes {
-		if r == s.Remote {
-			s.Git.Rm(s.Remote)
+		if r == remote {
+			ig.Rm(remote)
 			break
 		}
 	}
-	err = s.Git.Add(s.Remote, chosenService.Source)
+	err = ig.Add(remote, chosenService.Source)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("\"%s\" remote added.\n", s.Remote)
+	fmt.Printf("\"%s\" remote added.\n", remote)
 
+	name := alias
+	if name == "" {
+		name = envLabel
+	}
+	err = ia.Associate(name, remote, defaultEnv, e, chosenService)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Your git repository \"%s\"  has been associated with code service \"%s\" and environment \"%s\"\n", remote, svcLabel, name)
+	return nil
 }
 
 // Associate an environment so that commands can be run against it. This command
 // no longer adds a git remote. See commands.AddRemote().
-func (s *SAssociate) Associate() error {
+func (s *SAssociate) Associate(name, remote string, defaultEnv bool, env *models.Environment, chosenService *models.Service) error {
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
 		return err
 	}
-	name := s.Alias
-	if name == "" {
-		name = s.EnvLabel
-	}
+
 	s.Settings.Environments[name] = models.AssociatedEnv{
 		EnvironmentID: env.ID,
 		ServiceID:     chosenService.ID,
 		Directory:     dir,
-		Name:          s.EnvLabel,
+		Name:          env.Name,
 		Pod:           env.Pod,
 	}
-	if s.DefaultEnv {
+	if defaultEnv {
 		s.Settings.Default = name
 	}
 	config.DropBreadcrumb(name, s.Settings)
@@ -102,6 +107,6 @@ func (s *SAssociate) Associate() error {
 	if len(s.Settings.Environments) > 1 && s.Settings.Default == "" {
 		fmt.Printf("You now have %d environments associated. Consider running \"catalyze default ENV_NAME\" to set a default\n", len(s.Settings.Environments))
 	}
-	fmt.Printf("Your git repository \"%s\"  has been associated with code service \"%s\" and environment \"%s\"\n", s.Remote, s.SvcLabel, name)
+
 	return nil
 }

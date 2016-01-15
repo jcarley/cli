@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/catalyzeio/cli/models"
+	"github.com/catalyzeio/cli/services"
 	"github.com/jawher/mow.cli"
 )
 
@@ -19,8 +20,7 @@ var Cmd = models.Command{
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to open up a console for")
 			command := cmd.StringArg("COMMAND", "", "An optional command to run when the console becomes available")
 			cmd.Action = func() {
-				ic := New(settings, *serviceName, *command)
-				err := ic.Open()
+				err := CmdConsole(*serviceName, *command, New(settings), services.New(settings))
 				if err != nil {
 					fmt.Println(err.Error())
 					os.Exit(1)
@@ -33,22 +33,17 @@ var Cmd = models.Command{
 
 // IConsole
 type IConsole interface {
-	Open() error
+	Open(command string, service *models.Service) error
 }
 
 // SConsole is a concrete implementation of IConsole
 type SConsole struct {
 	Settings *models.Settings
-
-	SvcName string
-	Command string
 }
 
 // New returns an instance of IConsole
-func New(settings *models.Settings, svcName, command string) IConsole {
+func New(settings *models.Settings) IConsole {
 	return &SConsole{
 		Settings: settings,
-		SvcName:  svcName,
-		Command:  command,
 	}
 }

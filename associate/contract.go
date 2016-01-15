@@ -31,8 +31,7 @@ var Cmd = models.Command{
 					settings.Pods = helpers.ListPods(settings)
 					fmt.Println(settings.Pods)
 				}
-				ia := New(settings, git.New(), environments.New(settings), *envName, *serviceName, *alias, *remote, *defaultEnv)
-				err := CmdAssociate(*envName, *serviceName, *alias, *remote, *defaultEnv, ia, ig, ie)
+				err := CmdAssociate(*envName, *serviceName, *alias, *remote, *defaultEnv, New(settings), git.New(), environments.New(settings))
 				if err != nil {
 					fmt.Println(err.Error())
 					os.Exit(1)
@@ -45,32 +44,16 @@ var Cmd = models.Command{
 
 // interfaces are the API calls
 type IAssociate interface {
-	Associate() error
+	Associate(name, remote string, defaultEnv bool, env *models.Environment, chosenService *models.Service) error
 }
 
 // SAssociate is a concrete implementation of IAssociate
 type SAssociate struct {
-	Settings     *models.Settings
-	Git          git.IGit
-	Environments environments.IEnvironments
-
-	EnvLabel   string
-	SvcLabel   string
-	Alias      string
-	Remote     string
-	DefaultEnv bool
+	Settings *models.Settings
 }
 
-func New(settings *models.Settings, git git.IGit, environments environments.IEnvironments, envLabel, svcLabel, alias, remote string, defaultEnv bool) IAssociate {
+func New(settings *models.Settings) IAssociate {
 	return &SAssociate{
-		Settings:     settings,
-		Git:          git,
-		Environments: environments,
-
-		EnvLabel:   envLabel,
-		SvcLabel:   svcLabel,
-		Alias:      alias,
-		Remote:     remote,
-		DefaultEnv: defaultEnv,
+		Settings: settings,
 	}
 }

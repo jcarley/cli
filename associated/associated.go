@@ -2,6 +2,10 @@ package associated
 
 import "fmt"
 
+func CmdAssociated(ia IAssociated) error {
+	return ia.Associated()
+}
+
 // Associated lists all currently associated environments.
 func (a *SAssociated) Associated() error {
 	for envAlias, env := range a.Settings.Environments {

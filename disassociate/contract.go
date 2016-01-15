@@ -16,10 +16,9 @@ var Cmd = models.Command{
 	LongHelp:  "Remove the association with an environment",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			envAlias := cmd.StringArg("ENV_ALIAS", "", "The alias of an already associated environment to disassociate")
+			alias := cmd.StringArg("ENV_ALIAS", "", "The alias of an already associated environment to disassociate")
 			cmd.Action = func() {
-				id := New(settings, *envAlias)
-				err := id.Disassociate()
+				err := CmdDisassociate(*alias, New(settings))
 				if err != nil {
 					fmt.Println(err.Error())
 					os.Exit(1)
@@ -32,20 +31,17 @@ var Cmd = models.Command{
 
 // IDisassociate
 type IDisassociate interface {
-	Disassociate() error
+	Disassociate(alias string) error
 }
 
 // SDisassociate is a concrete implementation of IDisassociate
 type SDisassociate struct {
 	Settings *models.Settings
-
-	Alias string
 }
 
 // New returns an instance of IDisassociate
-func New(settings *models.Settings, alias string) IDisassociate {
+func New(settings *models.Settings) IDisassociate {
 	return &SDisassociate{
 		Settings: settings,
-		Alias:    alias,
 	}
 }

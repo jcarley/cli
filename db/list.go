@@ -6,7 +6,32 @@ import (
 
 	"github.com/catalyzeio/cli/helpers"
 	"github.com/catalyzeio/cli/models"
+	"github.com/catalyzeio/cli/services"
 )
+
+func CmdList(databaseName string, page, pageSize int, id IDb, is services.IServices) error {
+	service, err := is.RetrieveByLabel(databaseName)
+	if err != nil {
+		return err
+	}
+	if service == nil {
+		return fmt.Errorf("Could not find a service with the label \"%s\"\n", databaseName)
+	}
+	jobs, err := id.List(page, pageSize, service)
+	if err != nil {
+		return err
+	}
+	for _, job := range *jobs {
+		fmt.Printf("%s %s (status = %s)\n", job.ID, job.CreatedAt, job.Status)
+	}
+	if len(*jobs) == pageSize && page == 1 {
+		fmt.Println("(for older backups, try with --page 2 or adjust --page-size)")
+	}
+	if len(*jobs) == 0 && page == 1 {
+		fmt.Println("No backups created yet for this service.")
+	}
+	return nil
+}
 
 // SortedJobs is a wrapper for Jobs array in order to sort them by CreatedAt
 // for the ListBackups command
@@ -25,21 +50,8 @@ func (jobs SortedJobs) Less(i, j int) bool {
 }
 
 // List lists the created backups for the service sorted from oldest to newest
-func (d *SDb) List() error {
-	service := helpers.RetrieveServiceByLabel(d.DatabaseName, d.Settings)
-	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\"\n", d.DatabaseName)
-	}
-	jobs := helpers.ListBackups(service.ID, d.Page, d.PageSize, d.Settings)
+func (d *SDb) List(page, pageSize int, service *models.Service) (*[]models.Job, error) {
+	jobs := helpers.ListBackups(service.ID, page, pageSize, d.Settings)
 	sort.Sort(SortedJobs(*jobs))
-	for _, job := range *jobs {
-		fmt.Printf("%s %s (status = %s)\n", job.ID, job.CreatedAt, job.Status)
-	}
-	if len(*jobs) == d.PageSize && d.Page == 1 {
-		fmt.Println("(for older backups, try with --page 2 or adjust --page-size)")
-	}
-	if len(*jobs) == 0 && d.Page == 1 {
-		fmt.Println("No backups created yet for this service.")
-	}
-	return nil
+	return jobs, nil
 }

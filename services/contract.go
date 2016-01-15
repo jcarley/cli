@@ -17,8 +17,7 @@ var Cmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {
-				is := New(settings, "", "")
-				err := CmdServices(is)
+				err := CmdServices(New(settings))
 				if err != nil {
 					fmt.Println(err.Error())
 					os.Exit(1)
@@ -31,24 +30,18 @@ var Cmd = models.Command{
 // IServices
 type IServices interface {
 	List() (*[]models.Service, error)
-	Retrieve() (*models.Service, error)
-	RetrieveByLabel() (*models.Service, error)
+	Retrieve(svcID string) (*models.Service, error)
+	RetrieveByLabel(label string) (*models.Service, error)
 }
 
 // SServices is a concrete implementation of IServices
 type SServices struct {
 	Settings *models.Settings
-
-	SvcID    string
-	SvcLabel string
 }
 
 // New generates a new instance of IServices
-func New(settings *models.Settings, svcID string, svcLabel string) IServices {
+func New(settings *models.Settings) IServices {
 	return &SServices{
 		Settings: settings,
-
-		SvcID:    svcID,
-		SvcLabel: svcLabel,
 	}
 }

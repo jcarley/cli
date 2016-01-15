@@ -23,10 +23,10 @@ func (s *SServices) List() (*[]models.Service, error) {
 	return nil, nil
 }
 
-func (s *SServices) Retrieve() (*models.Service, error) {
+func (s *SServices) Retrieve(svcID string) (*models.Service, error) {
 	return nil, nil
 }
 
-func (s *SServices) RetrieveByLabel() (*models.Service, error) {
+func (s *SServices) RetrieveByLabel(label string) (*models.Service, error) {
 	return nil, nil
 }

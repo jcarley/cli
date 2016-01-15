@@ -17,8 +17,7 @@ var Cmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {
-				id := New(settings)
-				err := id.Open()
+				err := CmdDashboard(New(settings))
 				if err != nil {
 					fmt.Println(err.Error())
 					os.Exit(1)

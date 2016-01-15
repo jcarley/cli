@@ -16,10 +16,9 @@ var Cmd = models.Command{
 	LongHelp:  "Set the default associated environment",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			envAlias := cmd.StringArg("ENV_ALIAS", "", "The alias of an already associated environment to set as the default")
+			alias := cmd.StringArg("ENV_ALIAS", "", "The alias of an already associated environment to set as the default")
 			cmd.Action = func() {
-				id := New(settings, *envAlias)
-				err := id.Set()
+				err := CmdDefault(*alias, New(settings))
 				if err != nil {
 					fmt.Println(err.Error())
 					os.Exit(1)
@@ -32,20 +31,17 @@ var Cmd = models.Command{
 
 // IDefault
 type IDefault interface {
-	Set() error
+	Set(alias string) error
 }
 
 // SDefault is a concrete implementation of IDefault
 type SDefault struct {
 	Settings *models.Settings
-
-	Alias string
 }
 
 // New returns an instance of IDefault
-func New(settings *models.Settings, alias string) IDefault {
+func New(settings *models.Settings) IDefault {
 	return &SDefault{
 		Settings: settings,
-		Alias:    alias,
 	}
 }
