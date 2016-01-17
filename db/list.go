@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/catalyzeio/cli/helpers"
+	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/services"
 )
@@ -51,7 +51,21 @@ func (jobs SortedJobs) Less(i, j int) bool {
 
 // List lists the created backups for the service sorted from oldest to newest
 func (d *SDb) List(page, pageSize int, service *models.Service) (*[]models.Job, error) {
-	jobs := helpers.ListBackups(service.ID, page, pageSize, d.Settings)
-	sort.Sort(SortedJobs(*jobs))
-	return jobs, nil
+	headers := httpclient.GetHeaders(d.Settings.APIKey, d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/backup?pageNum=%d&pageSize=%d", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID, page, pageSize), headers)
+	if err != nil {
+		return nil, err
+	}
+	var jobsMap map[string]models.Job
+	err = httpclient.ConvertResp(resp, statusCode, &jobsMap)
+	if err != nil {
+		return nil, err
+	}
+	var jobs []models.Job
+	for jobID, job := range jobsMap {
+		job.ID = jobID
+		jobs = append(jobs, job)
+	}
+	sort.Sort(SortedJobs(jobs))
+	return &jobs, nil
 }

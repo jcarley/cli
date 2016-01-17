@@ -3,7 +3,7 @@ package invites
 import (
 	"fmt"
 
-	"github.com/catalyzeio/cli/helpers"
+	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
 
@@ -27,5 +27,15 @@ func CmdList(envName string, ii IInvites) error {
 // invite is accepted, you can manage the users access with the `users`
 // commands.
 func (i *SInvites) List() (*[]models.Invite, error) {
-	return helpers.ListEnvironmentInvites(i.Settings), nil
+	headers := httpclient.GetHeaders(i.Settings.APIKey, i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/invites", i.Settings.PaasHost, i.Settings.PaasHostVersion, i.Settings.EnvironmentID), headers)
+	if err != nil {
+		return nil, err
+	}
+	var invites []models.Invite
+	err = httpclient.ConvertResp(resp, statusCode, &invites)
+	if err != nil {
+		return nil, err
+	}
+	return &invites, nil
 }

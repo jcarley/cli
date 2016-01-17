@@ -28,6 +28,7 @@ import (
 	"github.com/catalyzeio/cli/supportids"
 	"github.com/catalyzeio/cli/update"
 	"github.com/catalyzeio/cli/updater"
+	"github.com/catalyzeio/cli/users"
 	"github.com/catalyzeio/cli/vars"
 	"github.com/catalyzeio/cli/whoami"
 	"github.com/catalyzeio/cli/worker"
@@ -133,6 +134,7 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.Command(status.Cmd.Name, status.Cmd.ShortHelp, status.Cmd.CmdFunc(settings))
 	app.Command(supportids.Cmd.Name, supportids.Cmd.ShortHelp, supportids.Cmd.CmdFunc(settings))
 	app.Command(update.Cmd.Name, update.Cmd.ShortHelp, update.Cmd.CmdFunc(settings))
+	app.Command(users.Cmd.Name, users.Cmd.ShortHelp, users.Cmd.CmdFunc(settings))
 	app.Command(vars.Cmd.Name, vars.Cmd.ShortHelp, vars.Cmd.CmdFunc(settings))
 	app.Command(whoami.Cmd.Name, whoami.Cmd.ShortHelp, whoami.Cmd.CmdFunc(settings))
 	app.Command(worker.Cmd.Name, worker.Cmd.ShortHelp, worker.Cmd.CmdFunc(settings))

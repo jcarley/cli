@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/catalyzeio/cli/helpers"
+	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/prompts"
 	"github.com/catalyzeio/cli/services"
@@ -43,30 +43,53 @@ func CmdDownload(databaseName, backupID, filePath string, force bool, id IDb, ip
 // Download an existing backup to the local machine. The backup is encrypted
 // throughout the entire journey and then decrypted once it is stored locally.
 func (d *SDb) Download(backupID, filePath string, service *models.Service) error {
-	job := helpers.RetrieveJob(backupID, service.ID, d.Settings)
+	job, err := d.Jobs.Retrieve(backupID)
+	if err != nil {
+		return err
+	}
 	if job.Type != "backup" || job.Status != "finished" {
 		fmt.Println("Only 'finished' 'backup' jobs may be downloaded")
 	}
 	fmt.Printf("Downloading backup %s\n", backupID)
-	tempURL := helpers.RetrieveTempURL(backupID, service.ID, d.Settings)
-	dir, dirErr := ioutil.TempDir("", "")
-	if dirErr != nil {
-		return dirErr
+	tempURL, err := d.TempDownloadURL(backupID, service)
+	if err != nil {
+		return err
+	}
+	dir, err := ioutil.TempDir("", "")
+	if err != nil {
+		return err
 	}
 	defer os.Remove(dir)
-	tmpFile, tmpFileErr := ioutil.TempFile(dir, "")
-	if tmpFileErr != nil {
-		return tmpFileErr
+	tmpFile, err := ioutil.TempFile(dir, "")
+	if err != nil {
+		return err
 	}
-	resp, respErr := http.Get(tempURL.URL)
-	if respErr != nil {
-		return respErr
+	resp, err := http.Get(tempURL.URL)
+	if err != nil {
+		return err
 	}
 	defer resp.Body.Close()
 	io.Copy(tmpFile, resp.Body)
 	tmpFile.Close()
 	fmt.Println("Decrypting...")
-	helpers.DecryptFile(tmpFile.Name(), job.Backup.Key, job.Backup.IV, filePath)
+	err = d.Crypto.DecryptFile(tmpFile.Name(), job.Backup.Key, job.Backup.IV, filePath)
+	if err != nil {
+		return err
+	}
 
 	return nil
+}
+
+func (d *SDb) TempDownloadURL(jobID string, service *models.Service) (*models.TempURL, error) {
+	headers := httpclient.GetHeaders(d.Settings.APIKey, d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/backup/%s/url", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID, jobID), headers)
+	if err != nil {
+		return nil, err
+	}
+	var tempURL models.TempURL
+	err = httpclient.ConvertResp(resp, statusCode, &tempURL)
+	if err != nil {
+		return nil, err
+	}
+	return &tempURL, nil
 }

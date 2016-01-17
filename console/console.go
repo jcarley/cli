@@ -2,6 +2,7 @@ package console
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -11,7 +12,7 @@ import (
 
 	"golang.org/x/net/websocket"
 
-	"github.com/catalyzeio/cli/helpers"
+	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/services"
 	"github.com/docker/docker/pkg/term"
@@ -35,14 +36,21 @@ func CmdConsole(svcName, command string, ic IConsole, is services.IServices) err
 // For example, for a postgres database, psql is run.
 func (c *SConsole) Open(command string, service *models.Service) error {
 	fmt.Printf("Opening console to %s (%s)\n", service.Name, service.ID)
-	task := helpers.RequestConsole(command, service.ID, c.Settings)
+	task, err := c.Request(command, service)
+	if err != nil {
+		return err
+	}
 	fmt.Print("Waiting for the console to be ready. This might take a minute.")
 
-	ch := make(chan string, 1)
-	go helpers.PollConsoleJob(task.ID, service.ID, ch, c.Settings)
-	jobID := <-ch
-	defer helpers.DestroyConsole(jobID, service.ID, c.Settings)
-	creds := helpers.RetrieveConsoleTokens(jobID, service.ID, c.Settings)
+	jobID, err := c.Tasks.PollForConsole(task, service)
+	if err != nil {
+		return err
+	}
+	defer c.Destroy(jobID, service)
+	creds, err := c.RetrieveTokens(jobID, service)
+	if err != nil {
+		return err
+	}
 
 	creds.URL = strings.Replace(creds.URL, "http", "ws", 1)
 	fmt.Println("Connecting...")
@@ -79,6 +87,53 @@ func (c *SConsole) Open(command string, service *models.Service) error {
 
 	<-done
 	return nil
+}
+
+func (c *SConsole) Request(command string, service *models.Service) (*models.Task, error) {
+	console := map[string]string{}
+	if command != "" {
+		console["command"] = command
+	}
+	b, err := json.Marshal(console)
+	if err != nil {
+		return nil, err
+	}
+	headers := httpclient.GetHeaders(c.Settings.APIKey, c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod)
+	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/console", c.Settings.PaasHost, c.Settings.PaasHostVersion, c.Settings.EnvironmentID, service.ID), headers)
+	if err != nil {
+		return nil, err
+	}
+	var m map[string]string
+	err = httpclient.ConvertResp(resp, statusCode, &m)
+	if err != nil {
+		return nil, err
+	}
+	return &models.Task{
+		ID: m["taskId"],
+	}, nil
+}
+
+func (c *SConsole) RetrieveTokens(jobID string, service *models.Service) (*models.ConsoleCredentials, error) {
+	headers := httpclient.GetHeaders(c.Settings.APIKey, c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/console/token/%s", c.Settings.PaasHost, c.Settings.PaasHostVersion, c.Settings.EnvironmentID, service.ID, jobID), headers)
+	if err != nil {
+		return nil, err
+	}
+	var credentials models.ConsoleCredentials
+	err = httpclient.ConvertResp(resp, statusCode, &credentials)
+	if err != nil {
+		return nil, err
+	}
+	return &credentials, nil
+}
+
+func (c *SConsole) Destroy(jobID string, service *models.Service) error {
+	headers := httpclient.GetHeaders(c.Settings.APIKey, c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod)
+	resp, statusCode, err := httpclient.Delete(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/console/%s", c.Settings.PaasHost, c.Settings.PaasHostVersion, c.Settings.EnvironmentID, service.ID, jobID), headers)
+	if err != nil {
+		return err
+	}
+	return httpclient.ConvertResp(resp, statusCode, nil)
 }
 
 // Reads incoming data from the websocket and forwards it to stdout.

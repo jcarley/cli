@@ -29,7 +29,7 @@ var Cmd = models.Command{
 
 // IAssociated
 type IAssociated interface {
-	Associated() error
+	Associated() (map[string]models.AssociatedEnv, string, error)
 }
 
 // SAssociated is a concrete implementation of IAssociated

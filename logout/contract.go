@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/catalyzeio/cli/auth"
 	"github.com/catalyzeio/cli/models"
+	"github.com/catalyzeio/cli/prompts"
 	"github.com/jawher/mow.cli"
 )
 
@@ -17,7 +19,7 @@ var Cmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {
-				err := CmdLogout(New(settings))
+				err := CmdLogout(New(settings), auth.New(settings, prompts.New()))
 				if err != nil {
 					fmt.Println(err.Error())
 					os.Exit(1)
@@ -29,7 +31,7 @@ var Cmd = models.Command{
 
 // ILogout
 type ILogout interface {
-	Logout() error
+	Clear() error
 }
 
 // SLogout is a concrete implementation of ILogout

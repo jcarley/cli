@@ -22,7 +22,7 @@ func CmdServices(is IServices) error {
 
 func (s *SServices) List() (*[]models.Service, error) {
 	headers := httpclient.GetHeaders(s.Settings.APIKey, s.Settings.SessionToken, s.Settings.Version, s.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services", s.Settings.PaasHost, s.Settings.PaasHostVersion, s.Settings.EnvironmentID), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services", s.Settings.PaasHost, s.Settings.PaasHostVersion, s.Settings.EnvironmentID), headers)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func (s *SServices) List() (*[]models.Service, error) {
 
 func (s *SServices) Retrieve(svcID string) (*models.Service, error) {
 	headers := httpclient.GetHeaders(s.Settings.APIKey, s.Settings.SessionToken, s.Settings.Version, s.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(fmt.Sprintf("%s%s/environments/%s/services/%s", s.Settings.PaasHost, s.Settings.PaasHostVersion, s.Settings.EnvironmentID, s.Settings.ServiceID), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s", s.Settings.PaasHost, s.Settings.PaasHostVersion, s.Settings.EnvironmentID, s.Settings.ServiceID), headers)
 	if err != nil {
 		return nil, err
 	}

@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"encoding/csv"
 	"fmt"
-	"os"
 	"time"
 
-	"github.com/catalyzeio/cli/helpers"
+	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
+	"github.com/catalyzeio/cli/services"
 	ui "gopkg.in/gizak/termui.v1"
 )
 
@@ -19,8 +19,8 @@ type Transformer struct {
 	Stream          bool
 	GroupMode       bool
 	Mins            int
-	GroupRetriever  func(int, *models.Settings) *[]models.Metrics
-	SingleRetriever func(int, *models.Settings) *models.Metrics
+	GroupRetriever  func(int) (*[]models.Metrics, error)
+	SingleRetriever func(int) (*models.Metrics, error)
 	DataTransformer MetricsTransformer
 
 	settings *models.Settings
@@ -44,12 +44,21 @@ func (transformer *Transformer) process() {
 	}
 }
 
-func (transformer *Transformer) transform() {
+func (transformer *Transformer) transform() error {
 	if transformer.GroupMode {
-		transformer.DataTransformer.TransformGroup(transformer.GroupRetriever(transformer.Mins, transformer.settings))
+		data, err := transformer.GroupRetriever(transformer.Mins)
+		if err != nil {
+			return err
+		}
+		transformer.DataTransformer.TransformGroup(data)
 	} else {
-		transformer.DataTransformer.TransformSingle(transformer.SingleRetriever(transformer.Mins, transformer.settings))
+		data, err := transformer.SingleRetriever(transformer.Mins)
+		if err != nil {
+			return err
+		}
+		transformer.DataTransformer.TransformSingle(data)
 	}
+	return nil
 }
 
 // go unfortunately doesn't have anything except comparisons for floats
@@ -62,22 +71,28 @@ func max(a, b int) int {
 
 // CmdMetrics prints out metrics for a given service or if the service is not
 // specified, metrics for the entire environment are printed.
-func CmdMetrics(svcName string, jsonFlag, csvFlag, sparkFlag, streamFlag bool, mins int, im IMetrics) error {
-	return im.Metrics(svcName, jsonFlag, csvFlag, sparkFlag, streamFlag, mins, im)
-}
-
-func (m *SMetrics) Metrics(svcName string, jsonFlag bool, csvFlag bool, sparkFlag bool, streamFlag bool, mins int, im IMetrics) error {
-	if streamFlag && (jsonFlag || csvFlag || mins != 1) {
-		return fmt.Errorf("--stream cannot be used with a custom format and multiple records")
-	}
-	var singleRetriever func(mins int, settings *models.Settings) *models.Metrics
+func CmdMetrics(svcName string, jsonFlag, csvFlag, sparkFlag, streamFlag bool, mins int, im IMetrics, is services.IServices) error {
+	var service *models.Service
 	if svcName != "" {
-		service := helpers.RetrieveServiceByLabel(svcName, m.Settings)
+		service, err := is.RetrieveByLabel(svcName)
+		if err != nil {
+			return err
+		}
 		if service == nil {
 			return fmt.Errorf("Could not find a service with the label \"%s\"\n", svcName)
 		}
+	}
+	return im.Metrics(jsonFlag, csvFlag, sparkFlag, streamFlag, mins, service)
+}
+
+func (m *SMetrics) Metrics(jsonFlag bool, csvFlag bool, sparkFlag bool, streamFlag bool, mins int, service *models.Service) error {
+	if streamFlag && (jsonFlag || csvFlag || mins != 1) {
+		return fmt.Errorf("--stream cannot be used with a custom format and multiple records")
+	}
+	var singleRetriever func(mins int) (*models.Metrics, error)
+	if service != nil {
 		m.Settings.ServiceID = service.ID
-		singleRetriever = helpers.RetrieveServiceMetrics
+		singleRetriever = m.RetrieveServiceMetrics
 	}
 	var transformer Transformer
 	redraw := make(chan bool)
@@ -92,7 +107,7 @@ func (m *SMetrics) Metrics(svcName string, jsonFlag bool, csvFlag bool, sparkFla
 			SingleRetriever: singleRetriever,
 			DataTransformer: &CSVTransformer{
 				HeadersWritten: false,
-				GroupMode:      svcName == "",
+				GroupMode:      service == nil,
 				Buffer:         buffer,
 				Writer:         csv.NewWriter(buffer),
 			},
@@ -104,8 +119,7 @@ func (m *SMetrics) Metrics(svcName string, jsonFlag bool, csvFlag bool, sparkFla
 		mins = 60
 		err := ui.Init()
 		if err != nil {
-			fmt.Println(err.Error())
-			os.Exit(1)
+			return err
 		}
 		defer ui.Close()
 		ui.UseTheme("helloworld")
@@ -130,13 +144,13 @@ func (m *SMetrics) Metrics(svcName string, jsonFlag bool, csvFlag bool, sparkFla
 			DataTransformer: &TextTransformer{},
 		}
 	}
-	transformer.GroupRetriever = helpers.RetrieveEnvironmentMetrics
+	transformer.GroupRetriever = m.RetrieveEnvironmentMetrics
 	transformer.Stream = streamFlag
-	transformer.GroupMode = svcName == ""
+	transformer.GroupMode = service == nil
 	transformer.Mins = mins
 	transformer.settings = m.Settings
 
-	helpers.SignIn(m.Settings)
+	// TODO why is this here? helpers.SignIn(m.Settings)
 
 	if sparkFlag {
 		go transformer.process()
@@ -151,4 +165,32 @@ func (m *SMetrics) Metrics(svcName string, jsonFlag bool, csvFlag bool, sparkFla
 		transformer.process()
 	}
 	return nil
+}
+
+func (m *SMetrics) RetrieveEnvironmentMetrics(mins int) (*[]models.Metrics, error) {
+	headers := httpclient.GetHeaders(m.Settings.APIKey, m.Settings.SessionToken, m.Settings.Version, m.Settings.Pod)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/metrics?mins=%d", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, mins), headers)
+	if err != nil {
+		return nil, err
+	}
+	var metrics []models.Metrics
+	err = httpclient.ConvertResp(resp, statusCode, &metrics)
+	if err != nil {
+		return nil, err
+	}
+	return &metrics, nil
+}
+
+func (m *SMetrics) RetrieveServiceMetrics(mins int) (*models.Metrics, error) {
+	headers := httpclient.GetHeaders(m.Settings.APIKey, m.Settings.SessionToken, m.Settings.Version, m.Settings.Pod)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/metrics/%s?mins=%d", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, m.Settings.ServiceID, mins), headers)
+	if err != nil {
+		return nil, err
+	}
+	var metrics models.Metrics
+	err = httpclient.ConvertResp(resp, statusCode, &metrics)
+	if err != nil {
+		return nil, err
+	}
+	return &metrics, nil
 }

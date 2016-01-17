@@ -3,15 +3,17 @@ package db
 import (
 	"crypto/aes"
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"os"
 
-	"github.com/catalyzeio/cli/helpers"
+	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/services"
+	"github.com/catalyzeio/cli/tasks"
 )
 
-func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id IDb, is services.IServices) error {
+func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id IDb, is services.IServices, it tasks.ITasks) error {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return fmt.Errorf("A file does not exist at path '%s'\n", filePath)
 	}
@@ -23,12 +25,47 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id
 		return fmt.Errorf("Could not find a service with the label \"%s\"\n", databaseName)
 	}
 	fmt.Printf("Backing up \"%s\" before performing the import\n", databaseName)
-	err = id.Backup(false, service)
+	task, err := id.Backup(service)
 	if err != nil {
 		return err
 	}
+	fmt.Printf("Backup started (task ID = %s)\n", task.ID)
+
+	fmt.Print("Polling until backup finishes.")
+	status, err := it.PollForStatus(task)
+	if err != nil {
+		return err
+	}
+	task.Status = status
+	fmt.Printf("\nEnded in status '%s'\n", task.Status)
+	err = id.DumpLogs("backup", task, service)
+	if err != nil {
+		return err
+	}
+	if task.Status != "finished" {
+		return fmt.Errorf("Task finished with invalid status %s\n", task.Status)
+	}
 	fmt.Printf("Importing '%s' into %s (ID = %s)\n", filePath, databaseName, service.ID)
-	return id.Import(filePath, mongoCollection, mongoDatabase, service)
+	task, err = id.Import(filePath, mongoCollection, mongoDatabase, service)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Processing import... (task ID = %s)\n", task.ID)
+
+	status, err = it.PollForStatus(task)
+	if err != nil {
+		return err
+	}
+	task.Status = status
+	fmt.Printf("\nImport complete (end status = '%s')\n", task.Status)
+	err = id.DumpLogs("restore", task, service)
+	if err != nil {
+		return err
+	}
+	if task.Status != "finished" {
+		return fmt.Errorf("Finished with invalid status %s\n", task.Status)
+	}
+	return nil
 }
 
 // Import imports data into a database service. The import is accomplished
@@ -40,13 +77,16 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id
 // PostgreSQL and MySQL, this should be a single `.sql` file. For Mongo, this
 // should be a single tar'ed, gzipped archive (`.tar.gz`) of the database dump
 // that you want to import.
-func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *models.Service) error {
+func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *models.Service) (*models.Task, error) {
 	key := make([]byte, 32)
 	iv := make([]byte, aes.BlockSize)
 	rand.Read(key)
 	rand.Read(iv)
 	fmt.Println("Encrypting...")
-	encrFilePath := helpers.EncryptFile(filePath, key, iv, true)
+	encrFilePath, err := d.Crypto.EncryptFile(filePath, key, iv)
+	if err != nil {
+		return nil, err
+	}
 	defer os.Remove(encrFilePath)
 	options := map[string]string{}
 	if mongoCollection != "" {
@@ -56,20 +96,53 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 		options["mongoDatabase"] = mongoDatabase
 	}
 	fmt.Println("Uploading...")
-	tempURL := helpers.RetrieveTempUploadURL(service.ID, d.Settings)
-
-	wipeFirst := false
-	task := helpers.InitiateImport(tempURL.URL, encrFilePath, string(helpers.Base64Encode(helpers.Hex(key))), string(helpers.Base64Encode(helpers.Hex(iv))), options, wipeFirst, service.ID, d.Settings)
-	fmt.Printf("Processing import... (task ID = %s)\n", task.ID)
-
-	ch := make(chan string, 1)
-	go helpers.PollTaskStatus(task.ID, ch, d.Settings)
-	status := <-ch
-	task.Status = status
-	fmt.Printf("\nImport complete (end status = '%s')\n", task.Status)
-	helpers.DumpLogs(service, task, "restore", d.Settings)
-	if task.Status != "finished" {
-		return fmt.Errorf("Finished with invalid status %s\n", task.Status)
+	tempURL, err := d.TempUploadURL(service)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+
+	headers := httpclient.GetHeaders(d.Settings.APIKey, d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
+	resp, statusCode, err := httpclient.PutFile(encrFilePath, tempURL.URL, headers)
+	if err != nil {
+		return nil, err
+	}
+	err = httpclient.ConvertResp(resp, statusCode, nil)
+	if err != nil {
+		return nil, err
+	}
+	importParams := models.Import{
+		Location:  tempURL.URL,
+		Key:       string(d.Crypto.Base64Encode(d.Crypto.Hex(key))),
+		IV:        string(d.Crypto.Base64Encode(d.Crypto.Hex(iv))),
+		WipeFirst: false,
+		Options:   options,
+	}
+	b, err := json.Marshal(importParams)
+	if err != nil {
+		return nil, err
+	}
+	resp, statusCode, err = httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/db/import", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
+	if err != nil {
+		return nil, err
+	}
+	var task models.Task
+	err = httpclient.ConvertResp(resp, statusCode, &task)
+	if err != nil {
+		return nil, err
+	}
+	return &task, nil
+}
+
+func (d *SDb) TempUploadURL(service *models.Service) (*models.TempURL, error) {
+	headers := httpclient.GetHeaders(d.Settings.APIKey, d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/restore/url", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
+	if err != nil {
+		return nil, err
+	}
+	var tempURL models.TempURL
+	err = httpclient.ConvertResp(resp, statusCode, &tempURL)
+	if err != nil {
+		return nil, err
+	}
+	return &tempURL, nil
 }

@@ -20,7 +20,7 @@ func CmdUnset(key string, iv IVars) error {
 // or via `catalyze redeploy`.
 func (v *SVars) Unset(variable string) error {
 	headers := httpclient.GetHeaders(v.Settings.APIKey, v.Settings.SessionToken, v.Settings.Version, v.Settings.Pod)
-	resp, statusCode, err := httpclient.Delete(fmt.Sprintf("%s%s/environments/%s/services/%s/env/%s", v.Settings.PaasHost, v.Settings.PaasHostVersion, v.Settings.EnvironmentID, v.Settings.ServiceID, variable), headers)
+	resp, statusCode, err := httpclient.Delete(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/env/%s", v.Settings.PaasHost, v.Settings.PaasHostVersion, v.Settings.EnvironmentID, v.Settings.ServiceID, variable), headers)
 	if err != nil {
 		return err
 	}

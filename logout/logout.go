@@ -1,12 +1,18 @@
 package logout
 
-func CmdLogout(il ILogout) error {
-	return il.Logout()
+import "github.com/catalyzeio/cli/auth"
+
+func CmdLogout(il ILogout, ia auth.IAuth) error {
+	err := ia.Signout()
+	if err != nil {
+		return err
+	}
+	return il.Clear()
 }
 
-// Logout clears the stored user information from the local machine. This does
+// Clear clears the stored user information from the local machine. This does
 // not remove environment data.
-func (l *SLogout) Logout() error {
+func (l *SLogout) Clear() error {
 	l.Settings.SessionToken = ""
 	l.Settings.UsersID = ""
 	return nil

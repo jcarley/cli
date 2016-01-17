@@ -1,14 +1,17 @@
 package associated
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/catalyzeio/cli/models"
+)
 
 func CmdAssociated(ia IAssociated) error {
-	return ia.Associated()
-}
-
-// Associated lists all currently associated environments.
-func (a *SAssociated) Associated() error {
-	for envAlias, env := range a.Settings.Environments {
+	envs, defaultEnv, err := ia.Associated()
+	if err != nil {
+		return err
+	}
+	for envAlias, env := range envs {
 		fmt.Printf(`%s:
     Environment ID:   %s
     Environment Name: %s
@@ -16,10 +19,15 @@ func (a *SAssociated) Associated() error {
     Associated at:    %s
     Default:          %v
     Pod:              %s
-`, envAlias, env.EnvironmentID, env.Name, env.ServiceID, env.Directory, a.Settings.Default == envAlias, env.Pod)
+`, envAlias, env.EnvironmentID, env.Name, env.ServiceID, env.Directory, defaultEnv == envAlias, env.Pod)
 	}
-	if len(a.Settings.Environments) == 0 {
+	if len(envs) == 0 {
 		fmt.Println("No environments have been associated")
 	}
 	return nil
+}
+
+// Associated lists all currently associated environments.
+func (a *SAssociated) Associated() (map[string]models.AssociatedEnv, string, error) {
+	return a.Settings.Environments, a.Settings.Default, nil
 }

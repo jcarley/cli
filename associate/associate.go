@@ -103,7 +103,6 @@ func (s *SAssociate) Associate(name, remote string, defaultEnv bool, env *models
 		s.Settings.Default = name
 	}
 	config.DropBreadcrumb(name, s.Settings)
-	config.SaveSettings(s.Settings)
 	if len(s.Settings.Environments) > 1 && s.Settings.Default == "" {
 		fmt.Printf("You now have %d environments associated. Consider running \"catalyze default ENV_NAME\" to set a default\n", len(s.Settings.Environments))
 	}

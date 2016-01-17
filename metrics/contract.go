@@ -28,6 +28,7 @@ var Cmd = models.Command{
 					fmt.Println(err.Error())
 					os.Exit(1)
 				}*/
+				fmt.Println(serviceName, json, csv, spark, stream, mins)
 				fmt.Println("shits broke yo")
 				os.Exit(1)
 			}
@@ -38,12 +39,16 @@ var Cmd = models.Command{
 
 // IMetrics
 type IMetrics interface {
-	// rework metrics and remove this generic metrics command
-	Metrics(svcName string, jsonFlag bool, csvFlag bool, sparkFlag bool, streamFlag bool, mins int, im IMetrics) error
+	// TODO rework metrics and remove this generic metrics command. most likely
+	// the Text, CSV, JSON, and Spark will turn into their own Cmd methods.
+	// such as CmdText and CmdCSV. Then just API calls go in this interface.
+	Metrics(jsonFlag bool, csvFlag bool, sparkFlag bool, streamFlag bool, mins int, service *models.Service) error
 	Text() error
 	CSV() error
 	JSON() error
 	Spark() error
+	RetrieveEnvironmentMetrics(mins int) (*[]models.Metrics, error)
+	RetrieveServiceMetrics(mins int) (*models.Metrics, error)
 }
 
 // SMetrics is a concrete implementation of IMetrics

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/services"
 )
@@ -58,6 +59,15 @@ func fileModeToRWXString(perms uint64) string {
 }
 
 func (f *SFiles) List() (*[]models.ServiceFile, error) {
-	// TODO this
-	return nil, nil
+	headers := httpclient.GetHeaders(f.Settings.APIKey, f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/files", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.EnvironmentID, f.Settings.ServiceID), headers)
+	if err != nil {
+		return nil, err
+	}
+	var files []models.ServiceFile
+	err = httpclient.ConvertResp(resp, statusCode, &files)
+	if err != nil {
+		return nil, err
+	}
+	return &files, nil
 }

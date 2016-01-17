@@ -8,7 +8,7 @@ import (
 // IAuth represents the contract that concrete implementations should follow
 // when implementing authentication.
 type IAuth interface {
-	Signin() ([]byte, error)
+	Signin() (*models.User, error)
 	Signout() error
 	Verify() error
 }

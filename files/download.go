@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/catalyzeio/cli/helpers"
+	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/services"
 )
@@ -100,7 +100,15 @@ func (f *SFiles) Retrieve(fileName string, service *models.Service) (*models.Ser
 	}
 	for _, ff := range *files {
 		if ff.Name == fileName {
-			file = helpers.RetrieveServiceFile(service.ID, ff.ID, f.Settings)
+			headers := httpclient.GetHeaders(f.Settings.APIKey, f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod)
+			resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/files/%d", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.EnvironmentID, f.Settings.ServiceID, ff.ID), headers)
+			if err != nil {
+				return nil, err
+			}
+			err = httpclient.ConvertResp(resp, statusCode, &file)
+			if err != nil {
+				return nil, err
+			}
 			break
 		}
 	}
