@@ -150,7 +150,7 @@ func (m *SMetrics) Metrics(jsonFlag bool, csvFlag bool, sparkFlag bool, streamFl
 	transformer.Mins = mins
 	transformer.settings = m.Settings
 
-	// TODO why is this here? helpers.SignIn(m.Settings)
+	// TODO why is this here? -> helpers.SignIn(m.Settings)
 
 	if sparkFlag {
 		go transformer.process()
@@ -168,8 +168,8 @@ func (m *SMetrics) Metrics(jsonFlag bool, csvFlag bool, sparkFlag bool, streamFl
 }
 
 func (m *SMetrics) RetrieveEnvironmentMetrics(mins int) (*[]models.Metrics, error) {
-	headers := httpclient.GetHeaders(m.Settings.APIKey, m.Settings.SessionToken, m.Settings.Version, m.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/metrics?mins=%d", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, mins), headers)
+	headers := httpclient.GetHeaders(m.Settings.SessionToken, m.Settings.Version, m.Settings.Pod)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/metrics?time=%d", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, mins), headers)
 	if err != nil {
 		return nil, err
 	}
@@ -182,8 +182,8 @@ func (m *SMetrics) RetrieveEnvironmentMetrics(mins int) (*[]models.Metrics, erro
 }
 
 func (m *SMetrics) RetrieveServiceMetrics(mins int) (*models.Metrics, error) {
-	headers := httpclient.GetHeaders(m.Settings.APIKey, m.Settings.SessionToken, m.Settings.Version, m.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/metrics/%s?mins=%d", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, m.Settings.ServiceID, mins), headers)
+	headers := httpclient.GetHeaders(m.Settings.SessionToken, m.Settings.Version, m.Settings.Pod)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/metrics?time=%d", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, m.Settings.ServiceID, mins), headers)
 	if err != nil {
 		return nil, err
 	}

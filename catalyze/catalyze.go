@@ -7,6 +7,7 @@ import (
 
 	"github.com/catalyzeio/cli/associate"
 	"github.com/catalyzeio/cli/associated"
+	"github.com/catalyzeio/cli/auth"
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/console"
 	"github.com/catalyzeio/cli/dashboard"
@@ -20,6 +21,8 @@ import (
 	"github.com/catalyzeio/cli/logs"
 	"github.com/catalyzeio/cli/metrics"
 	"github.com/catalyzeio/cli/models"
+	"github.com/catalyzeio/cli/pods"
+	"github.com/catalyzeio/cli/prompts"
 	"github.com/catalyzeio/cli/rake"
 	"github.com/catalyzeio/cli/redeploy"
 	"github.com/catalyzeio/cli/services"
@@ -43,46 +46,62 @@ func Run() {
 
 	var app = cli.App("catalyze", fmt.Sprintf("Catalyze CLI. Version %s", config.VERSION))
 
-	baasHost := os.Getenv("BAAS_HOST")
-	if baasHost == "" {
-		baasHost = config.BaasHost
+	authHost := os.Getenv(config.AuthHostEnvVar)
+	if authHost == "" {
+		authHost = config.AuthHost
 	}
-	paasHost := os.Getenv("PAAS_HOST")
+	paasHost := os.Getenv(config.PaasHostEnvVar)
 	if paasHost == "" {
 		paasHost = config.PaasHost
 	}
 	username := app.String(cli.StringOpt{
 		Name:      "U username",
 		Desc:      "Catalyze Username",
-		EnvVar:    "CATALYZE_USERNAME",
+		EnvVar:    config.CatalyzeUsernameEnvVar,
 		HideValue: true,
 	})
 	password := app.String(cli.StringOpt{
 		Name:      "P password",
 		Desc:      "Catalyze Password",
-		EnvVar:    "CATALYZE_PASSWORD",
+		EnvVar:    config.CatalyzePasswordEnvVar,
 		HideValue: true,
 	})
 	givenEnvName := app.String(cli.StringOpt{
 		Name:      "E env",
 		Desc:      "The local alias of the environment in which this command will be run",
-		EnvVar:    "CATALYZE_ENV",
+		EnvVar:    config.CatalyzeEnvironmentEnvVar,
 		HideValue: true,
 	})
 	var settings *models.Settings
 
 	app.Before = func() {
-		// TODO auth
 		r := config.FileSettingsRetriever{}
-		settings = r.GetSettings(*givenEnvName, "", baasHost, paasHost, *username, *password)
-		// TODO do this thing
-		/*if settings.Pods == nil || len(*settings.Pods) == 0 {
-			settings.Pods = helpers.ListPods(settings)
-			fmt.Println(settings.Pods)
-		}*/
+		settings = r.GetSettings(*givenEnvName, "", authHost, paasHost, *username, *password)
+
+		if settings.Pods == nil || len(*settings.Pods) == 0 {
+			p := pods.New(settings)
+			pods, err := p.List()
+			if err == nil {
+				settings.Pods = pods
+				fmt.Println(settings.Pods)
+			} else {
+				// TODO check in the cmd wherever settings.Pods is used and check for null/empty
+				// log this err
+			}
+		}
+
+		a := auth.New(settings, prompts.New())
+		user, err := a.Signin()
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+		settings.SessionToken = user.SessionToken
+		settings.Username = user.Username
+		settings.UsersID = user.UsersID
 	}
 	app.After = func() {
-		// TODO save the settings
+		config.SaveSettings(settings)
 	}
 
 	InitCLI(app, settings)
@@ -99,7 +118,9 @@ func Run() {
 	versionString := fmt.Sprintf("version %s %s\n", config.VERSION, archString)
 	app.Version("v version", versionString)
 	app.Command("version", "Output the version and quit", func(cmd *cli.Cmd) {
-		cmd.Action = app.PrintVersion
+		cmd.Action = func() {
+			fmt.Println(versionString)
+		}
 	})
 
 	app.Run(os.Args)
@@ -107,13 +128,6 @@ func Run() {
 
 // InitCLI adds arguments and commands to the given cli instance
 func InitCLI(app *cli.Cli, settings *models.Settings) {
-
-	// TODO ideally, we want to upgrade the mow.cli and use the precommand hook to take care
-	// of authentication. that way we can create the settings object here and then
-	// the commands dont need anyhting but the settings object. then they just have
-	// to check if the serviceID or environmentID on the settings object is empty.
-	// if required and empty, prompt or throw error as appropriate.
-
 	app.Command(associate.Cmd.Name, associate.Cmd.ShortHelp, associate.Cmd.CmdFunc(settings))
 	app.Command(associated.Cmd.Name, associated.Cmd.ShortHelp, associate.Cmd.CmdFunc(settings))
 	app.Command(console.Cmd.Name, console.Cmd.ShortHelp, console.Cmd.CmdFunc(settings))

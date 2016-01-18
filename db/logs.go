@@ -18,7 +18,7 @@ func (d *SDb) DumpLogs(taskType string, task *models.Task, service *models.Servi
 	if err != nil {
 		return err
 	}
-	tempURL, err := d.TempLogsURL(job.ID, taskType, service.ID)
+	tempURL, err := d.TempLogsURL(job.ID, service.ID)
 	if err != nil {
 		return err
 	}
@@ -69,9 +69,9 @@ func (d *SDb) DumpLogs(taskType string, task *models.Task, service *models.Servi
 	return nil
 }
 
-func (d *SDb) TempLogsURL(jobID string, jobType string, serviceID string) (*models.TempURL, error) {
-	headers := httpclient.GetHeaders(d.Settings.APIKey, d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/%s/%s/logs/url", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, serviceID, jobType, jobID), headers)
+func (d *SDb) TempLogsURL(jobID string, serviceID string) (*models.TempURL, error) {
+	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/services/%s/backup-restore-logs-url/%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, serviceID, jobID), headers)
 	if err != nil {
 		return nil, err
 	}

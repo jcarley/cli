@@ -18,7 +18,7 @@ func CmdRm(inviteID string, ii IInvites) error {
 // Rm deletes an invite sent to a user. This invite must not already be
 // accepted.
 func (i *SInvites) Rm(inviteID string) error {
-	headers := httpclient.GetHeaders(i.Settings.APIKey, i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod)
+	headers := httpclient.GetHeaders(i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod)
 	resp, statusCode, err := httpclient.Delete(nil, fmt.Sprintf("%s%s/environments/%s/invites/%s", i.Settings.PaasHost, i.Settings.PaasHostVersion, i.Settings.EnvironmentID, inviteID), headers)
 	if err != nil {
 		return err

@@ -33,7 +33,7 @@ func (i *SInvites) Send(email string) error {
 	if err != nil {
 		return err
 	}
-	headers := httpclient.GetHeaders(i.Settings.APIKey, i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod)
+	headers := httpclient.GetHeaders(i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod)
 	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/invites", i.Settings.PaasHost, i.Settings.PaasHostVersion, i.Settings.EnvironmentID), headers)
 	if err != nil {
 		return err

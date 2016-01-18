@@ -28,11 +28,10 @@ func getClient() *http.Client {
 	}
 }
 
-func GetHeaders(apiKey, sessionToken, version, pod string) map[string][]string {
+func GetHeaders(sessionToken, version, pod string) map[string][]string {
 	return map[string][]string{
 		"Accept":        {"application/json"},
 		"Content-Type":  {"application/json"},
-		"X-Api-Key":     {apiKey},
 		"Authorization": {fmt.Sprintf("Bearer %s", sessionToken)},
 		"X-CLI-Version": {version},
 		"X-Pod-ID":      {pod},

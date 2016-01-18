@@ -98,11 +98,12 @@ func (c *SConsole) Request(command string, service *models.Service) (*models.Tas
 	if err != nil {
 		return nil, err
 	}
-	headers := httpclient.GetHeaders(c.Settings.APIKey, c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod)
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/console", c.Settings.PaasHost, c.Settings.PaasHostVersion, c.Settings.EnvironmentID, service.ID), headers)
+	headers := httpclient.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod)
+	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/services/%s/console", c.Settings.PaasHost, c.Settings.PaasHostVersion, service.ID), headers)
 	if err != nil {
 		return nil, err
 	}
+	// TODO this is broken. The task is returned in the Location header as a route
 	var m map[string]string
 	err = httpclient.ConvertResp(resp, statusCode, &m)
 	if err != nil {
@@ -114,8 +115,16 @@ func (c *SConsole) Request(command string, service *models.Service) (*models.Tas
 }
 
 func (c *SConsole) RetrieveTokens(jobID string, service *models.Service) (*models.ConsoleCredentials, error) {
-	headers := httpclient.GetHeaders(c.Settings.APIKey, c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/console/token/%s", c.Settings.PaasHost, c.Settings.PaasHostVersion, c.Settings.EnvironmentID, service.ID, jobID), headers)
+	tokenRequest := map[string]string{
+		"serviceid": service.ID,
+		"jobid":     jobID,
+	}
+	b, err := json.Marshal(tokenRequest)
+	if err != nil {
+		return nil, err
+	}
+	headers := httpclient.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod)
+	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/console/token", c.Settings.PaasHost, c.Settings.PaasHostVersion), headers)
 	if err != nil {
 		return nil, err
 	}
@@ -128,8 +137,8 @@ func (c *SConsole) RetrieveTokens(jobID string, service *models.Service) (*model
 }
 
 func (c *SConsole) Destroy(jobID string, service *models.Service) error {
-	headers := httpclient.GetHeaders(c.Settings.APIKey, c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod)
-	resp, statusCode, err := httpclient.Delete(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/console/%s", c.Settings.PaasHost, c.Settings.PaasHostVersion, c.Settings.EnvironmentID, service.ID, jobID), headers)
+	headers := httpclient.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod)
+	resp, statusCode, err := httpclient.Delete(nil, fmt.Sprintf("%s%s/jobs/%s", c.Settings.PaasHost, c.Settings.PaasHostVersion, jobID), headers)
 	if err != nil {
 		return err
 	}

@@ -101,7 +101,7 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 		return nil, err
 	}
 
-	headers := httpclient.GetHeaders(d.Settings.APIKey, d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
+	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
 	resp, statusCode, err := httpclient.PutFile(encrFilePath, tempURL.URL, headers)
 	if err != nil {
 		return nil, err
@@ -110,32 +110,36 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	if err != nil {
 		return nil, err
 	}
-	importParams := models.Import{
-		Location:  tempURL.URL,
-		Key:       string(d.Crypto.Base64Encode(d.Crypto.Hex(key))),
-		IV:        string(d.Crypto.Base64Encode(d.Crypto.Hex(iv))),
-		WipeFirst: false,
-		Options:   options,
+	importParams := map[string]interface{}{}
+	for key, value := range options {
+		importParams[key] = value
 	}
+	importParams["filename"] = tempURL.URL
+	importParams["encryptionKey"] = string(d.Crypto.Base64Encode(d.Crypto.Hex(key)))
+	importParams["encryptionIV"] = string(d.Crypto.Base64Encode(d.Crypto.Hex(iv)))
+	importParams["dropDatabase"] = false
+
 	b, err := json.Marshal(importParams)
 	if err != nil {
 		return nil, err
 	}
-	resp, statusCode, err = httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/db/import", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
+	resp, statusCode, err = httpclient.Post(b, fmt.Sprintf("%s%s/services/%s/import", d.Settings.PaasHost, d.Settings.PaasHostVersion, service.ID), headers)
 	if err != nil {
 		return nil, err
 	}
-	var task models.Task
-	err = httpclient.ConvertResp(resp, statusCode, &task)
+	var m map[string]string
+	err = httpclient.ConvertResp(resp, statusCode, &m)
 	if err != nil {
 		return nil, err
 	}
-	return &task, nil
+	return &models.Task{
+		ID: m["task"],
+	}, nil
 }
 
 func (d *SDb) TempUploadURL(service *models.Service) (*models.TempURL, error) {
-	headers := httpclient.GetHeaders(d.Settings.APIKey, d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/restore/url", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
+	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/services/%s/restore-url", d.Settings.PaasHost, d.Settings.PaasHostVersion, service.ID), headers)
 	if err != nil {
 		return nil, err
 	}

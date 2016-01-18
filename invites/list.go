@@ -27,7 +27,7 @@ func CmdList(envName string, ii IInvites) error {
 // invite is accepted, you can manage the users access with the `users`
 // commands.
 func (i *SInvites) List() (*[]models.Invite, error) {
-	headers := httpclient.GetHeaders(i.Settings.APIKey, i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod)
+	headers := httpclient.GetHeaders(i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/invites", i.Settings.PaasHost, i.Settings.PaasHostVersion, i.Settings.EnvironmentID), headers)
 	if err != nil {
 		return nil, err

@@ -1,19 +1,29 @@
 package config
 
-// current cli version
-const VERSION = "2.1.7"
+const (
+	// VERSION is the current cli version
+	VERSION = "2.1.7"
+	// AuthHost is the production auth URL
+	AuthHost = "https://api.catalyze.io"
+	// AuthHostVersion is the version path for the auth host
+	AuthHostVersion = "/v2"
+	// PaasHost is the production PaaS URL
+	PaasHost = "https://paas-api.catalyze.io"
+	// PaasHostVersion is the version path for the PaaS host
+	PaasHostVersion = ""
 
-// alternate BaaS URL
-const BaasHost = "https://api.catalyze.io"
-
-// version for the BaaSHost
-const BaasHostVersion = "/v2"
-
-// alternate PaaS URL
-const PaasHost = "https://paas-api.catalyze.io"
-
-// version for the PaaSHost
-const PaasHostVersion = ""
-
-// the Dashboard API Key
-const APIKey = "32a384f5-5d11-4214-812e-b35ced9af4d7"
+	// AuthHostEnvVar is the env variable used to override AuthHost
+	AuthHostEnvVar = "AUTH_HOST"
+	// PaasHostEnvVar is the env variable used to override PaasHost
+	PaasHostEnvVar = "PAAS_HOST"
+	// AuthHostVersionEnvVar is the env variable used to override AuthHostVersion
+	AuthHostVersionEnvVar = "AUTH_HOST_VERSION"
+	// PaasHostVersionEnvVar is the env variable used to override PaasHostVersion
+	PaasHostVersionEnvVar = "PAAS_HOST_VERSION"
+	// CatalyzeUsernameEnvVar is the env variable used to override the username
+	CatalyzeUsernameEnvVar = "CATALYZE_USERNAME"
+	// CatalyzePasswordEnvVar is the env variable used to override the passowrd
+	CatalyzePasswordEnvVar = "CATALYZE_PASSWORD"
+	// CatalyzeEnvironmentEnvVar is the env variable used to override the environment used in the current command
+	CatalyzeEnvironmentEnvVar = "CATALYZE_ENV"
+)

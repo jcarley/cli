@@ -84,11 +84,24 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, baasHost, paasHost,
 		os.Exit(1)
 	}*/
 
-	settings.BaasHost = baasHost
+	settings.AuthHost = baasHost
 	settings.PaasHost = paasHost
 	settings.Username = username
 	settings.Password = password
 
+	authHostVersion := os.Getenv(AuthHostVersionEnvVar)
+	if authHostVersion == "" {
+		authHostVersion = AuthHostVersion
+	}
+	settings.AuthHostVersion = authHostVersion
+
+	paasHostVersion := os.Getenv(PaasHostVersionEnvVar)
+	if paasHostVersion == "" {
+		paasHostVersion = PaasHostVersion
+	}
+	settings.PaasHostVersion = paasHostVersion
+
+	settings.Version = VERSION
 	return &settings
 }
 

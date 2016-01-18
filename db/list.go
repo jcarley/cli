@@ -51,8 +51,8 @@ func (jobs SortedJobs) Less(i, j int) bool {
 
 // List lists the created backups for the service sorted from oldest to newest
 func (d *SDb) List(page, pageSize int, service *models.Service) (*[]models.Job, error) {
-	headers := httpclient.GetHeaders(d.Settings.APIKey, d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/backup?pageNum=%d&pageSize=%d", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID, page, pageSize), headers)
+	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/services/%s/brrgc/backup?pageNumber=%d&pageSize=%d", d.Settings.PaasHost, d.Settings.PaasHostVersion, service.ID, page, pageSize), headers)
 	if err != nil {
 		return nil, err
 	}

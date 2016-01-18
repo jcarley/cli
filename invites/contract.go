@@ -17,6 +17,7 @@ var Cmd = models.Command{
 	LongHelp:  "Manage invitations for your environments",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
+			// TODO make use of orgs in the core api to use this command
 			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
 			cmd.Command(RmSubCmd.Name, RmSubCmd.ShortHelp, RmSubCmd.CmdFunc(settings))
 			cmd.Command(SendSubCmd.Name, SendSubCmd.ShortHelp, SendSubCmd.CmdFunc(settings))

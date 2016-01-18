@@ -145,6 +145,7 @@ type IDb interface {
 	List(page, pageSize int, service *models.Service) (*[]models.Job, error)
 	TempUploadURL(service *models.Service) (*models.TempURL, error)
 	TempDownloadURL(jobID string, service *models.Service) (*models.TempURL, error)
+	TempLogsURL(jobID string, serviceID string) (*models.TempURL, error)
 	DumpLogs(taskType string, task *models.Task, service *models.Service) error
 }
 

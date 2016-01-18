@@ -24,8 +24,8 @@ type ReportedError struct {
 
 // Login is used for making an authentication request
 type Login struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Identifier string `json:"identifier"`
+	Password   string `json:"password"`
 }
 
 // Invite represents an invitation to an environment
@@ -47,15 +47,6 @@ type User struct {
 type EncryptionStore struct {
 	Key string `json:"key"`
 	IV  string `json:"iv"`
-}
-
-// Import creation object
-type Import struct {
-	Location  string            `json:"location"`
-	Key       string            `json:"key"`
-	IV        string            `json:"iv"`
-	WipeFirst bool              `json:"wipeBeforeImport"`
-	Options   map[string]string `json:"options"`
 }
 
 // TempURL holds a URL for uploading or downloading files from a temporary URL
@@ -155,11 +146,10 @@ type PodMetadata struct {
 // `json:"-"` are never persisted to disk but used in memory for the current
 // command.
 type Settings struct {
-	BaasHost        string `json:"-"`
+	AuthHost        string `json:"-"`
 	PaasHost        string `json:"-"`
-	BaasHostVersion string `json:"-"`
+	AuthHostVersion string `json:"-"`
 	PaasHostVersion string `json:"-"`
-	APIKey          string `json:"-"`
 	Version         string `json:"-"`
 
 	Username        string                   `json:"-"`

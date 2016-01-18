@@ -27,8 +27,8 @@ func (w *SWorker) Start(target string) error {
 	if err != nil {
 		return err
 	}
-	headers := httpclient.GetHeaders(w.Settings.APIKey, w.Settings.SessionToken, w.Settings.Version, w.Settings.Pod)
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/background", w.Settings.PaasHost, w.Settings.PaasHostVersion, w.Settings.EnvironmentID, w.Settings.ServiceID), headers)
+	headers := httpclient.GetHeaders(w.Settings.SessionToken, w.Settings.Version, w.Settings.Pod)
+	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/services/%s/background_worker", w.Settings.PaasHost, w.Settings.PaasHostVersion, w.Settings.ServiceID), headers)
 	if err != nil {
 		return err
 	}

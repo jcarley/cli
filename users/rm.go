@@ -16,7 +16,7 @@ func CmdRm(usersID string, iu IUsers) error {
 }
 
 func (u *SUsers) Rm(usersID string) error {
-	headers := httpclient.GetHeaders(u.Settings.APIKey, u.Settings.SessionToken, u.Settings.Version, u.Settings.Pod)
+	headers := httpclient.GetHeaders(u.Settings.SessionToken, u.Settings.Version, u.Settings.Pod)
 	resp, statusCode, err := httpclient.Delete(nil, fmt.Sprintf("%s%s/environments/%s/users/%s", u.Settings.PaasHost, u.Settings.PaasHostVersion, u.Settings.EnvironmentID, usersID), headers)
 	if err != nil {
 		return err

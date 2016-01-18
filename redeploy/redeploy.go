@@ -1,7 +1,6 @@
 package redeploy
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/catalyzeio/cli/httpclient"
@@ -30,13 +29,8 @@ func CmdRedeploy(svcName string, ir IRedeploy, is services.IServices) error {
 // first. The same version of the currently running service is deployed with
 // no changes.
 func (r *SRedeploy) Redeploy(service *models.Service) error {
-	redeploy := map[string]string{}
-	b, err := json.Marshal(redeploy)
-	if err != nil {
-		return err
-	}
-	headers := httpclient.GetHeaders(r.Settings.APIKey, r.Settings.SessionToken, r.Settings.Version, r.Settings.Pod)
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/redeploy", r.Settings.PaasHost, r.Settings.PaasHostVersion, r.Settings.EnvironmentID, service.ID), headers)
+	headers := httpclient.GetHeaders(r.Settings.SessionToken, r.Settings.Version, r.Settings.Pod)
+	resp, statusCode, err := httpclient.Post(nil, fmt.Sprintf("%s%s/services/%s/redeploy", r.Settings.PaasHost, r.Settings.PaasHostVersion, service.ID), headers)
 	if err != nil {
 		return err
 	}

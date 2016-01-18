@@ -48,8 +48,8 @@ func (v *SVars) Set(envVarsMap map[string]string) error {
 	if err != nil {
 		return err
 	}
-	headers := httpclient.GetHeaders(v.Settings.APIKey, v.Settings.SessionToken, v.Settings.Version, v.Settings.Pod)
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/env", v.Settings.PaasHost, v.Settings.PaasHostVersion, v.Settings.EnvironmentID, v.Settings.ServiceID), headers)
+	headers := httpclient.GetHeaders(v.Settings.SessionToken, v.Settings.Version, v.Settings.Pod)
+	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/services/%s/env", v.Settings.PaasHost, v.Settings.PaasHostVersion, v.Settings.ServiceID), headers)
 	if err != nil {
 		return err
 	}

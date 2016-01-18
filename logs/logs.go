@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/environments"
 	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
@@ -24,8 +25,8 @@ const size = 50
 // command.
 func CmdLogs(queryString string, follow bool, hours, minutes, seconds int, envID string, il ILogs, ip prompts.IPrompts, ie environments.IEnvironments) error {
 	// TODO make these consts
-	username := os.Getenv("CATALYZE_USERNAME")
-	password := os.Getenv("CATALYZE_PASSWORD")
+	username := os.Getenv(config.CatalyzeUsernameEnvVar)
+	password := os.Getenv(config.CatalyzePasswordEnvVar)
 	if username == "" || password == "" {
 		fmt.Println("Your dashboard credentials are required to fetch logs")
 		u, p, err := ip.UsernamePassword()

@@ -23,7 +23,7 @@ func CmdList(myUsersID string, iu IUsers) error {
 }
 
 func (u *SUsers) List() (*models.EnvironmentUsers, error) {
-	headers := httpclient.GetHeaders(u.Settings.APIKey, u.Settings.SessionToken, u.Settings.Version, u.Settings.Pod)
+	headers := httpclient.GetHeaders(u.Settings.SessionToken, u.Settings.Version, u.Settings.Pod)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/users", u.Settings.PaasHost, u.Settings.PaasHostVersion, u.Settings.EnvironmentID), headers)
 	if err != nil {
 		return nil, err

@@ -41,67 +41,18 @@ func CmdDownload(svcName, fileName, output string, force bool, ifiles IFiles, is
 		return err
 	}
 	return nil
-
-	/*service := helpers.RetrieveServiceByLabel(serviceName, settings)
-	if service == nil {
-		return fmt.Errorf("Could not find a service with the name \"%s\"\n", serviceName)
-	}
-	if outputPath != "" && !force {
-		if _, err := os.Stat(outputPath); err == nil {
-			return fmt.Errorf("File already exists at path '%s'. Specify `--force` to overwrite\n", outputPath)
-		}
-	}
-	var file *models.ServiceFile
-	files, err := ifiles.List()
-	files := helpers.ListServiceFiles(service.ID, settings)
-	for _, f := range *files {
-		if f.Name == fileName {
-			file = helpers.RetrieveServiceFile(service.ID, f.ID, settings)
-			break
-		}
-	}
-	if file == nil {
-		fmt.Printf("File with name %s does not exist. Try listing files again by running \"catalyze files list\"\n", fileName)
-		os.Exit(1)
-	}
-	filePerms, err := strconv.ParseUint(file.Mode, 8, 32)
-	if err != nil {
-		filePerms = 0644
-	}
-
-	var wr io.Writer
-	if outputPath != "" {
-		if force {
-			os.Remove(outputPath)
-		}
-		outFile, err := os.OpenFile(outputPath, os.O_CREATE|os.O_RDWR, os.FileMode(filePerms))
-		if err != nil {
-			fmt.Printf("Warning! Could not apply %s file permissions. Attempting to apply defaults %s\n", fileModeToRWXString(filePerms), fileModeToRWXString(uint64(0644)))
-			outFile, err = os.OpenFile(outputPath, os.O_CREATE|os.O_RDWR, 0644)
-			if err != nil {
-				fmt.Printf("Could not open %s for writing: %s\n", outputPath, err.Error())
-				os.Exit(1)
-			}
-		}
-		defer outFile.Close()
-		wr = outFile
-	} else {
-		fmt.Printf("Mode: %s\n\nContent:\n", fileModeToRWXString(filePerms))
-		wr = os.Stdout
-	}
-	wr.Write([]byte(file.Contents))*/
 }
 
 func (f *SFiles) Retrieve(fileName string, service *models.Service) (*models.ServiceFile, error) {
-	var file *models.ServiceFile
+	var file models.ServiceFile
 	files, err := f.List()
 	if err != nil {
 		return nil, err
 	}
 	for _, ff := range *files {
 		if ff.Name == fileName {
-			headers := httpclient.GetHeaders(f.Settings.APIKey, f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod)
-			resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/files/%d", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.EnvironmentID, f.Settings.ServiceID, ff.ID), headers)
+			headers := httpclient.GetHeaders(f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod)
+			resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/services/%s/files/%d", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.ServiceID, ff.ID), headers)
 			if err != nil {
 				return nil, err
 			}
@@ -112,7 +63,7 @@ func (f *SFiles) Retrieve(fileName string, service *models.Service) (*models.Ser
 			break
 		}
 	}
-	return file, nil
+	return &file, nil
 }
 
 func (f *SFiles) Save(output string, force bool, file *models.ServiceFile) error {
