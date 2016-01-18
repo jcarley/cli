@@ -5,6 +5,7 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/associate"
 	"github.com/catalyzeio/cli/associated"
 	"github.com/catalyzeio/cli/auth"
@@ -44,6 +45,9 @@ func Run() {
 		updater.AutoUpdater.BackgroundRun()
 	}
 
+	logrus.SetOutput(os.Stdout)
+	logrus.SetLevel(logrus.DebugLevel)
+
 	var app = cli.App("catalyze", fmt.Sprintf("Catalyze CLI. Version %s", config.VERSION))
 
 	authHost := os.Getenv(config.AuthHostEnvVar)
@@ -72,11 +76,12 @@ func Run() {
 		EnvVar:    config.CatalyzeEnvironmentEnvVar,
 		HideValue: true,
 	})
-	var settings *models.Settings
+	settings := &models.Settings{}
 
 	app.Before = func() {
 		r := config.FileSettingsRetriever{}
-		settings = r.GetSettings(*givenEnvName, "", authHost, paasHost, *username, *password)
+		*settings = *r.GetSettings(*givenEnvName, "", authHost, paasHost, *username, *password)
+		logrus.Debugf("%+v", settings)
 
 		if settings.Pods == nil || len(*settings.Pods) == 0 {
 			p := pods.New(settings)
@@ -85,6 +90,7 @@ func Run() {
 				settings.Pods = pods
 				fmt.Println(settings.Pods)
 			} else {
+				logrus.Debugln(err.Error())
 				// TODO check in the cmd wherever settings.Pods is used and check for null/empty
 				// log this err
 			}
@@ -93,8 +99,7 @@ func Run() {
 		a := auth.New(settings, prompts.New())
 		user, err := a.Signin()
 		if err != nil {
-			fmt.Println(err.Error())
-			os.Exit(1)
+			logrus.Fatalln(err.Error())
 		}
 		settings.SessionToken = user.SessionToken
 		settings.Username = user.Username
@@ -115,7 +120,8 @@ func Run() {
 	case "arm":
 		archString = "arm"
 	}
-	versionString := fmt.Sprintf("version %s %s\n", config.VERSION, archString)
+	versionString := fmt.Sprintf("version %s %s", config.VERSION, archString)
+	logrus.Infoln(versionString)
 	app.Version("v version", versionString)
 	app.Command("version", "Output the version and quit", func(cmd *cli.Cmd) {
 		cmd.Action = func() {

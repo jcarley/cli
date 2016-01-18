@@ -6,7 +6,7 @@ const (
 	// AuthHost is the production auth URL
 	AuthHost = "https://api.catalyze.io"
 	// AuthHostVersion is the version path for the auth host
-	AuthHostVersion = "/v2"
+	AuthHostVersion = ""
 	// PaasHost is the production PaaS URL
 	PaasHost = "https://paas-api.catalyze.io"
 	// PaasHostVersion is the version path for the PaaS host

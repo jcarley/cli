@@ -1,9 +1,7 @@
 package db
 
 import (
-	"fmt"
-	"os"
-
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/crypto"
 	"github.com/catalyzeio/cli/jobs"
 	"github.com/catalyzeio/cli/models"
@@ -41,8 +39,7 @@ var BackupSubCmd = models.Command{
 			subCmd.Action = func() {
 				err := CmdBackup(*databaseName, *skipPoll, New(settings, crypto.New(), jobs.New(settings)), services.New(settings), tasks.New(settings))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 			}
 			subCmd.Spec = "DATABASE_NAME [-s]"
@@ -63,8 +60,7 @@ var DownloadSubCmd = models.Command{
 			subCmd.Action = func() {
 				err := CmdDownload(*databaseName, *backupID, *filePath, *force, New(settings, crypto.New(), jobs.New(settings)), prompts.New(), services.New(settings))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 			}
 			subCmd.Spec = "DATABASE_NAME BACKUP_ID FILEPATH [-f]"
@@ -84,8 +80,7 @@ var ExportSubCmd = models.Command{
 			subCmd.Action = func() {
 				err := CmdExport(*databaseName, *filePath, *force, New(settings, crypto.New(), jobs.New(settings)), prompts.New(), services.New(settings), tasks.New(settings))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 			}
 			subCmd.Spec = "DATABASE_NAME FILEPATH [-f]"
@@ -106,8 +101,7 @@ var ImportSubCmd = models.Command{
 			subCmd.Action = func() {
 				err := CmdImport(*databaseName, *filePath, *mongoCollection, *mongoDatabase, New(settings, crypto.New(), jobs.New(settings)), services.New(settings), tasks.New(settings))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 			}
 			subCmd.Spec = "DATABASE_NAME FILEPATH [-d [-c]]"
@@ -127,8 +121,7 @@ var ListSubCmd = models.Command{
 			subCmd.Action = func() {
 				err := CmdList(*databaseName, *page, *pageSize, New(settings, crypto.New(), jobs.New(settings)), services.New(settings))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 			}
 			subCmd.Spec = "DATABASE_NAME [-p] [-n]"

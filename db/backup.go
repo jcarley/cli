@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/services"
@@ -15,27 +16,27 @@ func CmdBackup(databaseName string, skipPoll bool, id IDb, is services.IServices
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\"\n", databaseName)
+		return fmt.Errorf("Could not find a service with the label \"%s\"", databaseName)
 	}
 	task, err := id.Backup(service)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Backup started (task ID = %s)\n", task.ID)
+	logrus.Printf("Backup started (task ID = %s)", task.ID)
 	if !skipPoll {
-		fmt.Print("Polling until backup finishes.")
+		logrus.Print("Polling until backup finishes.")
 		status, err := it.PollForStatus(task)
 		if err != nil {
 			return err
 		}
 		task.Status = status
-		fmt.Printf("\nEnded in status '%s'\n", task.Status)
+		logrus.Printf("\nEnded in status '%s'", task.Status)
 		err = id.DumpLogs("backup", task, service)
 		if err != nil {
 			return err
 		}
 		if task.Status != "finished" {
-			return fmt.Errorf("Task finished with invalid status %s\n", task.Status)
+			return fmt.Errorf("Task finished with invalid status %s", task.Status)
 		}
 	}
 	return nil

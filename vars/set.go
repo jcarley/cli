@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 )
 
@@ -17,7 +18,7 @@ func CmdSet(variables []string, iv IVars) error {
 	for _, envVar := range variables {
 		pieces := strings.SplitN(envVar, "=", 2)
 		if len(pieces) != 2 {
-			return fmt.Errorf("Invalid variable format. Expected <key>=<value> but got %s\n", envVar)
+			return fmt.Errorf("Invalid variable format. Expected <key>=<value> but got %s", envVar)
 		}
 		envVarsMap[pieces[0]] = pieces[1]
 	}
@@ -35,7 +36,7 @@ func CmdSet(variables []string, iv IVars) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Set. For these environment variables to take effect, you will need to redeploy your service with \"catalyze redeploy\"")
+	logrus.Println("Set. For these environment variables to take effect, you will need to redeploy your service with \"catalyze redeploy\"")
 	return nil
 }
 

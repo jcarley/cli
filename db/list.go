@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/services"
@@ -15,20 +16,20 @@ func CmdList(databaseName string, page, pageSize int, id IDb, is services.IServi
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\"\n", databaseName)
+		return fmt.Errorf("Could not find a service with the label \"%s\"", databaseName)
 	}
 	jobs, err := id.List(page, pageSize, service)
 	if err != nil {
 		return err
 	}
 	for _, job := range *jobs {
-		fmt.Printf("%s %s (status = %s)\n", job.ID, job.CreatedAt, job.Status)
+		logrus.Printf("%s %s (status = %s)", job.ID, job.CreatedAt, job.Status)
 	}
 	if len(*jobs) == pageSize && page == 1 {
-		fmt.Println("(for older backups, try with --page 2 or adjust --page-size)")
+		logrus.Println("(for older backups, try with --page 2 or adjust --page-size)")
 	}
 	if len(*jobs) == 0 && page == 1 {
-		fmt.Println("No backups created yet for this service.")
+		logrus.Println("No backups created yet for this service.")
 	}
 	return nil
 }

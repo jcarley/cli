@@ -1,13 +1,10 @@
 package associate
 
 import (
-	"fmt"
-	"os"
-
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/environments"
 	"github.com/catalyzeio/cli/git"
 	"github.com/catalyzeio/cli/models"
-	"github.com/catalyzeio/cli/pods"
 	"github.com/jawher/mow.cli"
 )
 
@@ -25,21 +22,10 @@ var Cmd = models.Command{
 			remote := cmd.StringOpt("r remote", "catalyze", "The name of the remote")
 			defaultEnv := cmd.BoolOpt("d default", false, "Specifies whether or not the associated environment will be the default")
 			cmd.Action = func() {
-				//settings := r.GetSettings(false, false, *givenEnvName, *givenSvcName, baasHost, paasHost, *username, *password)
-				// TODO this should be checked globablly and not just here
-				if settings.Pods == nil || len(*settings.Pods) == 0 {
-					p, err := pods.New(settings).List()
-					if err != nil {
-						fmt.Println(err.Error())
-						os.Exit(1)
-					}
-					settings.Pods = p
-					fmt.Println(settings.Pods)
-				}
+				logrus.Debugf("%+v", settings)
 				err := CmdAssociate(*envName, *serviceName, *alias, *remote, *defaultEnv, New(settings), git.New(), environments.New(settings))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 			}
 			cmd.Spec = "ENV_NAME SERVICE_NAME [-a] [-r] [-d]"

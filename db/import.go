@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/services"
@@ -15,55 +16,55 @@ import (
 
 func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id IDb, is services.IServices, it tasks.ITasks) error {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		return fmt.Errorf("A file does not exist at path '%s'\n", filePath)
+		return fmt.Errorf("A file does not exist at path '%s'", filePath)
 	}
 	service, err := is.RetrieveByLabel(databaseName)
 	if err != nil {
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\"\n", databaseName)
+		return fmt.Errorf("Could not find a service with the label \"%s\"", databaseName)
 	}
-	fmt.Printf("Backing up \"%s\" before performing the import\n", databaseName)
+	logrus.Printf("Backing up \"%s\" before performing the import", databaseName)
 	task, err := id.Backup(service)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Backup started (task ID = %s)\n", task.ID)
+	logrus.Printf("Backup started (task ID = %s)", task.ID)
 
-	fmt.Print("Polling until backup finishes.")
+	logrus.Print("Polling until backup finishes.")
 	status, err := it.PollForStatus(task)
 	if err != nil {
 		return err
 	}
 	task.Status = status
-	fmt.Printf("\nEnded in status '%s'\n", task.Status)
+	logrus.Printf("\nEnded in status '%s'", task.Status)
 	err = id.DumpLogs("backup", task, service)
 	if err != nil {
 		return err
 	}
 	if task.Status != "finished" {
-		return fmt.Errorf("Task finished with invalid status %s\n", task.Status)
+		return fmt.Errorf("Task finished with invalid status %s", task.Status)
 	}
-	fmt.Printf("Importing '%s' into %s (ID = %s)\n", filePath, databaseName, service.ID)
+	logrus.Printf("Importing '%s' into %s (ID = %s)", filePath, databaseName, service.ID)
 	task, err = id.Import(filePath, mongoCollection, mongoDatabase, service)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Processing import... (task ID = %s)\n", task.ID)
+	logrus.Printf("Processing import... (task ID = %s)", task.ID)
 
 	status, err = it.PollForStatus(task)
 	if err != nil {
 		return err
 	}
 	task.Status = status
-	fmt.Printf("\nImport complete (end status = '%s')\n", task.Status)
+	logrus.Printf("\nImport complete (end status = '%s')", task.Status)
 	err = id.DumpLogs("restore", task, service)
 	if err != nil {
 		return err
 	}
 	if task.Status != "finished" {
-		return fmt.Errorf("Finished with invalid status %s\n", task.Status)
+		return fmt.Errorf("Finished with invalid status %s", task.Status)
 	}
 	return nil
 }
@@ -82,7 +83,7 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	iv := make([]byte, aes.BlockSize)
 	rand.Read(key)
 	rand.Read(iv)
-	fmt.Println("Encrypting...")
+	logrus.Println("Encrypting...")
 	encrFilePath, err := d.Crypto.EncryptFile(filePath, key, iv)
 	if err != nil {
 		return nil, err
@@ -95,7 +96,7 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	if mongoDatabase != "" {
 		options["mongoDatabase"] = mongoDatabase
 	}
-	fmt.Println("Uploading...")
+	logrus.Println("Uploading...")
 	tempURL, err := d.TempUploadURL(service)
 	if err != nil {
 		return nil, err

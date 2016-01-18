@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/services"
@@ -18,19 +19,19 @@ func CmdList(svcName string, ifiles IFiles, is services.IServices) error {
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the name \"%s\"\n", svcName)
+		return fmt.Errorf("Could not find a service with the name \"%s\"", svcName)
 	}
 	files, err := ifiles.List()
 	if err != nil {
 		return err
 	}
 	if len(*files) == 0 {
-		fmt.Println("No service files found")
+		logrus.Println("No service files found")
 		return nil
 	}
-	fmt.Println("NAME")
+	logrus.Println("NAME")
 	for _, sf := range *files {
-		fmt.Println(sf.Name)
+		logrus.Println(sf.Name)
 	}
 	return nil
 }

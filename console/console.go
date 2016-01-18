@@ -12,6 +12,7 @@ import (
 
 	"golang.org/x/net/websocket"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/services"
@@ -35,12 +36,12 @@ func CmdConsole(svcName, command string, ic IConsole, is services.IServices) err
 // is needed - instead, the appropriate command for the database type is run.
 // For example, for a postgres database, psql is run.
 func (c *SConsole) Open(command string, service *models.Service) error {
-	fmt.Printf("Opening console to %s (%s)\n", service.Name, service.ID)
+	logrus.Printf("Opening console to %s (%s)", service.Name, service.ID)
 	task, err := c.Request(command, service)
 	if err != nil {
 		return err
 	}
-	fmt.Print("Waiting for the console to be ready. This might take a minute.")
+	logrus.Print("Waiting for the console to be ready. This might take a minute.")
 
 	jobID, err := c.Tasks.PollForConsole(task, service)
 	if err != nil {
@@ -53,7 +54,7 @@ func (c *SConsole) Open(command string, service *models.Service) error {
 	}
 
 	creds.URL = strings.Replace(creds.URL, "http", "ws", 1)
-	fmt.Println("Connecting...")
+	logrus.Println("Connecting...")
 
 	// BEGIN websocket impl
 	config, _ := websocket.NewConfig(creds.URL, "ws://localhost:9443/")
@@ -66,7 +67,7 @@ func (c *SConsole) Open(command string, service *models.Service) error {
 		return err
 	}
 	defer ws.Close()
-	fmt.Println("Connection opened")
+	logrus.Println("Connection opened")
 
 	stdin, stdout, _ := term.StdStreams()
 	fdIn, isTermIn := term.GetFdInfo(stdin)
@@ -149,9 +150,9 @@ func (c *SConsole) Destroy(jobID string, service *models.Service) error {
 func readWS(ws *websocket.Conn, t io.Writer, done chan struct{}) {
 	_, err := io.Copy(t, ws)
 	if err == io.EOF {
-		fmt.Println("Connection closed")
+		logrus.Println("Connection closed")
 	} else if err != nil {
-		fmt.Printf("Error reading data from server: %s", err)
+		logrus.Printf("Error reading data from server: %s", err)
 	}
 	done <- struct{}{}
 }
@@ -160,9 +161,9 @@ func readWS(ws *websocket.Conn, t io.Writer, done chan struct{}) {
 func readStdin(t io.ReadCloser, ws *websocket.Conn, done chan struct{}) {
 	_, err := io.Copy(ws, t)
 	if err == io.EOF {
-		fmt.Println("Input closed")
+		logrus.Println("Input closed")
 	} else if err != nil {
-		fmt.Printf("Error writing data to server: %s", err)
+		logrus.Printf("Error writing data to server: %s", err)
 	}
 	done <- struct{}{}
 }

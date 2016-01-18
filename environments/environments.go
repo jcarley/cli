@@ -3,6 +3,7 @@ package environments
 import (
 	"fmt"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
@@ -14,18 +15,18 @@ func CmdEnvironments(environments IEnvironments) error {
 		return err
 	}
 	for _, env := range *envs {
-		fmt.Printf("%+v", env)
-		//fmt.Printf("%s: %s\n", env.Data.Name, env.ID)
+		logrus.Printf("%+v", env)
+		//logrus.Printf("%s: %s", env.Data.Name, env.ID)
 	}
 	if len(*envs) == 0 {
-		fmt.Println("no environments found")
+		logrus.Println("no environments found")
 	}
 	return nil
 }
 
 func (e *SEnvironments) List() (*[]models.Environment, error) {
 	var allEnvs []models.Environment
-	fmt.Printf("pods %+v\n", e.Settings.Pods)
+	logrus.Debugf("pods %+v", e.Settings.Pods)
 	for _, pod := range *e.Settings.Pods {
 		headers := httpclient.GetHeaders(e.Settings.SessionToken, e.Settings.Version, pod.Name)
 		resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments", e.Settings.PaasHost, e.Settings.PaasHostVersion), headers)
@@ -39,11 +40,11 @@ func (e *SEnvironments) List() (*[]models.Environment, error) {
 		}
 		for i := 0; i < len(envs); i++ {
 			envs[i].Pod = pod.Name
-			fmt.Printf("e %+v\n", envs[i])
+			logrus.Debugf("e %+v", envs[i])
 		}
 		allEnvs = append(allEnvs, envs...)
 	}
-	fmt.Printf("all envs %+v\n", allEnvs)
+	logrus.Debugf("all envs %+v", allEnvs)
 	return &allEnvs, nil
 }
 

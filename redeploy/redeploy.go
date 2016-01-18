@@ -3,6 +3,7 @@ package redeploy
 import (
 	"fmt"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/services"
@@ -14,14 +15,14 @@ func CmdRedeploy(svcName string, ir IRedeploy, is services.IServices) error {
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the name \"%s\"\n", svcName)
+		return fmt.Errorf("Could not find a service with the name \"%s\"", svcName)
 	}
-	fmt.Printf("Redeploying %s (ID = %s)\n", svcName, service.ID)
+	logrus.Printf("Redeploying %s (ID = %s)", svcName, service.ID)
 	err = ir.Redeploy(service)
 	if err != nil {
 		return err
 	}
-	fmt.Println("Redeploy successful! Check the status and logs for updates")
+	logrus.Println("Redeploy successful! Check the status and logs for updates")
 	return nil
 }
 

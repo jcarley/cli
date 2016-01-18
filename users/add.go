@@ -4,16 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 )
 
 func CmdAdd(usersID string, iu IUsers) error {
-	fmt.Println("WARNING: This command is deprecated. Please use \"catalyze invites send\" instead.")
+	logrus.Println("WARNING: This command is deprecated. Please use \"catalyze invites send\" instead.")
 	err := iu.Add(usersID)
 	if err != nil {
 		return err
 	}
-	fmt.Println("Added.")
+	logrus.Println("Added.")
 	return nil
 }
 

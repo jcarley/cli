@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/prompts"
@@ -20,7 +21,7 @@ func CmdDownload(databaseName, backupID, filePath string, force bool, id IDb, ip
 	}
 	if !force {
 		if _, err := os.Stat(filePath); err == nil {
-			return fmt.Errorf("File already exists at path '%s'. Specify `--force` to overwrite\n", filePath)
+			return fmt.Errorf("File already exists at path '%s'. Specify `--force` to overwrite", filePath)
 		}
 	} else {
 		os.Remove(filePath)
@@ -30,13 +31,13 @@ func CmdDownload(databaseName, backupID, filePath string, force bool, id IDb, ip
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\"\n", databaseName)
+		return fmt.Errorf("Could not find a service with the label \"%s\"", databaseName)
 	}
 	err = id.Download(backupID, filePath, service)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%s backup downloaded successfully to %s\n", databaseName, filePath)
+	logrus.Printf("%s backup downloaded successfully to %s", databaseName, filePath)
 	return nil
 }
 
@@ -48,9 +49,9 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 		return err
 	}
 	if job.Type != "backup" || job.Status != "finished" {
-		fmt.Println("Only 'finished' 'backup' jobs may be downloaded")
+		logrus.Println("Only 'finished' 'backup' jobs may be downloaded")
 	}
-	fmt.Printf("Downloading backup %s\n", backupID)
+	logrus.Printf("Downloading backup %s", backupID)
 	tempURL, err := d.TempDownloadURL(backupID, service)
 	if err != nil {
 		return err
@@ -71,7 +72,7 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 	defer resp.Body.Close()
 	io.Copy(tmpFile, resp.Body)
 	tmpFile.Close()
-	fmt.Println("Decrypting...")
+	logrus.Println("Decrypting...")
 	err = d.Crypto.DecryptFile(tmpFile.Name(), job.Backup.Key, job.Backup.IV, filePath)
 	if err != nil {
 		return err

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/prompts"
 	"github.com/catalyzeio/cli/services"
@@ -20,7 +21,7 @@ func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPr
 	}
 	if !force {
 		if _, err := os.Stat(filePath); err == nil {
-			return fmt.Errorf("File already exists at path '%s'. Specify `--force` to overwrite\n", filePath)
+			return fmt.Errorf("File already exists at path '%s'. Specify `--force` to overwrite", filePath)
 		}
 	} else {
 		os.Remove(filePath)
@@ -30,23 +31,23 @@ func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPr
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\"\n", databaseName)
+		return fmt.Errorf("Could not find a service with the label \"%s\"", databaseName)
 	}
 	task, err := id.Backup(service)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Export started (task ID = %s)\n", task.ID)
-	fmt.Print("Polling until export finishes.")
+	logrus.Printf("Export started (task ID = %s)", task.ID)
+	logrus.Print("Polling until export finishes.")
 	status, err := it.PollForStatus(task)
 	if err != nil {
 		return err
 	}
 	task.Status = status
-	fmt.Printf("\nEnded in status '%s'\n", task.Status)
+	logrus.Printf("\nEnded in status '%s'", task.Status)
 	if task.Status != "finished" {
 		id.DumpLogs("backup", task, service)
-		return fmt.Errorf("Task finished with invalid status %s\n", task.Status)
+		return fmt.Errorf("Task finished with invalid status %s", task.Status)
 	}
 
 	err = id.Export(filePath, task, service)
@@ -57,7 +58,7 @@ func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPr
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%s exported successfully to %s\n", service.Name, filePath)
+	logrus.Printf("%s exported successfully to %s", service.Name, filePath)
 	return nil
 }
 
@@ -70,7 +71,7 @@ func (d *SDb) Export(filePath string, task *models.Task, service *models.Service
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Downloading export %s\n", job.ID)
+	logrus.Printf("Downloading export %s", job.ID)
 	tempURL, err := d.TempDownloadURL(job.ID, service)
 	if err != nil {
 		return err
@@ -90,7 +91,7 @@ func (d *SDb) Export(filePath string, task *models.Task, service *models.Service
 	}
 	defer resp.Body.Close()
 	io.Copy(tmpFile, resp.Body)
-	fmt.Println("Decrypting...")
+	logrus.Println("Decrypting...")
 	tmpFile.Close()
 	err = d.Crypto.DecryptFile(tmpFile.Name(), job.Backup.Key, job.Backup.IV, filePath)
 	if err != nil {

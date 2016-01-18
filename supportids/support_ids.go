@@ -1,13 +1,13 @@
 package supportids
 
-import "fmt"
+import "github.com/Sirupsen/logrus"
 
 func CmdSupportIDs(is ISupportIDs) error {
 	envID, usersID, svcID, err := is.SupportIDs()
 	if err != nil {
 		return err
 	}
-	fmt.Printf(`EnvironmentID:  %s
+	logrus.Printf(`EnvironmentID:  %s
 UsersID:        %s
 ServiceID:      %s
 `, envID, usersID, svcID)

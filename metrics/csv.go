@@ -3,10 +3,10 @@ package metrics
 import (
 	"bytes"
 	"encoding/csv"
-	"fmt"
 	"math"
 	"strconv"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
 )
 
@@ -43,7 +43,7 @@ func (csv *CSVTransformer) TransformGroup(metrics *[]models.Metrics) {
 		csv.TransformSingle(&metric)
 	}
 	csv.Writer.Flush()
-	fmt.Println(csv.Buffer.String())
+	logrus.Println(csv.Buffer.String())
 }
 
 // TransformSingle transforms a single service's metrics data into csv
@@ -72,6 +72,6 @@ func (csv *CSVTransformer) TransformSingle(metric *models.Metrics) {
 	}
 	if !csv.GroupMode {
 		csv.Writer.Flush()
-		fmt.Println(csv.Buffer.String())
+		logrus.Println(csv.Buffer.String())
 	}
 }

@@ -3,6 +3,7 @@ package users
 import (
 	"fmt"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 )
 
@@ -11,7 +12,7 @@ func CmdRm(usersID string, iu IUsers) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Removed.")
+	logrus.Println("Removed.")
 	return nil
 }
 

@@ -7,13 +7,14 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
 
 // DumpLogs dumps logs from a Backup/Restore/Import/Export job to the console
 func (d *SDb) DumpLogs(taskType string, task *models.Task, service *models.Service) error {
-	fmt.Printf("Retrieving %s logs for task %s...\n", service.Label, task.ID)
+	logrus.Printf("Retrieving %s logs for task %s...", service.Label, task.ID)
 	job, err := d.Jobs.RetrieveFromTaskID(task.ID)
 	if err != nil {
 		return err
@@ -58,11 +59,11 @@ func (d *SDb) DumpLogs(taskType string, task *models.Task, service *models.Servi
 			return err
 		}
 	}
-	fmt.Printf("-------------------------- Begin %s logs --------------------------\n", service.Label)
+	logrus.Printf("-------------------------- Begin %s logs --------------------------", service.Label)
 	plainFile, _ = os.Open(plainFile.Name())
 	io.Copy(os.Stdout, plainFile)
 	plainFile.Close()
-	fmt.Printf("--------------------------- End %s logs ---------------------------\n", service.Label)
+	logrus.Printf("--------------------------- End %s logs ---------------------------", service.Label)
 	os.Remove(encrFile.Name())
 	os.Remove(plainFile.Name())
 	os.Remove(dir)

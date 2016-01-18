@@ -1,10 +1,9 @@
 package logs
 
 import (
-	"fmt"
-	"os"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/environments"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/prompts"
@@ -28,8 +27,7 @@ var Cmd = models.Command{
 			cmd.Action = func() {
 				err := CmdLogs(*query, *follow || *tail, *hours, *mins, *secs, settings.EnvironmentID, New(settings), prompts.New(), environments.New(settings))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 			}
 			cmd.Spec = "[QUERY] [(-f | -t)] [--hours] [--minutes] [--seconds]"

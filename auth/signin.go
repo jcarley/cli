@@ -20,7 +20,10 @@ func (a *SAuth) Signin() (*models.User, error) {
 		}, nil
 	}
 	//var username, password string
-	var login models.Login
+	login := models.Login{
+		Identifier: a.Settings.Username,
+		Password:   a.Settings.Password,
+	}
 	if a.Settings.Username == "" || a.Settings.Password == "" {
 		username, password, err := a.Prompts.UsernamePassword()
 		if err != nil {
@@ -75,8 +78,8 @@ func (a *SAuth) Verify() error {
 		return err
 	}
 	// the verify route returns userId and not usersId like everything else...
-	if m["userId"] != "" {
-		a.Settings.UsersID = m["userId"]
+	if m["id"] != "" {
+		a.Settings.UsersID = m["id"]
 		return nil
 	}
 	return fmt.Errorf("Invalid session token: %s", string(resp))

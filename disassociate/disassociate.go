@@ -1,8 +1,7 @@
 package disassociate
 
 import (
-	"fmt"
-
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/config"
 )
 
@@ -11,8 +10,8 @@ func CmdDisassociate(alias string, id IDisassociate) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("WARNING: Your existing git remote *has not* been removed.\n\n")
-	fmt.Println("Association cleared.")
+	logrus.Printf("WARNING: Your existing git remote *has not* been removed.\n")
+	logrus.Println("Association cleared.")
 	return nil
 }
 

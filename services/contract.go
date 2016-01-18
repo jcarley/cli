@@ -1,9 +1,7 @@
 package services
 
 import (
-	"fmt"
-	"os"
-
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -19,8 +17,7 @@ var Cmd = models.Command{
 			cmd.Action = func() {
 				err := CmdServices(New(settings))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 			}
 		}

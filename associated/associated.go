@@ -1,8 +1,7 @@
 package associated
 
 import (
-	"fmt"
-
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
 )
 
@@ -12,7 +11,7 @@ func CmdAssociated(ia IAssociated) error {
 		return err
 	}
 	for envAlias, env := range envs {
-		fmt.Printf(`%s:
+		logrus.Printf(`%s:
     Environment ID:   %s
     Environment Name: %s
     Service ID:       %s
@@ -22,7 +21,7 @@ func CmdAssociated(ia IAssociated) error {
 `, envAlias, env.EnvironmentID, env.Name, env.ServiceID, env.Directory, defaultEnv == envAlias, env.Pod)
 	}
 	if len(envs) == 0 {
-		fmt.Println("No environments have been associated")
+		logrus.Println("No environments have been associated")
 	}
 	return nil
 }

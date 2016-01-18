@@ -1,9 +1,7 @@
 package ssl
 
 import (
-	"fmt"
-	"os"
-
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -34,8 +32,7 @@ var VerifySubCmd = models.Command{
 			subCmd.Action = func() {
 				err := CmdVerify(*chain, *privateKey, *hostname, *selfSigned, New(settings))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 			}
 			subCmd.Spec = "CHAIN PRIVATE_KEY HOSTNAME [-s]"

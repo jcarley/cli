@@ -1,9 +1,7 @@
 package logout
 
 import (
-	"fmt"
-	"os"
-
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/auth"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/prompts"
@@ -21,8 +19,7 @@ var Cmd = models.Command{
 			cmd.Action = func() {
 				err := CmdLogout(New(settings), auth.New(settings, prompts.New()))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 			}
 		}

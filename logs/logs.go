@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/environments"
 	"github.com/catalyzeio/cli/httpclient"
@@ -24,11 +25,10 @@ const size = 50
 // not very cohesive. This is intended to be similar to the `heroku logs`
 // command.
 func CmdLogs(queryString string, follow bool, hours, minutes, seconds int, envID string, il ILogs, ip prompts.IPrompts, ie environments.IEnvironments) error {
-	// TODO make these consts
 	username := os.Getenv(config.CatalyzeUsernameEnvVar)
 	password := os.Getenv(config.CatalyzePasswordEnvVar)
 	if username == "" || password == "" {
-		fmt.Println("Your dashboard credentials are required to fetch logs")
+		logrus.Println("Your dashboard credentials are required to fetch logs")
 		u, p, err := ip.UsernamePassword()
 		if err != nil {
 			return err
@@ -70,7 +70,7 @@ func (l *SLogs) Output(queryString, username, password string, follow bool, hour
 	basicAuth := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
 	headers := map[string][]string{"Authorization": {"Basic " + basicAuth}}
 
-	fmt.Println("        @timestamp       -        message")
+	logrus.Println("        @timestamp       -        message")
 	for {
 		queryBytes := generateQuery(queryString, appLogsIdentifier, appLogsValue, startTimestamp, from)
 
@@ -86,8 +86,7 @@ func (l *SLogs) Output(queryString, username, password string, follow bool, hour
 
 		end := time.Time{}
 		for _, lh := range *logs.Hits.Hits {
-			fmt.Printf("%s - %s\n", lh.Fields["@timestamp"][0], lh.Fields["message"][0])
-			// 2016-01-15T22:56:12.921Z
+			logrus.Printf("%s - %s", lh.Fields["@timestamp"][0], lh.Fields["message"][0])
 			end, _ = time.Parse(time.RFC3339Nano, lh.Fields["@timestamp"][0])
 		}
 		amount := len(*logs.Hits.Hits)

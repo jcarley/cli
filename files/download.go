@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/services"
@@ -19,7 +20,7 @@ import (
 func CmdDownload(svcName, fileName, output string, force bool, ifiles IFiles, is services.IServices) error {
 	if output != "" && !force {
 		if _, err := os.Stat(output); err == nil {
-			return fmt.Errorf("File already exists at path '%s'. Specify `--force` to overwrite\n", output)
+			return fmt.Errorf("File already exists at path '%s'. Specify `--force` to overwrite", output)
 		}
 	}
 	service, err := is.RetrieveByLabel(svcName)
@@ -27,14 +28,14 @@ func CmdDownload(svcName, fileName, output string, force bool, ifiles IFiles, is
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the name \"%s\"\n", svcName)
+		return fmt.Errorf("Could not find a service with the name \"%s\"", svcName)
 	}
 	file, err := ifiles.Retrieve(fileName, service)
 	if err != nil {
 		return err
 	}
 	if file == nil {
-		return fmt.Errorf("File with name %s does not exist. Try listing files again by running \"catalyze files list\"\n", fileName)
+		return fmt.Errorf("File with name %s does not exist. Try listing files again by running \"catalyze files list\"", fileName)
 	}
 	err = ifiles.Save(output, force, file)
 	if err != nil {
@@ -79,16 +80,16 @@ func (f *SFiles) Save(output string, force bool, file *models.ServiceFile) error
 		}
 		outFile, err := os.OpenFile(output, os.O_CREATE|os.O_RDWR, os.FileMode(filePerms))
 		if err != nil {
-			fmt.Printf("Warning! Could not apply %s file permissions. Attempting to apply defaults %s\n", fileModeToRWXString(filePerms), fileModeToRWXString(uint64(0644)))
+			logrus.Printf("Warning! Could not apply %s file permissions. Attempting to apply defaults %s", fileModeToRWXString(filePerms), fileModeToRWXString(uint64(0644)))
 			outFile, err = os.OpenFile(output, os.O_CREATE|os.O_RDWR, 0644)
 			if err != nil {
-				return fmt.Errorf("Could not open %s for writing: %s\n", output, err.Error())
+				return fmt.Errorf("Could not open %s for writing: %s", output, err.Error())
 			}
 		}
 		defer outFile.Close()
 		wr = outFile
 	} else {
-		fmt.Printf("Mode: %s\n\nContent:\n", fileModeToRWXString(filePerms))
+		logrus.Printf("Mode: %s\n\nContent:", fileModeToRWXString(filePerms))
 		wr = os.Stdout
 	}
 	wr.Write([]byte(file.Contents))

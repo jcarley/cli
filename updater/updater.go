@@ -55,6 +55,7 @@ import (
 
 	"gopkg.in/inconshreveable/go-update.v0"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/bugsnag/osext"
 	"github.com/catalyzeio/cli/config"
 	"github.com/kr/binarydist"
@@ -177,7 +178,7 @@ func (u *Updater) update() error {
 	bin, err := u.fetchAndVerifyPatch(old)
 	if err != nil {
 		if err == ErrHashMismatch {
-			log.Println("update: hash mismatch from patched binary - attempting full replacement...")
+			logrus.Println("update: hash mismatch from patched binary - attempting full replacement...")
 		} else {
 			if u.DiffURL != "" {
 				//log.Println("update: error patching binary,", err)
@@ -190,9 +191,9 @@ func (u *Updater) update() error {
 		bin, err = u.fetchAndVerifyFullBin()
 		if err != nil {
 			if err == ErrHashMismatch {
-				log.Println("update: hash mismatch from full binary")
+				logrus.Println("update: hash mismatch from full binary")
 			} else {
-				log.Println("update: error fetching full binary,", err)
+				logrus.Println("update: error fetching full binary,", err)
 			}
 			log.Println("update: please upgrade your CLI manually")
 			return err
@@ -210,7 +211,7 @@ func (u *Updater) update() error {
 	if err != nil {
 		return err
 	}
-	log.Println("update: your CLI has been successfully upgraded!")
+	logrus.Println("update: your CLI has been successfully upgraded!")
 	return nil
 }
 

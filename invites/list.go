@@ -3,6 +3,7 @@ package invites
 import (
 	"fmt"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
@@ -13,12 +14,12 @@ func CmdList(envName string, ii IInvites) error {
 		return err
 	}
 	if len(*invts) == 0 {
-		fmt.Printf("There are no pending invites for %s\n", envName)
+		logrus.Printf("There are no pending invites for %s", envName)
 		return nil
 	}
-	fmt.Printf("Pending invites for %s:\n", envName)
+	logrus.Printf("Pending invites for %s:", envName)
 	for _, invite := range *invts {
-		fmt.Printf("\t%s %s\n", invite.Email, invite.Code)
+		logrus.Printf("\t%s %s", invite.Email, invite.Code)
 	}
 	return nil
 }

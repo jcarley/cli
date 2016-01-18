@@ -2,8 +2,8 @@ package metrics
 
 import (
 	"encoding/json"
-	"fmt"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
 )
 
@@ -19,12 +19,12 @@ func (m *SMetrics) JSON() error {
 // format.
 func (j *JSONTransformer) TransformGroup(metrics *[]models.Metrics) {
 	b, _ := json.MarshalIndent(metrics, "", "    ")
-	fmt.Println(string(b))
+	logrus.Println(string(b))
 }
 
 // TransformSingle transforms a single service's metrics data into json
 // format.
 func (j *JSONTransformer) TransformSingle(metric *models.Metrics) {
 	b, _ := json.MarshalIndent(metric, "", "    ")
-	fmt.Println(string(b))
+	logrus.Println(string(b))
 }

@@ -1,9 +1,7 @@
 package files
 
 import (
-	"fmt"
-	"os"
-
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/services"
 	"github.com/jawher/mow.cli"
@@ -36,8 +34,7 @@ var DownloadSubCmd = models.Command{
 			subCmd.Action = func() {
 				err := CmdDownload(*serviceName, *fileName, *output, *force, New(settings), services.New(settings))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 			}
 			subCmd.Spec = "SERVICE_NAME FILE_NAME [-o] [-f]"
@@ -55,8 +52,7 @@ var ListSubCmd = models.Command{
 			subCmd.Action = func() {
 				err := CmdList(*svcName, New(settings), services.New(settings))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 			}
 			subCmd.Spec = "SERVICE_NAME"

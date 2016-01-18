@@ -1,9 +1,7 @@
 package console
 
 import (
-	"fmt"
-	"os"
-
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/services"
 	"github.com/catalyzeio/cli/tasks"
@@ -23,8 +21,7 @@ var Cmd = models.Command{
 			cmd.Action = func() {
 				err := CmdConsole(*serviceName, *command, New(settings, tasks.New(settings)), services.New(settings))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 			}
 			cmd.Spec = "SERVICE_NAME [COMMAND]"

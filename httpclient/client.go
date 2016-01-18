@@ -2,7 +2,9 @@ package httpclient
 
 import (
 	"bytes"
+	"crypto/rand"
 	"crypto/tls"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,7 +12,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/updater"
 )
@@ -29,12 +33,18 @@ func getClient() *http.Client {
 }
 
 func GetHeaders(sessionToken, version, pod string) map[string][]string {
+	b := make([]byte, 32)
+	rand.Read(b)
+	nonce := base64.StdEncoding.EncodeToString(b)
+	timestamp := time.Now().Unix()
 	return map[string][]string{
-		"Accept":        {"application/json"},
-		"Content-Type":  {"application/json"},
-		"Authorization": {fmt.Sprintf("Bearer %s", sessionToken)},
-		"X-CLI-Version": {version},
-		"X-Pod-ID":      {pod},
+		"Accept":              {"application/json"},
+		"Content-Type":        {"application/json"},
+		"Authorization":       {fmt.Sprintf("Bearer %s", sessionToken)},
+		"X-CLI-Version":       {version},
+		"X-Pod-ID":            {pod},
+		"X-Request-Nonce":     {nonce},
+		"X-Request-Timestamp": {fmt.Sprintf("%d", timestamp)},
 	}
 }
 
@@ -44,14 +54,15 @@ func GetHeaders(sessionToken, version, pod string) map[string][]string {
 // interface. ALWAYS PASS A POINTER INTO THIS METHOD. If you don't pass a struct
 // pointer your original object will be nil or an empty struct.
 func ConvertResp(b []byte, statusCode int, s interface{}) error {
+	logrus.Debugf("%d resp: %s", statusCode, string(b))
 	if statusCode < 200 || statusCode >= 300 {
 		msg := ""
 		var errs models.Error
 		err := json.Unmarshal(b, &errs)
 		if err == nil && errs.Title != "" && errs.Description != "" {
-			msg = fmt.Sprintf("(%d) %s: %s\n", errs.Code, errs.Title, errs.Description)
+			msg = fmt.Sprintf("(%d) %s: %s", errs.Code, errs.Title, errs.Description)
 		} else {
-			msg = fmt.Sprintf("(%d) %s\n", statusCode, string(b))
+			msg = fmt.Sprintf("(%d) %s", statusCode, string(b))
 		}
 		return errors.New(msg)
 	}
@@ -107,6 +118,11 @@ func Delete(body []byte, url string, headers map[string][]string) ([]byte, int, 
 // the result body as a byte array. It's up to the caller to transform them
 // into an object.
 func MakeRequest(method string, url string, body io.Reader, headers map[string][]string) ([]byte, int, error) {
+	logrus.Debugf("%s %s", method, url)
+	logrus.Debugf("%+v", headers)
+	var b []byte
+	body.Read(b)
+	logrus.Debugf("\n%s", string(b))
 	client := getClient()
 	req, _ := http.NewRequest(method, url, body)
 	req.Header = headers

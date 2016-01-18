@@ -3,6 +3,7 @@ package invites
 import (
 	"fmt"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 )
 
@@ -11,7 +12,7 @@ func CmdRm(inviteID string, ii IInvites) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Invite %s removed\n", inviteID)
+	logrus.Printf("Invite %s removed", inviteID)
 	return nil
 }
 

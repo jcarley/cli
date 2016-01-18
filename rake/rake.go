@@ -4,16 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 )
 
 func CmdRake(taskName string, ir IRake) error {
-	fmt.Printf("Executing Rake task: %s\n", taskName)
+	logrus.Printf("Executing Rake task: %s", taskName)
 	err := ir.Run(taskName)
 	if err != nil {
 		return err
 	}
-	fmt.Println("Rake task output viewable in your logging server")
+	logrus.Println("Rake task output viewable in your logging server")
 	return nil
 }
 

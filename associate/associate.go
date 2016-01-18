@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/environments"
 	"github.com/catalyzeio/cli/git"
@@ -17,14 +18,14 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 	if !ig.Exists() {
 		return errors.New("No git repo found in the current directory")
 	}
-	fmt.Printf("Existing git remotes named \"%s\" will be overwritten\n", remote)
+	logrus.Printf("Existing git remotes named \"%s\" will be overwritten", remote)
 	envs, err := ie.List()
 	if err != nil {
 		return err
 	}
 	var e *models.Environment
 	for _, env := range *envs {
-		fmt.Printf("\n\nassociate env %+v\n\n", env)
+		logrus.Debugf("associate env %+v", env)
 		if env.Name == envLabel {
 			pod := env.Pod
 			e, err = ie.Retrieve(env.ID)
@@ -33,13 +34,13 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 			}
 			e.Pod = pod
 			if e.State == "defined" {
-				return fmt.Errorf("Your environment is not yet provisioned. Please visit https://dashboard.catalyze.io/environments/update/%s to finish provisioning your environment\n", env.ID)
+				return fmt.Errorf("Your environment is not yet provisioned. Please visit https://dashboard.catalyze.io/environments/update/%s to finish provisioning your environment", env.ID)
 			}
 			break
 		}
 	}
 	if e == nil {
-		return fmt.Errorf("No environment with label \"%s\" found\n", envLabel)
+		return fmt.Errorf("No environment with label \"%s\" found", envLabel)
 	}
 
 	var chosenService *models.Service
@@ -54,7 +55,7 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 		}
 	}
 	if chosenService == nil {
-		return fmt.Errorf("No code service found with name '%s'. Code services found: %s\n", svcLabel, strings.Join(availableCodeServices, ", "))
+		return fmt.Errorf("No code service found with name '%s'. Code services found: %s", svcLabel, strings.Join(availableCodeServices, ", "))
 	}
 	remotes, err := ig.List()
 	if err != nil {
@@ -70,7 +71,7 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 	if err != nil {
 		return err
 	}
-	fmt.Printf("\"%s\" remote added.\n", remote)
+	logrus.Printf("\"%s\" remote added.", remote)
 
 	name := alias
 	if name == "" {
@@ -80,7 +81,7 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Your git repository \"%s\"  has been associated with code service \"%s\" and environment \"%s\"\n", remote, svcLabel, name)
+	logrus.Printf("Your git repository \"%s\"  has been associated with code service \"%s\" and environment \"%s\"", remote, svcLabel, name)
 	return nil
 }
 
@@ -104,7 +105,7 @@ func (s *SAssociate) Associate(name, remote string, defaultEnv bool, env *models
 	}
 	config.DropBreadcrumb(name, s.Settings)
 	if len(s.Settings.Environments) > 1 && s.Settings.Default == "" {
-		fmt.Printf("You now have %d environments associated. Consider running \"catalyze default ENV_NAME\" to set a default\n", len(s.Settings.Environments))
+		logrus.Printf("You now have %d environments associated. Consider running \"catalyze default ENV_NAME\" to set a default", len(s.Settings.Environments))
 	}
 
 	return nil

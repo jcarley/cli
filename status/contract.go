@@ -1,9 +1,7 @@
 package status
 
 import (
-	"fmt"
-	"os"
-
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/environments"
 	"github.com/catalyzeio/cli/jobs"
 	"github.com/catalyzeio/cli/models"
@@ -21,8 +19,7 @@ var Cmd = models.Command{
 			cmd.Action = func() {
 				err := CmdStatus(settings.EnvironmentID, New(settings, jobs.New(settings)), environments.New(settings))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 			}
 		}

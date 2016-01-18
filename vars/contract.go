@@ -1,9 +1,7 @@
 package vars
 
 import (
-	"fmt"
-	"os"
-
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -32,8 +30,7 @@ var ListSubCmd = models.Command{
 			subCmd.Action = func() {
 				err := CmdList(New(settings))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 			}
 		}
@@ -55,8 +52,7 @@ var SetSubCmd = models.Command{
 			subCmd.Action = func() {
 				err := CmdSet(*variables, New(settings))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 			}
 			subCmd.Spec = "-v..."
@@ -74,8 +70,7 @@ var UnsetSubCmd = models.Command{
 			subCmd.Action = func() {
 				err := CmdUnset(*variable, New(settings))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 			}
 			subCmd.Spec = "VARIABLE"

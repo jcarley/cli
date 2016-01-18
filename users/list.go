@@ -3,6 +3,7 @@ package users
 import (
 	"fmt"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
@@ -14,9 +15,9 @@ func CmdList(myUsersID string, iu IUsers) error {
 	}
 	for _, userID := range envUsers.Users {
 		if userID == myUsersID {
-			fmt.Printf("%s (you)\n", userID)
+			logrus.Printf("%s (you)", userID)
 		} else {
-			defer fmt.Printf("%s\n", userID)
+			defer logrus.Printf("%s", userID)
 		}
 	}
 	return nil

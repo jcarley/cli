@@ -1,9 +1,7 @@
 package metrics
 
 import (
-	"fmt"
-	"os"
-
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -25,12 +23,10 @@ var Cmd = models.Command{
 			cmd.Action = func() {
 				/*err := CmdMetrics(*serviceName, *json, *csv, *spark, *stream, *mins, New(settings))
 				if err != nil {
-					fmt.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}*/
-				fmt.Println(serviceName, json, csv, spark, stream, mins)
-				fmt.Println("shits broke yo")
-				os.Exit(1)
+				logrus.Debugf("%s, %t, %t, %t, %t, %d", serviceName, json, csv, spark, stream, mins)
+				logrus.Fatal("shits broke yo")
 			}
 			cmd.Spec = "[SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]"
 		}

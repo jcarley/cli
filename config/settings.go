@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
 	"github.com/mitchellh/go-homedir"
 )
@@ -30,10 +31,10 @@ type SettingsRetriever interface {
 type FileSettingsRetriever struct{}
 
 // GetSettings returns a Settings object for the current context
-func (s FileSettingsRetriever) GetSettings(envName, svcName, baasHost, paasHost, username, password string) *models.Settings {
+func (s FileSettingsRetriever) GetSettings(envName, svcName, authHost, paasHost, username, password string) *models.Settings {
 	HomeDir, err := homedir.Dir()
 	if err != nil {
-		fmt.Println(err.Error())
+		logrus.Println(err.Error())
 		os.Exit(1)
 	}
 
@@ -43,7 +44,7 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, baasHost, paasHost,
 	}
 	defer file.Close()
 	if err != nil {
-		fmt.Println(err.Error())
+		logrus.Println(err.Error())
 		os.Exit(1)
 	}
 	var settings models.Settings
@@ -57,8 +58,7 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, baasHost, paasHost,
 	if envName != "" {
 		setGivenEnv(envName, &settings)
 		if settings.EnvironmentID == "" || settings.ServiceID == "" {
-			fmt.Printf("No environment named \"%s\" has been associated. Run \"catalyze associated\" to see what environments have been associated or run \"catalyze associate\" from a local git repo to create a new association\n", envName)
-			os.Exit(1)
+			logrus.Fatalf("No environment named \"%s\" has been associated. Run \"catalyze associated\" to see what environments have been associated or run \"catalyze associate\" from a local git repo to create a new association", envName)
 		}
 	}
 
@@ -84,7 +84,7 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, baasHost, paasHost,
 		os.Exit(1)
 	}*/
 
-	settings.AuthHost = baasHost
+	settings.AuthHost = authHost
 	settings.PaasHost = paasHost
 	settings.Username = username
 	settings.Password = password
@@ -101,6 +101,16 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, baasHost, paasHost,
 	}
 	settings.PaasHostVersion = paasHostVersion
 
+	logrus.Infof("Auth Host: %s", authHost)
+	logrus.Infof("Paas Host: %s", paasHost)
+	logrus.Infof("Auth Host Version: %s", authHostVersion)
+	logrus.Infof("Paas Host Version: %s", paasHostVersion)
+	logrus.Infof("Default: %s", settings.Default)
+	logrus.Infof("Environment ID: %s", settings.EnvironmentID)
+	logrus.Infof("Environment Name: %s", settings.EnvironmentName)
+	logrus.Infof("Pod: %s", settings.Pod)
+	logrus.Infof("Service ID: %s", settings.ServiceID)
+
 	settings.Version = VERSION
 	return &settings
 }
@@ -109,13 +119,13 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, baasHost, paasHost,
 func SaveSettings(settings *models.Settings) {
 	HomeDir, err := homedir.Dir()
 	if err != nil {
-		fmt.Println(err.Error())
+		logrus.Println(err.Error())
 		os.Exit(1)
 	}
 	b, _ := json.Marshal(&settings)
 	err = ioutil.WriteFile(filepath.Join(HomeDir, SettingsFile), b, 0644)
 	if err != nil {
-		fmt.Println(err.Error())
+		logrus.Println(err.Error())
 		os.Exit(1)
 	}
 }
@@ -128,7 +138,7 @@ func DropBreadcrumb(envName string, settings *models.Settings) {
 	})
 	err := ioutil.WriteFile(filepath.Join(".git", LocalSettingsFile), b, 0644)
 	if err != nil {
-		fmt.Println(err.Error())
+		logrus.Println(err.Error())
 		os.Exit(1)
 	}
 }

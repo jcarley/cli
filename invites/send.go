@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/prompts"
@@ -18,7 +19,7 @@ func CmdSend(email, envName string, ii IInvites, ip prompts.IPrompts) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%s has been invited!\n", email)
+	logrus.Printf("%s has been invited!", email)
 	return nil
 }
 

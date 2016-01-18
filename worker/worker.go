@@ -4,16 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 )
 
 func CmdWorker(target, svcID string, iw IWorker) error {
-	fmt.Printf("Initiating a background worker for Service: %s (procfile target = \"%s\")\n", svcID, target)
+	logrus.Printf("Initiating a background worker for Service: %s (procfile target = \"%s\")", svcID, target)
 	err := iw.Start(target)
 	if err != nil {
 		return err
 	}
-	fmt.Println("Worker started.")
+	logrus.Println("Worker started.")
 	return nil
 }
 

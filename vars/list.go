@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 )
 
@@ -18,7 +19,7 @@ func CmdList(iv IVars) error {
 	}
 	sort.Strings(keys)
 	for _, key := range keys {
-		fmt.Printf("%s=%s\n", key, envVars[key])
+		logrus.Printf("%s=%s", key, envVars[key])
 	}
 	return nil
 }

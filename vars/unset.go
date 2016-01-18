@@ -3,6 +3,7 @@ package vars
 import (
 	"fmt"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 )
 
@@ -11,7 +12,7 @@ func CmdUnset(key string, iv IVars) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Unset.")
+	logrus.Println("Unset.")
 	return nil
 }
 

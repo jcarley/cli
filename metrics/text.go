@@ -5,6 +5,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
 )
 
@@ -20,7 +21,7 @@ func (m *SMetrics) Text() error {
 // format.
 func (text *TextTransformer) TransformGroup(metrics *[]models.Metrics) {
 	for _, metric := range *metrics {
-		fmt.Printf("%s:\n", metric.ServiceName)
+		logrus.Printf("%s:", metric.ServiceName)
 		text.TransformSingle(&metric)
 	}
 }
@@ -32,7 +33,7 @@ func (text *TextTransformer) TransformSingle(metric *models.Metrics) {
 	for _, job := range *metric.Jobs {
 		for _, data := range *job.MetricsData {
 			ts := time.Unix(data.TS, 0)
-			fmt.Printf("%s%s | %8s (%s) | CPU: %6.2fs (%5.2f%%) | Net: RX: %.2f KB TX: %.2f KB | Mem: %.2f KB | Disk: %.2f KB read / %.2f KB write\n",
+			logrus.Printf("%s%s | %8s (%s) | CPU: %6.2fs (%5.2f%%) | Net: RX: %.2f KB TX: %.2f KB | Mem: %.2f KB | Disk: %.2f KB read / %.2f KB write",
 				prefix,
 				fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d", ts.Year(), ts.Month(), ts.Day(), ts.Hour(), ts.Minute(), ts.Second()),
 				job.Type,

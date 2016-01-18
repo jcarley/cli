@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
@@ -13,9 +14,9 @@ func CmdServices(is IServices) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("NAME")
+	logrus.Println("NAME")
 	for _, s := range *svcs {
-		fmt.Printf("%s\n", s.Label)
+		logrus.Printf("%s", s.Label)
 	}
 	return nil
 }

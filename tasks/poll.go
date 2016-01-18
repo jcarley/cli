@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
@@ -26,12 +27,12 @@ poll:
 		}
 		switch task.Status {
 		case "scheduled", "queued", "started", "running":
-			fmt.Print(".")
+			logrus.Print(".")
 			time.Sleep(2 * time.Second)
 		case "finished":
 			break poll
 		default:
-			return "", fmt.Errorf("Error - ended in status '%s'.\n", task.Status)
+			return "", fmt.Errorf("Error - ended in status '%s'.", task.Status)
 		}
 	}
 	return task.Status, nil
@@ -53,7 +54,7 @@ func (t *STasks) PollForConsole(task *models.Task, service *models.Service) (str
 		if jobID, ok := job["jobId"]; ok && jobID != "" {
 			break
 		} else {
-			fmt.Print(".")
+			logrus.Print(".")
 			time.Sleep(2 * time.Second)
 		}
 	}

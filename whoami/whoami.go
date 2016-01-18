@@ -1,13 +1,13 @@
 package whoami
 
-import "fmt"
+import "github.com/Sirupsen/logrus"
 
 func CmdWhoAmI(w IWhoAmI) error {
 	usersID, err := w.WhoAmI()
 	if err != nil {
 		return err
 	}
-	fmt.Printf("user ID = %s\n", usersID)
+	logrus.Printf("user ID = %s", usersID)
 	return nil
 }
 
