@@ -5,8 +5,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/environments"
-	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/lib/prompts"
+	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
 

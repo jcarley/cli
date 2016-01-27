@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
-	"github.com/catalyzeio/cli/commands/services"
 )
 
 // CmdList lists all service files that are able to be downloaded

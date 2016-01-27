@@ -101,15 +101,15 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, authHost, paasHost,
 	}
 	settings.PaasHostVersion = paasHostVersion
 
-	logrus.Infof("Auth Host: %s", authHost)
-	logrus.Infof("Paas Host: %s", paasHost)
-	logrus.Infof("Auth Host Version: %s", authHostVersion)
-	logrus.Infof("Paas Host Version: %s", paasHostVersion)
-	logrus.Infof("Default: %s", settings.Default)
-	logrus.Infof("Environment ID: %s", settings.EnvironmentID)
-	logrus.Infof("Environment Name: %s", settings.EnvironmentName)
-	logrus.Infof("Pod: %s", settings.Pod)
-	logrus.Infof("Service ID: %s", settings.ServiceID)
+	logrus.Debugf("Auth Host: %s", authHost)
+	logrus.Debugf("Paas Host: %s", paasHost)
+	logrus.Debugf("Auth Host Version: %s", authHostVersion)
+	logrus.Debugf("Paas Host Version: %s", paasHostVersion)
+	logrus.Debugf("Default: %s", settings.Default)
+	logrus.Debugf("Environment ID: %s", settings.EnvironmentID)
+	logrus.Debugf("Environment Name: %s", settings.EnvironmentName)
+	logrus.Debugf("Pod: %s", settings.Pod)
+	logrus.Debugf("Service ID: %s", settings.ServiceID)
 
 	settings.Version = VERSION
 	return &settings

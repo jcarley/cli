@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
-	"github.com/catalyzeio/cli/commands/services"
 	ui "gopkg.in/gizak/termui.v1"
 )
 

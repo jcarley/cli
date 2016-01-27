@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
-	"github.com/catalyzeio/cli/commands/services"
 )
 
 func CmdRedeploy(svcName string, ir IRedeploy, is services.IServices) error {

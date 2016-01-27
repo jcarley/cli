@@ -2,7 +2,7 @@ package config
 
 const (
 	// VERSION is the current cli version
-	VERSION = "2.1.7"
+	VERSION = "dev"
 	// AuthHost is the production auth URL
 	AuthHost = "https://api.catalyze.io"
 	// AuthHostVersion is the version path for the auth host

@@ -7,9 +7,9 @@ import (
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
-	"github.com/catalyzeio/cli/commands/services"
 )
 
 // CmdDownload downloads a service file by its name (taken from listing

@@ -2,8 +2,8 @@ package redeploy
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/commands/services"
+	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
 
