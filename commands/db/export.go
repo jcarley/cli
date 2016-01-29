@@ -8,13 +8,13 @@ import (
 	"os"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/jobs"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/lib/tasks"
 	"github.com/catalyzeio/cli/models"
 )
 
-func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPrompts, is services.IServices, it tasks.ITasks) error {
+func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPrompts, is services.IServices, ij jobs.IJobs) error {
 	err := ip.PHI()
 	if err != nil {
 		return err
@@ -33,28 +33,28 @@ func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPr
 	if service == nil {
 		return fmt.Errorf("Could not find a service with the label \"%s\"", databaseName)
 	}
-	task, err := id.Backup(service)
+	job, err := id.Backup(service)
 	if err != nil {
 		return err
 	}
-	logrus.Printf("Export started (task ID = %s)", task.ID)
+	logrus.Printf("Export started (job ID = %s)", job.ID)
 	logrus.Print("Polling until export finishes.")
-	status, err := it.PollForStatus(task)
+	status, err := ij.PollForStatus(job.ID, service.ID)
 	if err != nil {
 		return err
 	}
-	task.Status = status
-	logrus.Printf("\nEnded in status '%s'", task.Status)
-	if task.Status != "finished" {
-		id.DumpLogs("backup", task, service)
-		return fmt.Errorf("Task finished with invalid status %s", task.Status)
+	job.Status = status
+	logrus.Printf("\nEnded in status '%s'", job.Status)
+	if job.Status != "finished" {
+		id.DumpLogs("backup", job, service)
+		return fmt.Errorf("Job finished with invalid status %s", job.Status)
 	}
 
-	err = id.Export(filePath, task, service)
+	err = id.Export(filePath, job, service)
 	if err != nil {
 		return err
 	}
-	err = id.DumpLogs("backup", task, service)
+	err = id.DumpLogs("backup", job, service)
 	if err != nil {
 		return err
 	}
@@ -66,11 +66,7 @@ func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPr
 // data to the local machine. The export is accomplished by first creating a
 // backup. Once finished, the CLI asks where the file can be downloaded from.
 // The file is downloaded, decrypted, and saved locally.
-func (d *SDb) Export(filePath string, task *models.Task, service *models.Service) error {
-	job, err := d.Jobs.RetrieveFromTaskID(task.ID)
-	if err != nil {
-		return err
-	}
+func (d *SDb) Export(filePath string, job *models.Job, service *models.Service) error {
 	logrus.Printf("Downloading export %s", job.ID)
 	tempURL, err := d.TempDownloadURL(job.ID, service)
 	if err != nil {

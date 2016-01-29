@@ -9,12 +9,13 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/environments"
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/git"
 	"github.com/catalyzeio/cli/models"
 )
 
-func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia IAssociate, ig git.IGit, ie environments.IEnvironments) error {
+func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia IAssociate, ig git.IGit, ie environments.IEnvironments, is services.IServices) error {
 	if !ig.Exists() {
 		return errors.New("No git repo found in the current directory")
 	}
@@ -24,17 +25,13 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 		return err
 	}
 	var e *models.Environment
+	var svcs *[]models.Service
 	for _, env := range *envs {
-		logrus.Debugf("associate env %+v", env)
 		if env.Name == envLabel {
-			pod := env.Pod
-			e, err = ie.Retrieve(env.ID)
+			e = &env
+			svcs, err = is.ListByEnvID(env.ID, env.Pod)
 			if err != nil {
 				return err
-			}
-			e.Pod = pod
-			if e.State == "defined" {
-				return fmt.Errorf("Your environment is not yet provisioned. Please visit https://dashboard.catalyze.io/environments/update/%s to finish provisioning your environment", env.ID)
 			}
 			break
 		}
@@ -42,10 +39,13 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 	if e == nil {
 		return fmt.Errorf("No environment with label \"%s\" found", envLabel)
 	}
+	if svcs == nil {
+		return fmt.Errorf("No services found for environment with name \"%s\"", envLabel)
+	}
 
 	var chosenService *models.Service
 	availableCodeServices := []string{}
-	for _, service := range *e.Services {
+	for _, service := range *svcs {
 		if service.Type == "code" {
 			if service.Label == svcLabel {
 				chosenService = &service
@@ -81,7 +81,7 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 	if err != nil {
 		return err
 	}
-	logrus.Printf("Your git repository \"%s\"  has been associated with code service \"%s\" and environment \"%s\"", remote, svcLabel, name)
+	logrus.Printf("Your git repository \"%s\" has been associated with code service \"%s\" and environment \"%s\"", remote, svcLabel, name)
 	return nil
 }
 

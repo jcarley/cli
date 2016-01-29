@@ -9,27 +9,27 @@ import (
 )
 
 func CmdList(myUsersID string, iu IUsers) error {
-	envUsers, err := iu.List()
+	orgUsers, err := iu.List()
 	if err != nil {
 		return err
 	}
-	for _, userID := range envUsers.Users {
-		if userID == myUsersID {
-			logrus.Printf("%s (you)", userID)
+	for _, user := range *orgUsers {
+		if user.ID == myUsersID {
+			logrus.Printf("%s (you)", user.ID)
 		} else {
-			defer logrus.Printf("%s", userID)
+			defer logrus.Printf("%s", user.ID)
 		}
 	}
 	return nil
 }
 
-func (u *SUsers) List() (*models.EnvironmentUsers, error) {
+func (u *SUsers) List() (*[]models.OrgUser, error) {
 	headers := httpclient.GetHeaders(u.Settings.SessionToken, u.Settings.Version, u.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/users", u.Settings.PaasHost, u.Settings.PaasHostVersion, u.Settings.EnvironmentID), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/orgs/%s/users", u.Settings.AuthHost, u.Settings.AuthHostVersion, u.Settings.OrgID), headers)
 	if err != nil {
 		return nil, err
 	}
-	var users models.EnvironmentUsers
+	var users []models.OrgUser
 	err = httpclient.ConvertResp(resp, statusCode, &users)
 	if err != nil {
 		return nil, err

@@ -13,12 +13,8 @@ import (
 )
 
 // DumpLogs dumps logs from a Backup/Restore/Import/Export job to the console
-func (d *SDb) DumpLogs(taskType string, task *models.Task, service *models.Service) error {
-	logrus.Printf("Retrieving %s logs for task %s...", service.Label, task.ID)
-	job, err := d.Jobs.RetrieveFromTaskID(task.ID)
-	if err != nil {
-		return err
-	}
+func (d *SDb) DumpLogs(taskType string, job *models.Job, service *models.Service) error {
+	logrus.Printf("Retrieving %s logs for job %s...", service.Label, job.ID)
 	tempURL, err := d.TempLogsURL(job.ID, service.ID)
 	if err != nil {
 		return err
@@ -72,7 +68,7 @@ func (d *SDb) DumpLogs(taskType string, task *models.Task, service *models.Servi
 
 func (d *SDb) TempLogsURL(jobID string, serviceID string) (*models.TempURL, error) {
 	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/services/%s/backup-restore-logs-url/%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, serviceID, jobID), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/backup-restore-logs-url/%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, serviceID, jobID), headers)
 	if err != nil {
 		return nil, err
 	}

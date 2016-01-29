@@ -4,7 +4,6 @@ import "github.com/catalyzeio/cli/models"
 
 // ITasks
 type ITasks interface {
-	PollForStatus(task *models.Task) (string, error)
 	PollForConsole(task *models.Task, service *models.Service) (string, error)
 }
 

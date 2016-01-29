@@ -22,8 +22,12 @@ func CmdServices(is IServices) error {
 }
 
 func (s *SServices) List() (*[]models.Service, error) {
-	headers := httpclient.GetHeaders(s.Settings.SessionToken, s.Settings.Version, s.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services", s.Settings.PaasHost, s.Settings.PaasHostVersion, s.Settings.EnvironmentID), headers)
+	return s.ListByEnvID(s.Settings.EnvironmentID, s.Settings.Pod)
+}
+
+func (s *SServices) ListByEnvID(envID, podID string) (*[]models.Service, error) {
+	headers := httpclient.GetHeaders(s.Settings.SessionToken, s.Settings.Version, podID)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services", s.Settings.PaasHost, s.Settings.PaasHostVersion, envID), headers)
 	if err != nil {
 		return nil, err
 	}

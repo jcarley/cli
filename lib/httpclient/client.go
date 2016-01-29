@@ -56,15 +56,18 @@ func GetHeaders(sessionToken, version, pod string) map[string][]string {
 func ConvertResp(b []byte, statusCode int, s interface{}) error {
 	logrus.Debugf("%d resp: %s", statusCode, string(b))
 	if statusCode < 200 || statusCode >= 300 {
-		msg := ""
-		var errs models.Error
-		err := json.Unmarshal(b, &errs)
-		if err == nil && errs.Title != "" && errs.Description != "" {
-			msg = fmt.Sprintf("(%d) %s: %s", errs.Code, errs.Title, errs.Description)
-		} else {
-			msg = fmt.Sprintf("(%d) %s", statusCode, string(b))
+		msg := fmt.Sprintf("(%d)", statusCode)
+		if b != nil || len(b) > 0 {
+			var errs models.Error
+			err := json.Unmarshal(b, &errs)
+			if err == nil && errs.Title != "" && errs.Description != "" {
+				msg = fmt.Sprintf("(%d) %s: %s", errs.Code, errs.Title, errs.Description)
+			}
 		}
 		return errors.New(msg)
+	}
+	if b == nil || len(b) == 0 || s == nil {
+		return nil
 	}
 	return json.Unmarshal(b, s)
 }

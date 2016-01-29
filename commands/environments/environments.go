@@ -15,8 +15,7 @@ func CmdEnvironments(environments IEnvironments) error {
 		return err
 	}
 	for _, env := range *envs {
-		logrus.Printf("%+v", env)
-		//logrus.Printf("%s: %s", env.Data.Name, env.ID)
+		logrus.Printf("%s: %s", env.Name, env.ID)
 	}
 	if len(*envs) == 0 {
 		logrus.Println("no environments found")
@@ -26,7 +25,6 @@ func CmdEnvironments(environments IEnvironments) error {
 
 func (e *SEnvironments) List() (*[]models.Environment, error) {
 	var allEnvs []models.Environment
-	logrus.Debugf("pods %+v", e.Settings.Pods)
 	for _, pod := range *e.Settings.Pods {
 		headers := httpclient.GetHeaders(e.Settings.SessionToken, e.Settings.Version, pod.Name)
 		resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments", e.Settings.PaasHost, e.Settings.PaasHostVersion), headers)
@@ -40,11 +38,9 @@ func (e *SEnvironments) List() (*[]models.Environment, error) {
 		}
 		for i := 0; i < len(envs); i++ {
 			envs[i].Pod = pod.Name
-			logrus.Debugf("e %+v", envs[i])
 		}
 		allEnvs = append(allEnvs, envs...)
 	}
-	logrus.Debugf("all envs %+v", allEnvs)
 	return &allEnvs, nil
 }
 
@@ -59,5 +55,6 @@ func (e *SEnvironments) Retrieve(envID string) (*models.Environment, error) {
 	if err != nil {
 		return nil, err
 	}
+	env.Pod = e.Settings.Pod
 	return &env, nil
 }

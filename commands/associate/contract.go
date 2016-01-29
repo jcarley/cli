@@ -3,6 +3,7 @@ package associate
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/environments"
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/git"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
@@ -23,7 +24,7 @@ var Cmd = models.Command{
 			defaultEnv := cmd.BoolOpt("d default", false, "Specifies whether or not the associated environment will be the default")
 			cmd.Action = func() {
 				logrus.Debugf("%+v", settings)
-				err := CmdAssociate(*envName, *serviceName, *alias, *remote, *defaultEnv, New(settings), git.New(), environments.New(settings))
+				err := CmdAssociate(*envName, *serviceName, *alias, *remote, *defaultEnv, New(settings), git.New(), environments.New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}

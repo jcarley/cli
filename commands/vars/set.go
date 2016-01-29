@@ -10,10 +10,10 @@ import (
 )
 
 func CmdSet(variables []string, iv IVars) error {
-	existingVars, err := iv.List()
+	/*existingVars, err := iv.List()
 	if err != nil {
 		return err
-	}
+	}*/
 	envVarsMap := make(map[string]string, len(variables))
 	for _, envVar := range variables {
 		pieces := strings.SplitN(envVar, "=", 2)
@@ -23,16 +23,16 @@ func CmdSet(variables []string, iv IVars) error {
 		envVarsMap[pieces[0]] = pieces[1]
 	}
 
-	for key := range envVarsMap {
+	/*for key := range envVarsMap {
 		if _, ok := existingVars[key]; ok {
 			err := iv.Unset(key)
 			if err != nil {
 				return err
 			}
 		}
-	}
+	}*/
 
-	err = iv.Set(envVarsMap)
+	err := iv.Set(envVarsMap)
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func (v *SVars) Set(envVarsMap map[string]string) error {
 		return err
 	}
 	headers := httpclient.GetHeaders(v.Settings.SessionToken, v.Settings.Version, v.Settings.Pod)
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/services/%s/env", v.Settings.PaasHost, v.Settings.PaasHostVersion, v.Settings.ServiceID), headers)
+	resp, statusCode, err := httpclient.Put(b, fmt.Sprintf("%s%s/environments/%s/services/%s/env", v.Settings.PaasHost, v.Settings.PaasHostVersion, v.Settings.EnvironmentID, v.Settings.ServiceID), headers)
 	if err != nil {
 		return err
 	}

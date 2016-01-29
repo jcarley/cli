@@ -6,7 +6,6 @@ import (
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/crypto"
 	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/lib/tasks"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -37,7 +36,7 @@ var BackupSubCmd = models.Command{
 			databaseName := subCmd.StringArg("DATABASE_NAME", "", "The name of the database service to create a backup for (i.e. 'db01')")
 			skipPoll := subCmd.BoolOpt("s skip-poll", false, "Whether or not to wait for the backup to finish")
 			subCmd.Action = func() {
-				err := CmdBackup(*databaseName, *skipPoll, New(settings, crypto.New(), jobs.New(settings)), services.New(settings), tasks.New(settings))
+				err := CmdBackup(*databaseName, *skipPoll, New(settings, crypto.New(), jobs.New(settings)), services.New(settings), jobs.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -78,7 +77,7 @@ var ExportSubCmd = models.Command{
 			filePath := subCmd.StringArg("FILEPATH", "", "The location to save the exported data. This location must NOT already exist unless -f is specified")
 			force := subCmd.BoolOpt("f force", false, "If a file previously exists at `filepath`, overwrite it and export data")
 			subCmd.Action = func() {
-				err := CmdExport(*databaseName, *filePath, *force, New(settings, crypto.New(), jobs.New(settings)), prompts.New(), services.New(settings), tasks.New(settings))
+				err := CmdExport(*databaseName, *filePath, *force, New(settings, crypto.New(), jobs.New(settings)), prompts.New(), services.New(settings), jobs.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -99,7 +98,7 @@ var ImportSubCmd = models.Command{
 			mongoCollection := subCmd.StringOpt("c mongo-collection", "", "If importing into a mongo service, the name of the collection to import into")
 			mongoDatabase := subCmd.StringOpt("d mongo-database", "", "If importing into a mongo service, the name of the database to import into")
 			subCmd.Action = func() {
-				err := CmdImport(*databaseName, *filePath, *mongoCollection, *mongoDatabase, New(settings, crypto.New(), jobs.New(settings)), services.New(settings), tasks.New(settings))
+				err := CmdImport(*databaseName, *filePath, *mongoCollection, *mongoDatabase, New(settings, crypto.New(), jobs.New(settings)), services.New(settings), jobs.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -131,15 +130,15 @@ var ListSubCmd = models.Command{
 
 // IDb
 type IDb interface {
-	Backup(service *models.Service) (*models.Task, error)
+	Backup(service *models.Service) (*models.Job, error)
 	Download(backupID, filePath string, service *models.Service) error
-	Export(filePath string, task *models.Task, service *models.Service) error
-	Import(filePath, mongoCollection, mongoDatabase string, service *models.Service) (*models.Task, error)
+	Export(filePath string, job *models.Job, service *models.Service) error
+	Import(filePath, mongoCollection, mongoDatabase string, service *models.Service) (*models.Job, error)
 	List(page, pageSize int, service *models.Service) (*[]models.Job, error)
 	TempUploadURL(service *models.Service) (*models.TempURL, error)
 	TempDownloadURL(jobID string, service *models.Service) (*models.TempURL, error)
 	TempLogsURL(jobID string, serviceID string) (*models.TempURL, error)
-	DumpLogs(taskType string, task *models.Task, service *models.Service) error
+	DumpLogs(taskType string, job *models.Job, service *models.Service) error
 }
 
 // SDb is a concrete implementation of IDb

@@ -2,6 +2,18 @@ package models
 
 import "github.com/jawher/mow.cli"
 
+type Role struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+type Org struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	RoleID      int    `json:"roleID"`
+}
+
 type Command struct {
 	Name      string
 	ShortHelp string
@@ -28,12 +40,21 @@ type Login struct {
 	Password   string `json:"password"`
 }
 
-// Invite represents an invitation to an environment
+type PostInvite struct {
+	Email        string `json:"email"`
+	Role         int    `json:"role"`
+	LinkTemplate string `json:"linkTemplate"`
+}
+
+// Invite represents an invitation to an organization
 type Invite struct {
-	ID            string `json:"id,omitempty"`
-	Code          string `json:"code,omitempty"`
-	Email         string `json:"email"`
-	EnvironmentID string `json:"environmentId,omitempty"`
+	ID       string `json:"id"`
+	OrgID    string `json:"orgID"`
+	SenderID string `json:"senderID"`
+	RoleID   int    `json:"roleID"`
+	Email    string `json:"email"`
+	Consumed bool   `json:"consumed"`
+	Revoked  bool   `json:"revoked"`
 }
 
 // User is an authenticated User
@@ -60,31 +81,22 @@ type Task struct {
 	Status string `json:"status"`
 }
 
-// EnvironmentData is the data blob inside of an Environment
-type EnvironmentData struct {
-	Name      string     `json:"name"`
-	Services  *[]Service `json:"services"`
-	Namespace string     `json:"namespace"`
-	DNSName   string     `json:"dns_name"`
-}
-
-// EnvironmentUsers users who have access to an environment
-type EnvironmentUsers struct {
-	Users []string `json:"users"`
+// OrgUser users who have access to an org
+type OrgUser struct {
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Email  string `json:"email"`
+	RoleID int    `json:"roleID"`
 }
 
 // Environment environment
 type Environment struct {
-	ID    string `json:"id"`
-	State string `json:"state"`
-	//Data  *EnvironmentData `json:"data"`
-	PodID string `json:"podId"`
-	Name  string `json:"name"`
-	Pod   string `json:"pod"`
-
-	Services  *[]Service `json:"services"`
-	Namespace string     `json:"namespace"`
-	DNSName   string     `json:"dns_name"`
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	Pod       string `json:"pod"`
+	Namespace string `json:"namespace"`
+	DNSName   string `json:"dns_name"`
+	OrgID     string `json:"organizationId"`
 }
 
 // Job job
@@ -114,7 +126,7 @@ type Service struct {
 	ID           string            `json:"id"`
 	Type         string            `json:"type"`
 	Label        string            `json:"label"`
-	Size         interface{}       `json:"size"`
+	Size         interface{}       `json:"size"` // TODO is this guaranteed to be the new format now?
 	BuildStatus  string            `json:"build_status"`
 	DeployStatus string            `json:"deploy_status"`
 	Name         string            `json:"name"`
@@ -158,6 +170,7 @@ type Settings struct {
 	ServiceID       string                   `json:"-"` // the id of the service used for the current command
 	Pod             string                   `json:"-"` // the pod used for the current command
 	EnvironmentName string                   `json:"-"` // the name of the environment used for the current command
+	OrgID           string                   `json:"-"` // the org ID the chosen environment for this commands belongs to
 	SessionToken    string                   `json:"token"`
 	UsersID         string                   `json:"user_id"`
 	Environments    map[string]AssociatedEnv `json:"environments"`
@@ -184,6 +197,7 @@ type AssociatedEnv struct {
 	Directory     string `json:"dir"`
 	Name          string `json:"name"`
 	Pod           string `json:"pod"`
+	OrgID         string `json:"organizationId"`
 }
 
 // Breadcrumb is stored in a local git repo to make a link back to the

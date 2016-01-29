@@ -19,17 +19,15 @@ func CmdList(envName string, ii IInvites) error {
 	}
 	logrus.Printf("Pending invites for %s:", envName)
 	for _, invite := range *invts {
-		logrus.Printf("\t%s %s", invite.Email, invite.Code)
+		logrus.Printf("\t%s %s", invite.Email, invite.ID)
 	}
 	return nil
 }
 
-// List lists all pending invites for a given environment. After an
-// invite is accepted, you can manage the users access with the `users`
-// commands.
+// List lists all pending invites for a given org.
 func (i *SInvites) List() (*[]models.Invite, error) {
 	headers := httpclient.GetHeaders(i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/invites", i.Settings.PaasHost, i.Settings.PaasHostVersion, i.Settings.EnvironmentID), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/orgs/%s/invites", i.Settings.AuthHost, i.Settings.AuthHostVersion, i.Settings.OrgID), headers)
 	if err != nil {
 		return nil, err
 	}
@@ -39,4 +37,26 @@ func (i *SInvites) List() (*[]models.Invite, error) {
 		return nil, err
 	}
 	return &invites, nil
+}
+
+// ListRoles lists all available roles
+func (i *SInvites) ListRoles() (*[]models.Role, error) {
+	headers := httpclient.GetHeaders(i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/orgs/roles", i.Settings.AuthHost, i.Settings.AuthHostVersion), headers)
+	if err != nil {
+		return nil, err
+	}
+	var rolesMap map[string]int
+	err = httpclient.ConvertResp(resp, statusCode, &rolesMap)
+	if err != nil {
+		return nil, err
+	}
+	var roles []models.Role
+	for name, id := range rolesMap {
+		roles = append(roles, models.Role{
+			ID:   id,
+			Name: name,
+		})
+	}
+	return &roles, nil
 }

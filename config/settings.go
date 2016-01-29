@@ -110,6 +110,7 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, authHost, paasHost,
 	logrus.Debugf("Environment Name: %s", settings.EnvironmentName)
 	logrus.Debugf("Pod: %s", settings.Pod)
 	logrus.Debugf("Service ID: %s", settings.ServiceID)
+	logrus.Debugf("Org ID: %s", settings.OrgID)
 
 	settings.Version = VERSION
 	return &settings
@@ -168,6 +169,7 @@ func setGivenEnv(envName string, settings *models.Settings) {
 			settings.ServiceID = e.ServiceID
 			settings.Pod = e.Pod
 			settings.EnvironmentName = envName
+			settings.OrgID = e.OrgID
 		}
 	}
 }
@@ -209,6 +211,7 @@ func setFirstAssociatedEnv(settings *models.Settings) {
 		settings.ServiceID = e.ServiceID
 		settings.Pod = e.Pod
 		settings.EnvironmentName = e.Name
+		settings.OrgID = e.OrgID
 		/*if promptForEnv {
 			defaultEnvPrompt(envName)
 		}*/
