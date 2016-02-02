@@ -21,7 +21,7 @@ func CmdList(svcName string, ifiles IFiles, is services.IServices) error {
 	if service == nil {
 		return fmt.Errorf("Could not find a service with the name \"%s\"", svcName)
 	}
-	files, err := ifiles.List()
+	files, err := ifiles.List(service.ID)
 	if err != nil {
 		return err
 	}
@@ -59,9 +59,9 @@ func fileModeToRWXString(perms uint64) string {
 	return permissionString
 }
 
-func (f *SFiles) List() (*[]models.ServiceFile, error) {
+func (f *SFiles) List(svcID string) (*[]models.ServiceFile, error) {
 	headers := httpclient.GetHeaders(f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/files", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.EnvironmentID, f.Settings.ServiceID), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/files", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return nil, err
 	}

@@ -48,14 +48,14 @@ var ListSubCmd = models.Command{
 	LongHelp:  "List all files available for a given service",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
-			svcName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to list files for")
+			svcName := subCmd.StringArg("SERVICE_NAME", "service_proxy", "The name of the service to list files for")
 			subCmd.Action = func() {
 				err := CmdList(*svcName, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "SERVICE_NAME"
+			subCmd.Spec = "[SERVICE_NAME]"
 		}
 	},
 }
@@ -63,7 +63,7 @@ var ListSubCmd = models.Command{
 // IFiles
 type IFiles interface {
 	Create(svcID, filePath, name, mode string) (*models.ServiceFile, error)
-	List() (*[]models.ServiceFile, error)
+	List(svcID string) (*[]models.ServiceFile, error)
 	Retrieve(fileName string, service *models.Service) (*models.ServiceFile, error)
 	Save(output string, force bool, file *models.ServiceFile) error
 }

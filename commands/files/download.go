@@ -46,7 +46,7 @@ func CmdDownload(svcName, fileName, output string, force bool, ifiles IFiles, is
 
 func (f *SFiles) Retrieve(fileName string, service *models.Service) (*models.ServiceFile, error) {
 	var file models.ServiceFile
-	files, err := f.List()
+	files, err := f.List(service.ID)
 	if err != nil {
 		return nil, err
 	}

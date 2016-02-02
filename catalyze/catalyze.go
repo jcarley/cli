@@ -65,7 +65,7 @@ func Run() {
 
 	logrus.SetFormatter(&simpleLogger{})
 	logrus.SetOutput(os.Stdout)
-	//logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 
 	var app = cli.App("catalyze", fmt.Sprintf("Catalyze CLI. Version %s", config.VERSION))
 

@@ -46,17 +46,10 @@ func (i *SInvites) ListRoles() (*[]models.Role, error) {
 	if err != nil {
 		return nil, err
 	}
-	var rolesMap map[string]int
-	err = httpclient.ConvertResp(resp, statusCode, &rolesMap)
+	var roles []models.Role
+	err = httpclient.ConvertResp(resp, statusCode, &roles)
 	if err != nil {
 		return nil, err
-	}
-	var roles []models.Role
-	for name, id := range rolesMap {
-		roles = append(roles, models.Role{
-			ID:   id,
-			Name: name,
-		})
 	}
 	return &roles, nil
 }
