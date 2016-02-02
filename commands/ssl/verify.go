@@ -18,7 +18,7 @@ func CmdVerify(chainPath, privateKeyPath, hostname string, selfSigned bool, is I
 		return fmt.Errorf("A cert does not exist at path '%s'", chainPath)
 	}
 	if _, err := os.Stat(privateKeyPath); os.IsNotExist(err) {
-		return fmt.Errorf("A private key does not exist at path '%s'", chainPath)
+		return fmt.Errorf("A private key does not exist at path '%s'", privateKeyPath)
 	}
 	err := is.Verify(chainPath, privateKeyPath, hostname, selfSigned)
 	if err != nil {

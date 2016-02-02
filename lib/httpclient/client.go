@@ -84,8 +84,20 @@ func Post(body []byte, url string, headers map[string][]string) ([]byte, int, er
 	return MakeRequest("POST", url, reader, headers)
 }
 
-// PutFile uploads a file
+// PostFile uploads a file with a POST
+func PostFile(filepath string, url string, headers map[string][]string) ([]byte, int, error) {
+	return uploadFile("POST", filepath, url, headers)
+}
+
+// PutFile uploads a file with a PUT
 func PutFile(filepath string, url string, headers map[string][]string) ([]byte, int, error) {
+	return uploadFile("PUT", filepath, url, headers)
+}
+
+func uploadFile(method, filepath, url string, headers map[string][]string) ([]byte, int, error) {
+	logrus.Debugf("%s %s", method, url)
+	logrus.Debugf("%+v", headers)
+	logrus.Debugf("%s", filepath)
 	file, err := os.Open(filepath)
 	defer file.Close()
 	if err != nil {
@@ -93,7 +105,7 @@ func PutFile(filepath string, url string, headers map[string][]string) ([]byte, 
 	}
 	info, _ := file.Stat()
 	client := getClient()
-	req, _ := http.NewRequest("PUT", url, file)
+	req, _ := http.NewRequest(method, url, file)
 	req.ContentLength = info.Size()
 
 	resp, err := client.Do(req)
@@ -123,9 +135,7 @@ func Delete(body []byte, url string, headers map[string][]string) ([]byte, int, 
 func MakeRequest(method string, url string, body io.Reader, headers map[string][]string) ([]byte, int, error) {
 	logrus.Debugf("%s %s", method, url)
 	logrus.Debugf("%+v", headers)
-	var b []byte
-	body.Read(b)
-	logrus.Debugf("\n%s", string(b))
+	logrus.Debugf("%s", body)
 	client := getClient()
 	req, _ := http.NewRequest(method, url, body)
 	req.Header = headers

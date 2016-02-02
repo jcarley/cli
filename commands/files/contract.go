@@ -62,6 +62,7 @@ var ListSubCmd = models.Command{
 
 // IFiles
 type IFiles interface {
+	Create(svcID, filePath, name, mode string) (*models.ServiceFile, error)
 	List() (*[]models.ServiceFile, error)
 	Retrieve(fileName string, service *models.Service) (*models.ServiceFile, error)
 	Save(output string, force bool, file *models.ServiceFile) error

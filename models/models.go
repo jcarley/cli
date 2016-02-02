@@ -292,11 +292,22 @@ type LogHits struct {
 
 // ServiceFile is a file associated with a service
 type ServiceFile struct {
-	ID             int64  `json:"id"`
+	ID             int    `json:"id"`
 	Contents       string `json:"contents"`
-	GID            int64  `json:"gid"`
+	GID            int    `json:"gid"`
 	Mode           string `json:"mode"`
 	Name           string `json:"name"`
-	UID            int64  `json:"uid"`
+	UID            int    `json:"uid"`
 	EnableDownload bool   `json:"enable_download"`
+}
+
+type Site struct {
+	ID         int `json:"id,omitempty"`
+	SiteFileID int `json:"siteFileId,omitempty"`
+
+	Name                string `json:"name"`
+	SSLCertFileID       int    `json:"sslCertFileId"`
+	SSLPrivateKeyFileID int    `json:"sslPKFileId"`
+	Wildcard            bool   `json:"wildcard"`
+	ServiceName         string `json:"upstreamService"`
 }
