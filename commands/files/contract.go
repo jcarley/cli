@@ -27,7 +27,7 @@ var DownloadSubCmd = models.Command{
 	LongHelp:  "Download a file to your localhost with the same file permissions as on the remote host or print it to stdout",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
-			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to download a file from")
+			serviceName := subCmd.StringArg("SERVICE_NAME", "service_proxy", "The name of the service to download a file from")
 			fileName := subCmd.StringArg("FILE_NAME", "", "The name of the service file from running \"catalyze files list\"")
 			output := subCmd.StringOpt("o output", "", "The downloaded file will be saved to the given location with the same file permissions as it has on the remote host. If those file permissions cannot be applied, a warning will be printed and default 0644 permissions applied. If no output is specified, stdout is used.")
 			force := subCmd.BoolOpt("f force", false, "If the specified output file already exists, automatically overwrite it")
@@ -37,7 +37,7 @@ var DownloadSubCmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "SERVICE_NAME FILE_NAME [-o] [-f]"
+			subCmd.Spec = "[SERVICE_NAME] FILE_NAME [-o] [-f]"
 		}
 	},
 }
