@@ -99,6 +99,7 @@ func (s *SAssociate) Associate(name, remote string, defaultEnv bool, env *models
 		Directory:     dir,
 		Name:          env.Name,
 		Pod:           env.Pod,
+		OrgID:         env.OrgID,
 	}
 	if defaultEnv {
 		s.Settings.Default = name
