@@ -2,6 +2,7 @@ package models
 
 import "github.com/jawher/mow.cli"
 
+// Command ...
 type Command struct {
 	Name      string
 	ShortHelp string
@@ -39,8 +40,9 @@ type Invite struct {
 // User is an authenticated User
 type User struct {
 	Username     string `json:"username"`
+	Email        string `json:"email"`
 	SessionToken string `json:"sessionToken"`
-	UsersID      string `json:"usersId"`
+	UsersID      string `json:"ID"`
 }
 
 // EncryptionStore holds the values for encryption on backup/import jobs
@@ -158,6 +160,7 @@ type Settings struct {
 	ServiceID       string                   `json:"-"` // the id of the service used for the current command
 	Pod             string                   `json:"-"` // the pod used for the current command
 	EnvironmentName string                   `json:"-"` // the name of the environment used for the current command
+	PrivateKeyPath  string                   `json:"private_key_path"`
 	SessionToken    string                   `json:"token"`
 	UsersID         string                   `json:"user_id"`
 	Environments    map[string]AssociatedEnv `json:"environments"`
@@ -285,4 +288,10 @@ type ServiceFile struct {
 	Name           string `json:"name"`
 	UID            int64  `json:"uid"`
 	EnableDownload bool   `json:"enable_download"`
+}
+
+// UserKey is a public key belonging to a user
+type UserKey struct {
+	Name string `json:"name"`
+	Key  string `json:"key"`
 }
