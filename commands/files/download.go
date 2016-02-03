@@ -30,30 +30,26 @@ func CmdDownload(svcName, fileName, output string, force bool, ifiles IFiles, is
 	if service == nil {
 		return fmt.Errorf("Could not find a service with the name \"%s\"", svcName)
 	}
-	file, err := ifiles.Retrieve(fileName, service)
+	file, err := ifiles.Retrieve(fileName, service.ID)
 	if err != nil {
 		return err
 	}
 	if file == nil {
 		return fmt.Errorf("File with name %s does not exist. Try listing files again by running \"catalyze files list\"", fileName)
 	}
-	err = ifiles.Save(output, force, file)
-	if err != nil {
-		return err
-	}
-	return nil
+	return ifiles.Save(output, force, file)
 }
 
-func (f *SFiles) Retrieve(fileName string, service *models.Service) (*models.ServiceFile, error) {
+func (f *SFiles) Retrieve(fileName string, svcID string) (*models.ServiceFile, error) {
 	var file models.ServiceFile
-	files, err := f.List(service.ID)
+	files, err := f.List(svcID)
 	if err != nil {
 		return nil, err
 	}
 	for _, ff := range *files {
 		if ff.Name == fileName {
 			headers := httpclient.GetHeaders(f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod)
-			resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/files/%d", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.EnvironmentID, f.Settings.ServiceID, ff.ID), headers)
+			resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/files/%d", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.EnvironmentID, svcID, ff.ID), headers)
 			if err != nil {
 				return nil, err
 			}

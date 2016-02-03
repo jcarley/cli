@@ -17,6 +17,7 @@ var Cmd = models.Command{
 		return func(cmd *cli.Cmd) {
 			cmd.Command(DownloadSubCmd.Name, DownloadSubCmd.ShortHelp, DownloadSubCmd.CmdFunc(settings))
 			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
+			cmd.Command(RmSubCmd.Name, RmSubCmd.ShortHelp, RmSubCmd.CmdFunc(settings))
 		}
 	},
 }
@@ -60,11 +61,31 @@ var ListSubCmd = models.Command{
 	},
 }
 
+var RmSubCmd = models.Command{
+	Name:      "rm",
+	ShortHelp: "Remove a service file",
+	LongHelp:  "Remove a service file",
+	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
+		return func(subCmd *cli.Cmd) {
+			serviceName := subCmd.StringArg("SERVICE_NAME", "service_proxy", "The name of the service to remove a file from")
+			fileName := subCmd.StringArg("FILE_NAME", "", "The name of the service file from running \"catalyze files list\"")
+			subCmd.Action = func() {
+				err := CmdRm(*serviceName, *fileName, New(settings), services.New(settings))
+				if err != nil {
+					logrus.Fatal(err.Error())
+				}
+			}
+			subCmd.Spec = "[SERVICE_NAME] FILE_NAME"
+		}
+	},
+}
+
 // IFiles
 type IFiles interface {
 	Create(svcID, filePath, name, mode string) (*models.ServiceFile, error)
 	List(svcID string) (*[]models.ServiceFile, error)
-	Retrieve(fileName string, service *models.Service) (*models.ServiceFile, error)
+	Retrieve(fileName string, svcID string) (*models.ServiceFile, error)
+	Rm(fileID int, svcID string) error
 	Save(output string, force bool, file *models.ServiceFile) error
 }
 
