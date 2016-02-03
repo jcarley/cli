@@ -38,7 +38,7 @@ var validAnswers = map[string]bool{
 // UsernamePassword prompts a user to enter their username and password.
 func (p *SPrompts) UsernamePassword() (string, string, error) {
 	var username string
-	fmt.Print("Username: ")
+	fmt.Print("Username or Email: ")
 	in := bufio.NewReader(os.Stdin)
 	username, err := in.ReadString('\n')
 	if err != nil {
