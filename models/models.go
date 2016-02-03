@@ -62,7 +62,7 @@ type User struct {
 	Username     string `json:"username"`
 	Email        string `json:"email"`
 	SessionToken string `json:"sessionToken"`
-	UsersID      string `json:"ID"`
+	UsersID      string `json:"id"`
 }
 
 // EncryptionStore holds the values for encryption on backup/import jobs
