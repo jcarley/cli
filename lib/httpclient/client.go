@@ -59,6 +59,9 @@ func ConvertResp(b []byte, statusCode int, s interface{}) error {
 	if IsError(statusCode) {
 		return ConvertError(b, statusCode)
 	}
+	if b == nil || len(b) == 0 || s == nil {
+		return nil
+	}
 	return json.Unmarshal(b, s)
 }
 
@@ -69,15 +72,21 @@ func IsError(statusCode int) bool {
 
 // ConvertError attempts to convert a response into a usable error object.
 func ConvertError(b []byte, statusCode int) error {
-	msg := ""
 	var errs models.Error
 	err := json.Unmarshal(b, &errs)
 	if err != nil {
+		logrus.Debugf("Original response: %s", string(b))
 		return err
-	} else if errs.Title != "" && errs.Description != "" {
-		msg = fmt.Sprintf("(%d) %s: %s", errs.Code, errs.Title, errs.Description)
-	} else {
-		msg = fmt.Sprintf("(%d) %s", statusCode, string(b))
+	}
+	msg := fmt.Sprintf("(%d)", statusCode)
+	if b != nil || len(b) > 0 {
+		var errs models.Error
+		err := json.Unmarshal(b, &errs)
+		if err == nil && errs.Title != "" && errs.Description != "" {
+			msg = fmt.Sprintf("(%d) %s: %s", errs.Code, errs.Title, errs.Description)
+		} else {
+			msg = fmt.Sprintf("(%d) %s", statusCode, string(b))
+		}
 	}
 	return errors.New(msg)
 }

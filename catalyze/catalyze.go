@@ -43,12 +43,27 @@ import (
 	"github.com/jawher/mow.cli"
 )
 
+type simpleLogger struct{}
+
+func (s *simpleLogger) Format(entry *logrus.Entry) ([]byte, error) {
+	//	entry.Data["msg"]`. The message passed from Info, Warn, Error ..
+	// * `entry.Data["time"]`. The timestamp.
+	// * `entry.Data["level"]. The level the entry was logged at.
+	levelString := fmt.Sprintf("[%s] ", entry.Level)
+	if entry.Level == logrus.InfoLevel {
+		levelString = ""
+	}
+	l := fmt.Sprintf("%s%s\n", levelString, entry.Message)
+	return []byte(l), nil
+}
+
 // Run runs the Catalyze CLI
 func Run() {
 	if updater.AutoUpdater != nil {
 		updater.AutoUpdater.BackgroundRun()
 	}
 
+	logrus.SetFormatter(&simpleLogger{})
 	logrus.SetOutput(os.Stdout)
 	logrus.SetLevel(logrus.DebugLevel)
 
@@ -125,7 +140,7 @@ func Run() {
 		archString = "arm"
 	}
 	versionString := fmt.Sprintf("version %s %s", config.VERSION, archString)
-	logrus.Infoln(versionString)
+	logrus.Debugln(versionString)
 	app.Version("v version", versionString)
 	app.Command("version", "Output the version and quit", func(cmd *cli.Cmd) {
 		cmd.Action = func() {
@@ -139,7 +154,7 @@ func Run() {
 // InitCLI adds arguments and commands to the given cli instance
 func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.Command(associate.Cmd.Name, associate.Cmd.ShortHelp, associate.Cmd.CmdFunc(settings))
-	app.Command(associated.Cmd.Name, associated.Cmd.ShortHelp, associate.Cmd.CmdFunc(settings))
+	app.Command(associated.Cmd.Name, associated.Cmd.ShortHelp, associated.Cmd.CmdFunc(settings))
 	app.Command(console.Cmd.Name, console.Cmd.ShortHelp, console.Cmd.CmdFunc(settings))
 	app.Command(dashboard.Cmd.Name, dashboard.Cmd.ShortHelp, dashboard.Cmd.CmdFunc(settings))
 	app.Command(db.Cmd.Name, db.Cmd.ShortHelp, db.Cmd.CmdFunc(settings))

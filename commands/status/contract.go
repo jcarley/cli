@@ -4,6 +4,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/environments"
 	"github.com/catalyzeio/cli/commands/jobs"
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -17,7 +18,7 @@ var Cmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {
-				err := CmdStatus(settings.EnvironmentID, New(settings, jobs.New(settings)), environments.New(settings))
+				err := CmdStatus(settings.EnvironmentID, New(settings, jobs.New(settings)), environments.New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -28,7 +29,7 @@ var Cmd = models.Command{
 
 // IStatus
 type IStatus interface {
-	Status(env *models.Environment) error
+	Status(env *models.Environment, services *[]models.Service) error
 }
 
 // SStatus is a concrete implementation of IStatus

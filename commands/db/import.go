@@ -8,13 +8,13 @@ import (
 	"os"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/jobs"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
-	"github.com/catalyzeio/cli/lib/tasks"
 	"github.com/catalyzeio/cli/models"
 )
 
-func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id IDb, is services.IServices, it tasks.ITasks) error {
+func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id IDb, is services.IServices, ij jobs.IJobs) error {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return fmt.Errorf("A file does not exist at path '%s'", filePath)
 	}
@@ -26,45 +26,45 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id
 		return fmt.Errorf("Could not find a service with the label \"%s\"", databaseName)
 	}
 	logrus.Printf("Backing up \"%s\" before performing the import", databaseName)
-	task, err := id.Backup(service)
+	job, err := id.Backup(service)
 	if err != nil {
 		return err
 	}
-	logrus.Printf("Backup started (task ID = %s)", task.ID)
+	logrus.Printf("Backup started (job ID = %s)", job.ID)
 
 	logrus.Print("Polling until backup finishes.")
-	status, err := it.PollForStatus(task)
+	status, err := ij.PollForStatus(job.ID, service.ID)
 	if err != nil {
 		return err
 	}
-	task.Status = status
-	logrus.Printf("\nEnded in status '%s'", task.Status)
-	err = id.DumpLogs("backup", task, service)
+	job.Status = status
+	logrus.Printf("\nEnded in status '%s'", job.Status)
+	err = id.DumpLogs("backup", job, service)
 	if err != nil {
 		return err
 	}
-	if task.Status != "finished" {
-		return fmt.Errorf("Task finished with invalid status %s", task.Status)
+	if job.Status != "finished" {
+		return fmt.Errorf("Job finished with invalid status %s", job.Status)
 	}
 	logrus.Printf("Importing '%s' into %s (ID = %s)", filePath, databaseName, service.ID)
-	task, err = id.Import(filePath, mongoCollection, mongoDatabase, service)
+	job, err = id.Import(filePath, mongoCollection, mongoDatabase, service)
 	if err != nil {
 		return err
 	}
-	logrus.Printf("Processing import... (task ID = %s)", task.ID)
+	logrus.Printf("Processing import... (job ID = %s)", job.ID)
 
-	status, err = it.PollForStatus(task)
+	status, err = ij.PollForStatus(job.ID, service.ID)
 	if err != nil {
 		return err
 	}
-	task.Status = status
-	logrus.Printf("\nImport complete (end status = '%s')", task.Status)
-	err = id.DumpLogs("restore", task, service)
+	job.Status = status
+	logrus.Printf("\nImport complete (end status = '%s')", job.Status)
+	err = id.DumpLogs("restore", job, service)
 	if err != nil {
 		return err
 	}
-	if task.Status != "finished" {
-		return fmt.Errorf("Finished with invalid status %s", task.Status)
+	if job.Status != "finished" {
+		return fmt.Errorf("Finished with invalid status %s", job.Status)
 	}
 	return nil
 }
@@ -78,7 +78,7 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id
 // PostgreSQL and MySQL, this should be a single `.sql` file. For Mongo, this
 // should be a single tar'ed, gzipped archive (`.tar.gz`) of the database dump
 // that you want to import.
-func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *models.Service) (*models.Task, error) {
+func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *models.Service) (*models.Job, error) {
 	key := make([]byte, 32)
 	iv := make([]byte, aes.BlockSize)
 	rand.Read(key)
@@ -124,23 +124,21 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	if err != nil {
 		return nil, err
 	}
-	resp, statusCode, err = httpclient.Post(b, fmt.Sprintf("%s%s/services/%s/import", d.Settings.PaasHost, d.Settings.PaasHostVersion, service.ID), headers)
+	resp, statusCode, err = httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/import", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
 	if err != nil {
 		return nil, err
 	}
-	var m map[string]string
-	err = httpclient.ConvertResp(resp, statusCode, &m)
+	var job models.Job
+	err = httpclient.ConvertResp(resp, statusCode, &job)
 	if err != nil {
 		return nil, err
 	}
-	return &models.Task{
-		ID: m["task"],
-	}, nil
+	return &job, nil
 }
 
 func (d *SDb) TempUploadURL(service *models.Service) (*models.TempURL, error) {
 	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/services/%s/restore-url", d.Settings.PaasHost, d.Settings.PaasHostVersion, service.ID), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/restore-url", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
 	if err != nil {
 		return nil, err
 	}

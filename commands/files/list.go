@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
-	"github.com/catalyzeio/cli/commands/services"
 )
 
 // CmdList lists all service files that are able to be downloaded
@@ -61,15 +61,14 @@ func fileModeToRWXString(perms uint64) string {
 
 func (f *SFiles) List() (*[]models.ServiceFile, error) {
 	headers := httpclient.GetHeaders(f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/services/%s/files", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.ServiceID), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/files", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.EnvironmentID, f.Settings.ServiceID), headers)
 	if err != nil {
 		return nil, err
 	}
-	var m map[string][]models.ServiceFile
-	err = httpclient.ConvertResp(resp, statusCode, &m)
+	var svcFiles []models.ServiceFile
+	err = httpclient.ConvertResp(resp, statusCode, &svcFiles)
 	if err != nil {
 		return nil, err
 	}
-	svcFiles := m["files"]
 	return &svcFiles, nil
 }

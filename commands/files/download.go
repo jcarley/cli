@@ -7,9 +7,9 @@ import (
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
-	"github.com/catalyzeio/cli/commands/services"
 )
 
 // CmdDownload downloads a service file by its name (taken from listing
@@ -53,7 +53,7 @@ func (f *SFiles) Retrieve(fileName string, service *models.Service) (*models.Ser
 	for _, ff := range *files {
 		if ff.Name == fileName {
 			headers := httpclient.GetHeaders(f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod)
-			resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/services/%s/files/%d", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.ServiceID, ff.ID), headers)
+			resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/files/%d", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.EnvironmentID, f.Settings.ServiceID, ff.ID), headers)
 			if err != nil {
 				return nil, err
 			}

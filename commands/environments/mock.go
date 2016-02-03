@@ -28,26 +28,9 @@ func (e *MEnvironments) Retrieve(envID string) (*models.Environment, error) {
 
 func env() models.Environment {
 	return models.Environment{
-		ID:    "1234",
-		State: "running",
-		PodID: "pod01",
-		Name:  "env",
-		Pod:   "pod01",
-		Services: &[]models.Service{{
-			ID:    "1234",
-			Type:  "code",
-			Label: "app01",
-			Size: map[string]string{
-				"cpu": "1",
-			},
-			BuildStatus:  "finished",
-			DeployStatus: "running",
-			Name:         "svc",
-			EnvVars:      map[string]string{},
-			Source:       "git@git",
-			LBIP:         "1.2.3.4",
-			DockerImage:  "image",
-		}},
+		ID:        "1234",
+		Name:      "env",
+		Pod:       "pod01",
 		Namespace: "pod01",
 		DNSName:   "pod01",
 	}

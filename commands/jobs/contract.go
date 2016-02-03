@@ -5,9 +5,10 @@ import "github.com/catalyzeio/cli/models"
 // IJobs
 type IJobs interface {
 	Retrieve(jobID string) (*models.Job, error)
-	RetrieveFromTaskID(taskID string) (*models.Job, error)
-	RetrieveByStatus(status string) (*map[string]models.Job, error)
-	RetrieveByType(jobType string, page, pageSize int) (*map[string]models.Job, error)
+	//RetrieveFromTaskID(taskID string) (*models.Job, error)
+	RetrieveByStatus(status string) (*[]models.Job, error)
+	RetrieveByType(jobType string, page, pageSize int) (*[]models.Job, error)
+	PollForStatus(jobID, svcID string) (string, error)
 }
 
 // SJobs is a concrete implementation of IJobs

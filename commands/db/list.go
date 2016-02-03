@@ -5,9 +5,9 @@ import (
 	"sort"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
-	"github.com/catalyzeio/cli/commands/services"
 )
 
 func CmdList(databaseName string, page, pageSize int, id IDb, is services.IServices) error {
@@ -22,6 +22,7 @@ func CmdList(databaseName string, page, pageSize int, id IDb, is services.IServi
 	if err != nil {
 		return err
 	}
+	sort.Sort(SortedJobs(*jobs))
 	for _, job := range *jobs {
 		logrus.Printf("%s %s (status = %s)", job.ID, job.CreatedAt, job.Status)
 	}
@@ -53,20 +54,14 @@ func (jobs SortedJobs) Less(i, j int) bool {
 // List lists the created backups for the service sorted from oldest to newest
 func (d *SDb) List(page, pageSize int, service *models.Service) (*[]models.Job, error) {
 	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/services/%s/brrgc/backup?pageNumber=%d&pageSize=%d", d.Settings.PaasHost, d.Settings.PaasHostVersion, service.ID, page, pageSize), headers)
-	if err != nil {
-		return nil, err
-	}
-	var jobsMap map[string]models.Job
-	err = httpclient.ConvertResp(resp, statusCode, &jobsMap)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs?type=backup&pageNumber=%d&pageSize=%d", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID, page, pageSize), headers)
 	if err != nil {
 		return nil, err
 	}
 	var jobs []models.Job
-	for jobID, job := range jobsMap {
-		job.ID = jobID
-		jobs = append(jobs, job)
+	err = httpclient.ConvertResp(resp, statusCode, &jobs)
+	if err != nil {
+		return nil, err
 	}
-	sort.Sort(SortedJobs(jobs))
 	return &jobs, nil
 }

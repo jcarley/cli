@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
-	"github.com/catalyzeio/cli/commands/services"
 )
 
 func CmdRedeploy(svcName string, ir IRedeploy, is services.IServices) error {
@@ -31,7 +31,7 @@ func CmdRedeploy(svcName string, ir IRedeploy, is services.IServices) error {
 // no changes.
 func (r *SRedeploy) Redeploy(service *models.Service) error {
 	headers := httpclient.GetHeaders(r.Settings.SessionToken, r.Settings.Version, r.Settings.Pod)
-	resp, statusCode, err := httpclient.Post(nil, fmt.Sprintf("%s%s/services/%s/redeploy", r.Settings.PaasHost, r.Settings.PaasHostVersion, service.ID), headers)
+	resp, statusCode, err := httpclient.Post(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/deploy?redeploy=true", r.Settings.PaasHost, r.Settings.PaasHostVersion, r.Settings.EnvironmentID, service.ID), headers)
 	if err != nil {
 		return err
 	}

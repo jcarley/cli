@@ -27,6 +27,7 @@ var Cmd = models.Command{
 // IServices
 type IServices interface {
 	List() (*[]models.Service, error)
+	ListByEnvID(envID, podID string) (*[]models.Service, error)
 	Retrieve(svcID string) (*models.Service, error)
 	RetrieveByLabel(label string) (*models.Service, error)
 }

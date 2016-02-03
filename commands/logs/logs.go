@@ -10,11 +10,11 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/commands/environments"
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/httpclient"
-	"github.com/catalyzeio/cli/models"
 	"github.com/catalyzeio/cli/lib/prompts"
+	"github.com/catalyzeio/cli/models"
 )
 
 const size = 50

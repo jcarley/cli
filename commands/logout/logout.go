@@ -3,10 +3,7 @@ package logout
 import "github.com/catalyzeio/cli/lib/auth"
 
 func CmdLogout(il ILogout, ia auth.IAuth) error {
-	err := ia.Signout()
-	if err != nil {
-		return err
-	}
+	ia.Signout()
 	return il.Clear()
 }
 
