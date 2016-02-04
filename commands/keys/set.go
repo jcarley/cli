@@ -1,6 +1,7 @@
 package keys
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -22,40 +23,47 @@ var SetSubCmd = models.Command{
 			path := cmd.StringArg("PATH_TO_KEY", "", "Relative path to the private key file.")
 
 			cmd.Action = func() {
-				fullPath, err := homedir.Expand(*path)
+				err := CmdSet(settings, *path)
 				if err != nil {
 					logrus.Fatal(err)
 				}
-
-				// make sure both files exist
-				_, err = ioutil.ReadFile(fullPath + ".pub")
-				if err != nil {
-					if os.IsNotExist(err) {
-						logrus.Fatalf("Public key file '%s' does not exist.", fullPath+".pub")
-					} else {
-						logrus.Fatal(err)
-					}
-				}
-
-				_, err = ioutil.ReadFile(fullPath)
-				if err != nil {
-					if os.IsNotExist(err) {
-						logrus.Fatalf("Private key file '%s' does not exist.", fullPath)
-					} else {
-						logrus.Fatal(err)
-					}
-				}
-
-				settings.PrivateKeyPath = fullPath
-				settings.SessionToken = ""
-				a := auth.New(settings, prompts.New())
-				user, err := a.Signin()
-				if err != nil {
-					logrus.Fatal(err)
-				}
-				logrus.Infof("Successfully added key and signed in as %s.", user.Email)
-				config.SaveSettings(settings)
 			}
 		}
 	},
+}
+
+func CmdSet(settings *models.Settings, path string) error {
+	fullPath, err := homedir.Expand(path)
+	if err != nil {
+		return err
+	}
+
+	// make sure both files exist
+	_, err = ioutil.ReadFile(fullPath + ".pub")
+	if err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("Public key file '%s' does not exist.", fullPath+".pub")
+		}
+		return err
+	}
+
+	_, err = ioutil.ReadFile(fullPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("Private key file '%s' does not exist.", fullPath)
+		}
+		return err
+
+	}
+
+	settings.PrivateKeyPath = fullPath
+	settings.SessionToken = ""
+	a := auth.New(settings, prompts.New())
+	user, err := a.Signin()
+	if err != nil {
+		return err
+	}
+	logrus.Infof("Successfully added key and signed in as %s.", user.Email)
+	config.SaveSettings(settings)
+	return nil
 }

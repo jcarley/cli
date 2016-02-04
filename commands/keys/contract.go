@@ -19,3 +19,17 @@ var Cmd = models.Command{
 		}
 	},
 }
+
+type IKeys interface {
+	List() ([]models.UserKey, error)
+	Add(string, string) error
+	Remove(string) error
+}
+
+type SKeys struct {
+	Settings *models.Settings
+}
+
+func New(settings *models.Settings) IKeys {
+	return &SKeys{Settings: settings}
+}
