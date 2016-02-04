@@ -72,12 +72,6 @@ func IsError(statusCode int) bool {
 
 // ConvertError attempts to convert a response into a usable error object.
 func ConvertError(b []byte, statusCode int) error {
-	var errs models.Error
-	err := json.Unmarshal(b, &errs)
-	if err != nil {
-		logrus.Debugf("Original response: %s", string(b))
-		return err
-	}
 	msg := fmt.Sprintf("(%d)", statusCode)
 	if b != nil || len(b) > 0 {
 		var errs models.Error
