@@ -15,6 +15,7 @@ import (
 // input.
 type IPrompts interface {
 	UsernamePassword() (string, string, error)
+	KeyPassphrase(string) string
 	PHI() error
 	YesNo(msg string) error
 }
@@ -37,7 +38,7 @@ var validAnswers = map[string]bool{
 // UsernamePassword prompts a user to enter their username and password.
 func (p *SPrompts) UsernamePassword() (string, string, error) {
 	var username string
-	fmt.Print("Username: ")
+	fmt.Print("Username or Email: ")
 	in := bufio.NewReader(os.Stdin)
 	username, err := in.ReadString('\n')
 	if err != nil {
@@ -51,6 +52,14 @@ func (p *SPrompts) UsernamePassword() (string, string, error) {
 	bytes, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
 	fmt.Println("")
 	return username, string(bytes), nil
+}
+
+// KeyPassphrase prompts a user to enter a passphrase for a named key.
+func (p *SPrompts) KeyPassphrase(filepath string) string {
+	fmt.Printf("Enter passphrase for %s: ", filepath)
+	bytes, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
+	fmt.Println("")
+	return string(bytes)
 }
 
 // PHI prompts a user to accept liability for downloading PHI to their local
