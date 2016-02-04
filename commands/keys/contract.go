@@ -12,10 +12,10 @@ var Cmd = models.Command{
 	LongHelp:  "Tasks for your own SSH keys",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			cmd.Command(listSubCmd.Name, listSubCmd.ShortHelp, listSubCmd.CmdFunc(settings))
-			cmd.Command(addSubCmd.Name, addSubCmd.ShortHelp, addSubCmd.CmdFunc(settings))
-			cmd.Command(removeSubCmd.Name, removeSubCmd.ShortHelp, removeSubCmd.CmdFunc(settings))
-			cmd.Command(setSubCmd.Name, setSubCmd.ShortHelp, setSubCmd.CmdFunc(settings))
+			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
+			cmd.Command(AddSubCmd.Name, AddSubCmd.ShortHelp, AddSubCmd.CmdFunc(settings))
+			cmd.Command(RemoveSubCmd.Name, RemoveSubCmd.ShortHelp, RemoveSubCmd.CmdFunc(settings))
+			cmd.Command(SetSubCmd.Name, SetSubCmd.ShortHelp, SetSubCmd.CmdFunc(settings))
 		}
 	},
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 )
 
-var addSubCmd = models.Command{
+var AddSubCmd = models.Command{
 	Name:      "add",
 	ShortHelp: "Add a public key",
 	LongHelp:  "Add a new RSA public key to your own user account",

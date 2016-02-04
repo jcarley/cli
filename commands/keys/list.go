@@ -7,7 +7,7 @@ import (
 	"github.com/jawher/mow.cli"
 )
 
-var listSubCmd = models.Command{
+var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List your public keys",
 	LongHelp:  "List the names of all public keys currently attached to your user",

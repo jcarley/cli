@@ -7,7 +7,7 @@ import (
 	"github.com/jawher/mow.cli"
 )
 
-var removeSubCmd = models.Command{
+var RemoveSubCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Remove a public key",
 	LongHelp:  "Remove a public key from your own account, by name.",

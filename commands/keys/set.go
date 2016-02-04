@@ -13,7 +13,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 )
 
-var setSubCmd = models.Command{
+var SetSubCmd = models.Command{
 	Name:      "set",
 	ShortHelp: "Set your auth key",
 	LongHelp:  "Set the private key used to sign in instead of username and password. This is expected to correspond to an OpenSSH-formatted RSA public key in the same directory.",
