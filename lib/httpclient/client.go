@@ -32,6 +32,7 @@ func getClient() *http.Client {
 	}
 }
 
+// GetHeaders builds a map of headers for a new request.
 func GetHeaders(sessionToken, version, pod string) map[string][]string {
 	b := make([]byte, 32)
 	rand.Read(b)
@@ -55,21 +56,33 @@ func GetHeaders(sessionToken, version, pod string) map[string][]string {
 // pointer your original object will be nil or an empty struct.
 func ConvertResp(b []byte, statusCode int, s interface{}) error {
 	logrus.Debugf("%d resp: %s", statusCode, string(b))
-	if statusCode < 200 || statusCode >= 300 {
-		msg := fmt.Sprintf("(%d)", statusCode)
-		if b != nil || len(b) > 0 {
-			var errs models.Error
-			err := json.Unmarshal(b, &errs)
-			if err == nil && errs.Title != "" && errs.Description != "" {
-				msg = fmt.Sprintf("(%d) %s: %s", errs.Code, errs.Title, errs.Description)
-			}
-		}
-		return errors.New(msg)
+	if IsError(statusCode) {
+		return ConvertError(b, statusCode)
 	}
 	if b == nil || len(b) == 0 || s == nil {
 		return nil
 	}
 	return json.Unmarshal(b, s)
+}
+
+// IsError checks if an HTTP response code is outside of the "OK" range.
+func IsError(statusCode int) bool {
+	return statusCode < 200 || statusCode >= 300
+}
+
+// ConvertError attempts to convert a response into a usable error object.
+func ConvertError(b []byte, statusCode int) error {
+	msg := fmt.Sprintf("(%d)", statusCode)
+	if b != nil || len(b) > 0 {
+		var errs models.Error
+		err := json.Unmarshal(b, &errs)
+		if err == nil && errs.Title != "" && errs.Description != "" {
+			msg = fmt.Sprintf("(%d) %s: %s", errs.Code, errs.Title, errs.Description)
+		} else {
+			msg = fmt.Sprintf("(%d) %s", statusCode, string(b))
+		}
+	}
+	return errors.New(msg)
 }
 
 // Get performs a GET request

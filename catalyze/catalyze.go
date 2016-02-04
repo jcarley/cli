@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strconv"
 
 	"github.com/catalyzeio/cli/commands/associate"
 	"github.com/catalyzeio/cli/commands/associated"
@@ -15,6 +16,7 @@ import (
 	"github.com/catalyzeio/cli/commands/environments"
 	"github.com/catalyzeio/cli/commands/files"
 	"github.com/catalyzeio/cli/commands/invites"
+	"github.com/catalyzeio/cli/commands/keys"
 	"github.com/catalyzeio/cli/commands/logout"
 	"github.com/catalyzeio/cli/commands/logs"
 	"github.com/catalyzeio/cli/commands/metrics"
@@ -62,7 +64,7 @@ func Run() {
 
 	logrus.SetFormatter(&simpleLogger{})
 	logrus.SetOutput(os.Stdout)
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(config.LogLevel)
 
 	var app = cli.App("catalyze", fmt.Sprintf("Catalyze CLI. Version %s", config.VERSION))
 
@@ -92,6 +94,9 @@ func Run() {
 		EnvVar:    config.CatalyzeEnvironmentEnvVar,
 		HideValue: true,
 	})
+	if loggingLevel, err := strconv.ParseInt(os.Getenv(config.LogLevelEnvVar), 10, 64); err == nil {
+		logrus.SetLevel(logrus.Level(loggingLevel))
+	}
 	settings := &models.Settings{}
 
 	app.Before = func() {
@@ -160,6 +165,7 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.Command(environments.Cmd.Name, environments.Cmd.ShortHelp, environments.Cmd.CmdFunc(settings))
 	app.Command(files.Cmd.Name, files.Cmd.ShortHelp, files.Cmd.CmdFunc(settings))
 	app.Command(invites.Cmd.Name, invites.Cmd.ShortHelp, invites.Cmd.CmdFunc(settings))
+	app.Command(keys.Cmd.Name, keys.Cmd.ShortHelp, keys.Cmd.CmdFunc(settings))
 	app.Command(logs.Cmd.Name, logs.Cmd.ShortHelp, logs.Cmd.CmdFunc(settings))
 	app.Command(logout.Cmd.Name, logout.Cmd.ShortHelp, logout.Cmd.CmdFunc(settings))
 	app.Command(metrics.Cmd.Name, metrics.Cmd.ShortHelp, metrics.Cmd.CmdFunc(settings))

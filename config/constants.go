@@ -1,16 +1,20 @@
 package config
 
+import "github.com/Sirupsen/logrus"
+
 const (
 	// VERSION is the current cli version
 	VERSION = "dev"
 	// AuthHost is the production auth URL
-	AuthHost = "https://api.catalyze.io"
+	AuthHost = "https://auth.catalyze.io"
 	// AuthHostVersion is the version path for the auth host
 	AuthHostVersion = ""
 	// PaasHost is the production PaaS URL
-	PaasHost = "https://paas-api.catalyze.io"
+	PaasHost = "https://darwin.catalyze.io"
 	// PaasHostVersion is the version path for the PaaS host
 	PaasHostVersion = ""
+	// LogLevel is the amount of logging to enable
+	LogLevel = logrus.InfoLevel
 
 	// AuthHostEnvVar is the env variable used to override AuthHost
 	AuthHostEnvVar = "AUTH_HOST"
@@ -26,4 +30,6 @@ const (
 	CatalyzePasswordEnvVar = "CATALYZE_PASSWORD"
 	// CatalyzeEnvironmentEnvVar is the env variable used to override the environment used in the current command
 	CatalyzeEnvironmentEnvVar = "CATALYZE_ENV"
+	// LogLevelEnvVar is the env variable used to override the logging level used
+	LogLevelEnvVar = "CATALYZE_LOG_LEVEL"
 )
