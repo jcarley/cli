@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strconv"
 
 	"github.com/catalyzeio/cli/commands/associate"
 	"github.com/catalyzeio/cli/commands/associated"
@@ -65,7 +66,7 @@ func Run() {
 
 	logrus.SetFormatter(&simpleLogger{})
 	logrus.SetOutput(os.Stdout)
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(config.LogLevel)
 
 	var app = cli.App("catalyze", fmt.Sprintf("Catalyze CLI. Version %s", config.VERSION))
 
@@ -95,6 +96,9 @@ func Run() {
 		EnvVar:    config.CatalyzeEnvironmentEnvVar,
 		HideValue: true,
 	})
+	if loggingLevel, err := strconv.ParseInt(os.Getenv(config.LogLevelEnvVar), 10, 64); err == nil {
+		logrus.SetLevel(logrus.Level(loggingLevel))
+	}
 	settings := &models.Settings{}
 
 	app.Before = func() {
