@@ -46,9 +46,6 @@ import (
 type simpleLogger struct{}
 
 func (s *simpleLogger) Format(entry *logrus.Entry) ([]byte, error) {
-	//	entry.Data["msg"]`. The message passed from Info, Warn, Error ..
-	// * `entry.Data["time"]`. The timestamp.
-	// * `entry.Data["level"]. The level the entry was logged at.
 	levelString := fmt.Sprintf("[%s] ", entry.Level)
 	if entry.Level == logrus.InfoLevel {
 		levelString = ""
