@@ -9,8 +9,7 @@ func CmdSupportIDs(is ISupportIDs) error {
 	}
 	logrus.Printf(`EnvironmentID:  %s
 UsersID:        %s
-ServiceID:      %s
-`, envID, usersID, svcID)
+ServiceID:      %s`, envID, usersID, svcID)
 	return nil
 }
 

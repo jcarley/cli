@@ -15,6 +15,10 @@ const (
 	PaasHostVersion = ""
 	// LogLevel is the amount of logging to enable
 	LogLevel = logrus.InfoLevel
+	// JobPollTime is the amount of time in seconds to wait between polls for a job status
+	JobPollTime = 10
+	// LogPollTime is the amount of time in seconds to wait between polls for new logs
+	LogPollTime = 2
 
 	// AuthHostEnvVar is the env variable used to override AuthHost
 	AuthHostEnvVar = "AUTH_HOST"

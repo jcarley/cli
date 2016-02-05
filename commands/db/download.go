@@ -44,7 +44,7 @@ func CmdDownload(databaseName, backupID, filePath string, force bool, id IDb, ip
 // Download an existing backup to the local machine. The backup is encrypted
 // throughout the entire journey and then decrypted once it is stored locally.
 func (d *SDb) Download(backupID, filePath string, service *models.Service) error {
-	job, err := d.Jobs.Retrieve(backupID)
+	job, err := d.Jobs.Retrieve(backupID, service.ID)
 	if err != nil {
 		return err
 	}

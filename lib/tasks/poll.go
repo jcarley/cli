@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
@@ -26,7 +27,7 @@ func (t *STasks) PollForConsole(task *models.Task, service *models.Service) (str
 			break
 		} else {
 			logrus.Print(".")
-			time.Sleep(2 * time.Second)
+			time.Sleep(config.JobPollTime * time.Second)
 		}
 	}
 	return job["jobId"], nil

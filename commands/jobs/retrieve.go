@@ -7,9 +7,9 @@ import (
 	"github.com/catalyzeio/cli/models"
 )
 
-func (j *SJobs) Retrieve(jobID string) (*models.Job, error) {
+func (j *SJobs) Retrieve(jobID, svcID string) (*models.Job, error) {
 	headers := httpclient.GetHeaders(j.Settings.SessionToken, j.Settings.Version, j.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs/%s", j.Settings.PaasHost, j.Settings.PaasHostVersion, j.Settings.EnvironmentID, j.Settings.ServiceID, jobID), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs/%s", j.Settings.PaasHost, j.Settings.PaasHostVersion, j.Settings.EnvironmentID, svcID, jobID), headers)
 	if err != nil {
 		return nil, err
 	}
@@ -20,20 +20,6 @@ func (j *SJobs) Retrieve(jobID string) (*models.Job, error) {
 	}
 	return &job, nil
 }
-
-/*func (j *SJobs) RetrieveFromTaskID(taskID string) (*models.Job, error) {
-	headers := httpclient.GetHeaders(j.Settings.SessionToken, j.Settings.Version, j.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/status/jobs/%s", j.Settings.PaasHost, j.Settings.PaasHostVersion, taskID), headers)
-	if err != nil {
-		return nil, err
-	}
-	var job models.Job
-	err = httpclient.ConvertResp(resp, statusCode, &job)
-	if err != nil {
-		return nil, err
-	}
-	return &job, nil
-}*/
 
 func (j *SJobs) RetrieveByStatus(status string) (*[]models.Job, error) {
 	headers := httpclient.GetHeaders(j.Settings.SessionToken, j.Settings.Version, j.Settings.Pod)

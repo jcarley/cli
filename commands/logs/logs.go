@@ -97,7 +97,7 @@ func (l *SLogs) Output(queryString, username, password string, follow bool, hour
 		if amount < size || end.After(endTimestamp) {
 			break
 		}
-		time.Sleep(2 * time.Second)
+		time.Sleep(config.JobPollTime * time.Second)
 	}
 	return from, startTimestamp, nil
 }
@@ -110,7 +110,7 @@ func (l *SLogs) Stream(queryString, username, password string, follow bool, hour
 		}
 		from = f
 		timestamp = t
-		time.Sleep(2 * time.Second)
+		time.Sleep(config.LogPollTime * time.Second)
 	}
 }
 

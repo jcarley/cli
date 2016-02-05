@@ -4,8 +4,7 @@ import "github.com/catalyzeio/cli/models"
 
 // IJobs
 type IJobs interface {
-	Retrieve(jobID string) (*models.Job, error)
-	//RetrieveFromTaskID(taskID string) (*models.Job, error)
+	Retrieve(jobID, svcID string) (*models.Job, error)
 	RetrieveByStatus(status string) (*[]models.Job, error)
 	RetrieveByType(jobType string, page, pageSize int) (*[]models.Job, error)
 	PollForStatus(jobID, svcID string) (string, error)
