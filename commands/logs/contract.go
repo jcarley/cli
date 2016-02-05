@@ -5,6 +5,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/environments"
+	"github.com/catalyzeio/cli/commands/services"
+	"github.com/catalyzeio/cli/commands/sites"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
@@ -25,7 +27,7 @@ var Cmd = models.Command{
 			mins := cmd.IntOpt("minutes", 1, "The number of minutes before now (in combination with hours and seconds) to retrieve logs")
 			secs := cmd.IntOpt("seconds", 0, "The number of seconds before now (in combination with hours and minutes) to retrieve logs")
 			cmd.Action = func() {
-				err := CmdLogs(*query, *follow || *tail, *hours, *mins, *secs, settings.EnvironmentID, New(settings), prompts.New(), environments.New(settings))
+				err := CmdLogs(*query, *follow || *tail, *hours, *mins, *secs, settings.EnvironmentID, New(settings), prompts.New(), environments.New(settings), services.New(settings), sites.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -37,8 +39,8 @@ var Cmd = models.Command{
 
 // ILogs
 type ILogs interface {
-	Output(queryString, username, password string, follow bool, hours, minutes, seconds, from int, startTimestamp time.Time, endTimestamp time.Time, env *models.Environment) (int, time.Time, error)
-	Stream(queryString, username, password string, follow bool, hours, minutes, seconds, from int, timestamp time.Time, env *models.Environment) error
+	Output(queryString, username, password, domain string, follow bool, hours, minutes, seconds, from int, startTimestamp time.Time, endTimestamp time.Time, env *models.Environment) (int, time.Time, error)
+	Stream(queryString, username, password, domain string, follow bool, hours, minutes, seconds, from int, timestamp time.Time, env *models.Environment) error
 }
 
 // SLogs is a concrete implementation of ILogs

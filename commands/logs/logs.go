@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -11,6 +12,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/environments"
+	"github.com/catalyzeio/cli/commands/services"
+	"github.com/catalyzeio/cli/commands/sites"
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/prompts"
@@ -24,7 +27,7 @@ const size = 50
 // log statement into a separate block that spans multiple lines so it's
 // not very cohesive. This is intended to be similar to the `heroku logs`
 // command.
-func CmdLogs(queryString string, follow bool, hours, minutes, seconds int, envID string, il ILogs, ip prompts.IPrompts, ie environments.IEnvironments) error {
+func CmdLogs(queryString string, follow bool, hours, minutes, seconds int, envID string, il ILogs, ip prompts.IPrompts, ie environments.IEnvironments, is services.IServices, isites sites.ISites) error {
 	username := os.Getenv(config.CatalyzeUsernameEnvVar)
 	password := os.Getenv(config.CatalyzePasswordEnvVar)
 	if username == "" || password == "" {
@@ -40,24 +43,37 @@ func CmdLogs(queryString string, follow bool, hours, minutes, seconds int, envID
 	if err != nil {
 		return err
 	}
+	serviceProxy, err := is.RetrieveByLabel("service_proxy")
+	if err != nil {
+		return err
+	}
+	sites, err := isites.List(serviceProxy.ID)
+	if err != nil {
+		return err
+	}
+	domain := ""
+	for _, site := range *sites {
+		if strings.HasPrefix(site.Name, env.Namespace) {
+			domain = site.Name
+		}
+	}
+	if domain == "" {
+		return errors.New("Could not determine the fully qualified domain name of your environment")
+	}
 	from := 0
 	offset := time.Duration(hours)*time.Hour + time.Duration(minutes)*time.Minute + time.Duration(seconds)*time.Second
 	timestamp := time.Now().In(time.UTC).Add(-1 * offset)
-	from, timestamp, err = il.Output(queryString, username, password, follow, hours, minutes, seconds, from, timestamp, time.Now(), env)
+	from, timestamp, err = il.Output(queryString, username, password, domain, follow, hours, minutes, seconds, from, timestamp, time.Now(), env)
 	if err != nil {
 		return err
 	}
 	if follow {
-		return il.Stream(queryString, username, password, follow, hours, minutes, seconds, from, timestamp, env)
+		return il.Stream(queryString, username, password, domain, follow, hours, minutes, seconds, from, timestamp, env)
 	}
 	return nil
 }
 
-func (l *SLogs) Output(queryString, username, password string, follow bool, hours, minutes, seconds, from int, startTimestamp, endTimestamp time.Time, env *models.Environment) (int, time.Time, error) {
-	domain := env.DNSName
-	if domain == "" {
-		domain = fmt.Sprintf("%s.catalyze.io", env.Namespace)
-	}
+func (l *SLogs) Output(queryString, username, password, domain string, follow bool, hours, minutes, seconds, from int, startTimestamp, endTimestamp time.Time, env *models.Environment) (int, time.Time, error) {
 	appLogsIdentifier := "source"
 	appLogsValue := "app"
 	if strings.HasPrefix(domain, "pod01") || strings.HasPrefix(domain, "csb01") {
@@ -102,9 +118,9 @@ func (l *SLogs) Output(queryString, username, password string, follow bool, hour
 	return from, startTimestamp, nil
 }
 
-func (l *SLogs) Stream(queryString, username, password string, follow bool, hours, minutes, seconds, from int, timestamp time.Time, env *models.Environment) error {
+func (l *SLogs) Stream(queryString, username, password, domain string, follow bool, hours, minutes, seconds, from int, timestamp time.Time, env *models.Environment) error {
 	for {
-		f, t, err := l.Output(queryString, username, password, follow, hours, minutes, seconds, from, timestamp, time.Now(), env)
+		f, t, err := l.Output(queryString, username, password, domain, follow, hours, minutes, seconds, from, timestamp, time.Now(), env)
 		if err != nil {
 			return err
 		}
