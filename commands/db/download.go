@@ -48,8 +48,8 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 	if err != nil {
 		return err
 	}
-	if job.Type != "backup" || job.Status != "finished" {
-		logrus.Println("Only 'finished' 'backup' jobs may be downloaded")
+	if job.Type != "backup" || (job.Status != "finished" && job.Status != "disappeared") {
+		return fmt.Errorf("Only 'finished' 'backup' jobs may be downloaded %+v", job)
 	}
 	logrus.Printf("Downloading backup %s", backupID)
 	tempURL, err := d.TempDownloadURL(backupID, service)

@@ -39,7 +39,8 @@ poll:
 			if failedAttempts >= 3 {
 				return "", fmt.Errorf("Error - ended in status '%s'.", job.Status)
 			}
-			logrus.Print(".")
+			// all because logrus treats print, println, and printf the same
+			logrus.StandardLogger().Out.Write([]byte("."))
 			time.Sleep(config.JobPollTime * time.Second)
 		default:
 			return "", fmt.Errorf("Error - ended in status '%s'.", job.Status)

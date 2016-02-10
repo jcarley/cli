@@ -41,7 +41,8 @@ func (c *SConsole) Open(command string, service *models.Service) error {
 	if err != nil {
 		return err
 	}
-	logrus.Printf("Waiting for the console (job ID = %s) to be ready. This might take a minute.", job.ID)
+	// all because logrus treats print, println, and printf the same
+	logrus.StandardLogger().Out.Write([]byte(fmt.Sprintf("Waiting for the console (job ID = %s) to be ready. This might take a minute.", job.ID)))
 
 	runningStatus := "running"
 	status, err := c.Jobs.PollForStatus(runningStatus, job.ID, service.ID)
@@ -49,7 +50,7 @@ func (c *SConsole) Open(command string, service *models.Service) error {
 		return err
 	}
 	if status != runningStatus {
-		return fmt.Errorf("Could not open a console connection. Entered state '%s'", status)
+		return fmt.Errorf("\nCould not open a console connection. Entered state '%s'", status)
 	}
 	job.Status = runningStatus
 	defer c.Destroy(job.ID, service)
@@ -59,7 +60,7 @@ func (c *SConsole) Open(command string, service *models.Service) error {
 	}
 
 	creds.URL = strings.Replace(creds.URL, "http", "ws", 1)
-	logrus.Println("Connecting...")
+	logrus.Println("\nConnecting...")
 
 	// BEGIN websocket impl
 	config, _ := websocket.NewConfig(creds.URL, "ws://localhost:9443/")

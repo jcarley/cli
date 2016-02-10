@@ -32,7 +32,8 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id
 	}
 	logrus.Printf("Backup started (job ID = %s)", job.ID)
 
-	logrus.Print("Polling until backup finishes.")
+	// all because logrus treats print, println, and printf the same
+	logrus.StandardLogger().Out.Write([]byte("Polling until backup finishes."))
 	status, err := ij.PollTillFinished(job.ID, service.ID)
 	if err != nil {
 		return err
@@ -51,7 +52,8 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id
 	if err != nil {
 		return err
 	}
-	logrus.Printf("Processing import (job ID = %s).", job.ID)
+	// all because logrus treats print, println, and printf the same
+	logrus.StandardLogger().Out.Write([]byte(fmt.Sprintf("Processing import (job ID = %s).", job.ID)))
 
 	status, err = ij.PollTillFinished(job.ID, service.ID)
 	if err != nil {

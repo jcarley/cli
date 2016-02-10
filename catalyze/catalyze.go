@@ -95,7 +95,7 @@ func Run() {
 		HideValue: true,
 	})
 	if loggingLevel := os.Getenv(config.LogLevelEnvVar); loggingLevel != "" {
-		if lvl, err := logrus.ParseLevel(loggingLevel); err != nil {
+		if lvl, err := logrus.ParseLevel(loggingLevel); err == nil {
 			logrus.SetLevel(lvl)
 		}
 	}
