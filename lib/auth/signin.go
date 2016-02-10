@@ -34,7 +34,6 @@ func (a *SAuth) Signin() (*models.User, error) {
 }
 
 func (a *SAuth) signInWithCredentials() (*models.User, error) {
-	//var username, password string
 	login := models.Login{
 		Identifier: a.Settings.Username,
 		Password:   a.Settings.Password,

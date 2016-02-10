@@ -28,6 +28,28 @@ func CmdVerify(chainPath, privateKeyPath, hostname string, selfSigned bool, is I
 	return nil
 }
 
+func IsIncompleteChainErr(err error) bool {
+	switch err.(type) {
+	case nil:
+		return false
+	case *IncompleteChainError:
+		return true
+	default:
+		return false
+	}
+}
+
+func IsHostnameMismatchErr(err error) bool {
+	switch err.(type) {
+	case nil:
+		return false
+	case *HostnameMismatchError:
+		return true
+	default:
+		return false
+	}
+}
+
 // Verify takes a chain and ensures it is a full chain optionally ensuring
 // the given private key matches that chain.
 func (s *SSSL) Verify(chainPath, privateKeyPath, hostname string, selfSigned bool) error {
@@ -53,11 +75,17 @@ func (s *SSSL) Verify(chainPath, privateKeyPath, hostname string, selfSigned boo
 		if _, err := x509Cert.Verify(x509.VerifyOptions{
 			Intermediates: certPool,
 		}); err != nil {
-			return fmt.Errorf("Failed to verify certificate chain: %s", err.Error())
+			return &IncompleteChainError{
+				Err:     err,
+				Message: "Failed to verify certificate chain",
+			}
 		}
 		// verify the cert we pulled out matches the hostname specified
 		if err := x509Cert.VerifyHostname(hostname); err != nil {
-			return fmt.Errorf("Certificate hostname mismatch: %s", err.Error())
+			return &HostnameMismatchError{
+				Err:     err,
+				Message: "Certificate hostname mismatch",
+			}
 		}
 		outputCertInfo(x509Cert)
 		warnOnExpired(x509Cert)

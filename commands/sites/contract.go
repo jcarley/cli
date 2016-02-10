@@ -2,9 +2,7 @@ package sites
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/files"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/commands/ssl"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -20,37 +18,36 @@ var Cmd = models.Command{
 			cmd.Command(CreateSubCmd.Name, CreateSubCmd.ShortHelp, CreateSubCmd.CmdFunc(settings))
 			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
 			cmd.Command(RmSubCmd.Name, RmSubCmd.ShortHelp, RmSubCmd.CmdFunc(settings))
+			cmd.Command(ShowSubCmd.Name, ShowSubCmd.ShortHelp, ShowSubCmd.CmdFunc(settings))
 		}
 	},
 }
 
 var CreateSubCmd = models.Command{
 	Name:      "create",
-	ShortHelp: "Create a new site including a hostname, SSL certificate, and private key",
-	LongHelp:  "Create a new site including a hostname, SSL certificate, and private key",
+	ShortHelp: "Create a new site linking it to an existing cert instance",
+	LongHelp:  "Create a new site linking it to an existing cert instance",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
-			chain := subCmd.StringArg("CHAIN", "", "The path to your full certificate chain in PEM format")
-			privateKey := subCmd.StringArg("PRIVATE_KEY", "", "The path to your private key in PEM format")
-			hostname := subCmd.StringArg("HOSTNAME", "", "The hostname of your service")
+			name := subCmd.StringArg("NAME", "", "The name of the site to be created. This will be used in this site's nginx configuration file")
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to add this site configuration to (i.e. 'app01')")
-			wildcard := subCmd.BoolOpt("w wildcard", false, "Whether or not the given SSL certificate is for a wildcard domain")
-			selfSigned := subCmd.BoolOpt("s self-signed", false, "Whether or not the given SSL certificate is a self-signed cert")
+			hostname := subCmd.StringArg("HOSTNAME", "", "The hostname used in the creation of a certs instance with the 'certs' command")
+
 			subCmd.Action = func() {
-				err := CmdCreate(*hostname, *chain, *privateKey, *serviceName, *wildcard, *selfSigned, New(settings), ssl.New(settings), files.New(settings), services.New(settings))
+				err := CmdCreate(*name, *serviceName, *hostname, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "CHAIN PRIVATE_KEY HOSTNAME SERVICE_NAME [-w] [-s]"
+			subCmd.Spec = "NAME SERVICE_NAME HOSTNAME"
 		}
 	},
 }
 
 var ListSubCmd = models.Command{
 	Name:      "list",
-	ShortHelp: "List all site configurations for all code services",
-	LongHelp:  "List all site configurations for all code services",
+	ShortHelp: "List details for all site configurations",
+	LongHelp:  "List details for all site configurations",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
@@ -69,23 +66,42 @@ var RmSubCmd = models.Command{
 	LongHelp:  "Remove a site configuration",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
-			siteID := subCmd.IntArg("SITE_ID", 0, "The id of the site configuration to delete")
+			name := subCmd.StringArg("NAME", "", "The name of the site configuration to delete")
 			subCmd.Action = func() {
-				err := CmdRm(*siteID, New(settings), services.New(settings))
+				err := CmdRm(*name, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "SITE_ID"
+			subCmd.Spec = "NAME"
+		}
+	},
+}
+
+var ShowSubCmd = models.Command{
+	Name:      "show",
+	ShortHelp: "Shows the details for a given site",
+	LongHelp:  "Shows the details for a given site",
+	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
+		return func(subCmd *cli.Cmd) {
+			name := subCmd.StringArg("NAME", "", "The name of the site configuration to show")
+			subCmd.Action = func() {
+				err := CmdShow(*name, New(settings), services.New(settings))
+				if err != nil {
+					logrus.Fatal(err.Error())
+				}
+			}
+			subCmd.Spec = "NAME"
 		}
 	},
 }
 
 // ISites
 type ISites interface {
-	Create(svcID string, site *models.Site) error
+	Create(name, cert, upstreamServiceID, svcID string) (*models.Site, error)
 	List(svcID string) (*[]models.Site, error)
-	Rm(svcID string, siteID int) error
+	Retrieve(siteID int, svcID string) (*models.Site, error)
+	Rm(siteID int, svcID string) error
 }
 
 // SSites is a concrete implementation of ISites

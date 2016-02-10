@@ -5,6 +5,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/binary"
+	"fmt"
 	"os"
 )
 
@@ -40,6 +41,9 @@ func (c *SCrypto) DecryptFile(encryptedFilePath, key, iv, outputFilePath string)
 	for {
 		chunk := make([]byte, chunkSize)
 		read, _ := encryptedFile.Read(chunk)
+		if read%aes.BlockSize != 0 {
+			return fmt.Errorf("Logs unavailable for this job")
+		}
 		if read == 0 {
 			break
 		}

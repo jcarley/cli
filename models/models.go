@@ -76,12 +76,6 @@ type TempURL struct {
 	URL string `json:"url"`
 }
 
-// Task task
-type Task struct {
-	ID     string `json:"id"`
-	Status string `json:"status"`
-}
-
 // OrgUser users who have access to an org
 type OrgUser struct {
 	ID     string `json:"id"`
@@ -304,14 +298,21 @@ type ServiceFile struct {
 }
 
 type Site struct {
-	ID         int `json:"id,omitempty"`
-	SiteFileID int `json:"siteFileId,omitempty"`
+	ID              int    `json:"id,omitempty"`
+	Name            string `json:"name"`
+	Cert            string `json:"cert"`
+	SiteFileID      int    `json:"siteFileId,omitempty"`
+	UpstreamService string `json:"upstreamService"`
+}
 
-	Name                string `json:"name"`
-	SSLCertFileID       int    `json:"sslCertFileId"`
-	SSLPrivateKeyFileID int    `json:"sslPKFileId"`
-	Wildcard            bool   `json:"wildcard"`
-	ServiceName         string `json:"upstreamService"`
+type Cert struct {
+	Name    string `json:"name"`
+	PubKey  string `json:"sslCertFile"`
+	PrivKey string `json:"sslPKFile"`
+
+	Service   string `json:"service,omitempty"`
+	PubKeyID  int    `json:"sslCertFileId,omitempty"`
+	PrivKeyID int    `json:"sslPKFileId,omitempty"`
 }
 
 // UserKey is a public key belonging to a user

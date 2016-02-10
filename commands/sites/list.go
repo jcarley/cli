@@ -7,6 +7,7 @@ import (
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
+	"github.com/forana/simpletable"
 )
 
 func CmdList(is ISites, iservices services.IServices) error {
@@ -22,15 +23,11 @@ func CmdList(is ISites, iservices services.IServices) error {
 		logrus.Println("No sites found")
 		return nil
 	}
-	/*table, err := simpletable.New(simpletable.HeadersForType(models.Site{}), *sites)
+	table, err := simpletable.New(simpletable.HeadersForType(models.Site{}), *sites)
 	if err != nil {
 		return err
 	}
-	table.Print()*/
-	logrus.Println("ID\tWILDCARD\tNAME")
-	for _, s := range *sites {
-		logrus.Printf("%d\t%t\t\t%s", s.ID, s.Wildcard, s.Name)
-	}
+	table.Write(logrus.StandardLogger().Out)
 	return nil
 }
 

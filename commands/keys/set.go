@@ -2,11 +2,9 @@ package keys
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
@@ -20,7 +18,7 @@ var SetSubCmd = models.Command{
 	LongHelp:  "Set the private key used to sign in instead of username and password. This is expected to correspond to an OpenSSH-formatted RSA public key in the same directory.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			path := cmd.StringArg("PATH_TO_KEY", "", "Relative path to the private key file.")
+			path := cmd.StringArg("PRIVATE_KEY_PATH", "", "Relative path to the private key file.")
 
 			cmd.Action = func() {
 				err := CmdSet(settings, *path)
@@ -39,7 +37,7 @@ func CmdSet(settings *models.Settings, path string) error {
 	}
 
 	// make sure both files exist
-	_, err = ioutil.ReadFile(fullPath + ".pub")
+	_, err = os.Stat(fullPath + ".pub")
 	if err != nil {
 		if os.IsNotExist(err) {
 			return fmt.Errorf("Public key file '%s' does not exist.", fullPath+".pub")
@@ -47,13 +45,12 @@ func CmdSet(settings *models.Settings, path string) error {
 		return err
 	}
 
-	_, err = ioutil.ReadFile(fullPath)
+	_, err = os.Stat(fullPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return fmt.Errorf("Private key file '%s' does not exist.", fullPath)
 		}
 		return err
-
 	}
 
 	settings.PrivateKeyPath = fullPath
@@ -63,7 +60,6 @@ func CmdSet(settings *models.Settings, path string) error {
 	if err != nil {
 		return err
 	}
-	logrus.Infof("Successfully added key and signed in as %s.", user.Email)
-	config.SaveSettings(settings)
+	logrus.Printf("Successfully added key and signed in as %s.", user.Email)
 	return nil
 }

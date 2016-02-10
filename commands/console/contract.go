@@ -2,8 +2,8 @@ package console
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/jobs"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/tasks"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -19,7 +19,7 @@ var Cmd = models.Command{
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to open up a console for")
 			command := cmd.StringArg("COMMAND", "", "An optional command to run when the console becomes available")
 			cmd.Action = func() {
-				err := CmdConsole(*serviceName, *command, New(settings, tasks.New(settings)), services.New(settings))
+				err := CmdConsole(*serviceName, *command, New(settings, jobs.New(settings)), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -32,7 +32,7 @@ var Cmd = models.Command{
 // IConsole
 type IConsole interface {
 	Open(command string, service *models.Service) error
-	Request(command string, service *models.Service) (*models.Task, error)
+	Request(command string, service *models.Service) (*models.Job, error)
 	RetrieveTokens(jobID string, service *models.Service) (*models.ConsoleCredentials, error)
 	Destroy(jobID string, service *models.Service) error
 }
@@ -40,13 +40,13 @@ type IConsole interface {
 // SConsole is a concrete implementation of IConsole
 type SConsole struct {
 	Settings *models.Settings
-	Tasks    tasks.ITasks
+	Jobs     jobs.IJobs
 }
 
 // New returns an instance of IConsole
-func New(settings *models.Settings, tasks tasks.ITasks) IConsole {
+func New(settings *models.Settings, jobs jobs.IJobs) IConsole {
 	return &SConsole{
 		Settings: settings,
-		Tasks:    tasks,
+		Jobs:     jobs,
 	}
 }

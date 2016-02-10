@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 	"runtime"
-	"strconv"
 
 	"github.com/catalyzeio/cli/commands/associate"
 	"github.com/catalyzeio/cli/commands/associated"
+	"github.com/catalyzeio/cli/commands/certs"
 	"github.com/catalyzeio/cli/commands/console"
 	"github.com/catalyzeio/cli/commands/dashboard"
 	"github.com/catalyzeio/cli/commands/db"
@@ -94,8 +94,10 @@ func Run() {
 		EnvVar:    config.CatalyzeEnvironmentEnvVar,
 		HideValue: true,
 	})
-	if loggingLevel, err := strconv.ParseInt(os.Getenv(config.LogLevelEnvVar), 10, 64); err == nil {
-		logrus.SetLevel(logrus.Level(loggingLevel))
+	if loggingLevel := os.Getenv(config.LogLevelEnvVar); loggingLevel != "" {
+		if lvl, err := logrus.ParseLevel(loggingLevel); err != nil {
+			logrus.SetLevel(lvl)
+		}
 	}
 	settings := &models.Settings{}
 
@@ -157,6 +159,7 @@ func Run() {
 func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.Command(associate.Cmd.Name, associate.Cmd.ShortHelp, associate.Cmd.CmdFunc(settings))
 	app.Command(associated.Cmd.Name, associated.Cmd.ShortHelp, associated.Cmd.CmdFunc(settings))
+	app.Command(certs.Cmd.Name, certs.Cmd.ShortHelp, certs.Cmd.CmdFunc(settings))
 	app.Command(console.Cmd.Name, console.Cmd.ShortHelp, console.Cmd.CmdFunc(settings))
 	app.Command(dashboard.Cmd.Name, dashboard.Cmd.ShortHelp, dashboard.Cmd.CmdFunc(settings))
 	app.Command(db.Cmd.Name, db.Cmd.ShortHelp, db.Cmd.CmdFunc(settings))

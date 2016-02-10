@@ -25,7 +25,7 @@ func CmdBackup(databaseName string, skipPoll bool, id IDb, is services.IServices
 	logrus.Printf("Backup started (job ID = %s)", job.ID)
 	if !skipPoll {
 		logrus.Print("Polling until backup finishes.")
-		status, err := ij.PollForStatus(job.ID, service.ID)
+		status, err := ij.PollTillFinished(job.ID, service.ID)
 		if err != nil {
 			return err
 		}

@@ -18,8 +18,8 @@ var AddSubCmd = models.Command{
 	LongHelp:  "Add a new RSA public key to your own user account",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			name := cmd.StringArg("NAME", "", "The name for the new key, for your own purposes.")
-			path := cmd.StringArg("PATH_TO_KEY", "", "Relative path to the public key file.")
+			name := cmd.StringArg("NAME", "", "The name for the new key, for your own purposes")
+			path := cmd.StringArg("PUBLIC_KEY_PATH", "", "Relative path to the public key file")
 
 			cmd.Action = func() {
 				err := CmdAdd(New(settings), *name, *path)
@@ -50,10 +50,7 @@ func CmdAdd(k IKeys, name string, path string) error {
 
 // Add adds a new public key to the authenticated user's account
 func (k *SKeys) Add(name string, publicKey string) error {
-	body, err := json.Marshal(struct {
-		Key  string `json:"key"`
-		Name string `json:"name"`
-	}{
+	body, err := json.Marshal(models.UserKey{
 		Key:  publicKey,
 		Name: name,
 	})

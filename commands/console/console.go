@@ -37,18 +37,23 @@ func CmdConsole(svcName, command string, ic IConsole, is services.IServices) err
 // For example, for a postgres database, psql is run.
 func (c *SConsole) Open(command string, service *models.Service) error {
 	logrus.Printf("Opening console to %s (%s)", service.Name, service.ID)
-	task, err := c.Request(command, service)
+	job, err := c.Request(command, service)
 	if err != nil {
 		return err
 	}
-	logrus.Print("Waiting for the console to be ready. This might take a minute.")
+	logrus.Printf("Waiting for the console (job ID = %s) to be ready. This might take a minute.", job.ID)
 
-	jobID, err := c.Tasks.PollForConsole(task, service)
+	runningStatus := "running"
+	status, err := c.Jobs.PollForStatus(runningStatus, job.ID, service.ID)
 	if err != nil {
 		return err
 	}
-	defer c.Destroy(jobID, service)
-	creds, err := c.RetrieveTokens(jobID, service)
+	if status != runningStatus {
+		return fmt.Errorf("Could not open a console connection. Entered state '%s'", status)
+	}
+	job.Status = runningStatus
+	defer c.Destroy(job.ID, service)
+	creds, err := c.RetrieveTokens(job.ID, service)
 	if err != nil {
 		return err
 	}
@@ -90,7 +95,7 @@ func (c *SConsole) Open(command string, service *models.Service) error {
 	return nil
 }
 
-func (c *SConsole) Request(command string, service *models.Service) (*models.Task, error) {
+func (c *SConsole) Request(command string, service *models.Service) (*models.Job, error) {
 	console := map[string]string{}
 	if command != "" {
 		console["command"] = command
@@ -100,32 +105,21 @@ func (c *SConsole) Request(command string, service *models.Service) (*models.Tas
 		return nil, err
 	}
 	headers := httpclient.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod)
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/services/%s/console", c.Settings.PaasHost, c.Settings.PaasHostVersion, service.ID), headers)
+	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/console", c.Settings.PaasHost, c.Settings.PaasHostVersion, c.Settings.EnvironmentID, service.ID), headers)
 	if err != nil {
 		return nil, err
 	}
-	// TODO this is broken. The task is returned in the Location header as a route
-	var m map[string]string
-	err = httpclient.ConvertResp(resp, statusCode, &m)
+	var job models.Job
+	err = httpclient.ConvertResp(resp, statusCode, &job)
 	if err != nil {
 		return nil, err
 	}
-	return &models.Task{
-		ID: m["taskId"],
-	}, nil
+	return &job, nil
 }
 
 func (c *SConsole) RetrieveTokens(jobID string, service *models.Service) (*models.ConsoleCredentials, error) {
-	tokenRequest := map[string]string{
-		"serviceid": service.ID,
-		"jobid":     jobID,
-	}
-	b, err := json.Marshal(tokenRequest)
-	if err != nil {
-		return nil, err
-	}
 	headers := httpclient.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod)
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/console/token", c.Settings.PaasHost, c.Settings.PaasHostVersion), headers)
+	resp, statusCode, err := httpclient.Post(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs/%s/console-token", c.Settings.PaasHost, c.Settings.PaasHostVersion, c.Settings.EnvironmentID, service.ID, jobID), headers)
 	if err != nil {
 		return nil, err
 	}
@@ -138,12 +132,7 @@ func (c *SConsole) RetrieveTokens(jobID string, service *models.Service) (*model
 }
 
 func (c *SConsole) Destroy(jobID string, service *models.Service) error {
-	headers := httpclient.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod)
-	resp, statusCode, err := httpclient.Delete(nil, fmt.Sprintf("%s%s/jobs/%s", c.Settings.PaasHost, c.Settings.PaasHostVersion, jobID), headers)
-	if err != nil {
-		return err
-	}
-	return httpclient.ConvertResp(resp, statusCode, nil)
+	return c.Jobs.Delete(jobID, service.ID)
 }
 
 // Reads incoming data from the websocket and forwards it to stdout.

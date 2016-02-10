@@ -39,7 +39,7 @@ func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPr
 	}
 	logrus.Printf("Export started (job ID = %s)", job.ID)
 	logrus.Print("Polling until export finishes.")
-	status, err := ij.PollForStatus(job.ID, service.ID)
+	status, err := ij.PollTillFinished(job.ID, service.ID)
 	if err != nil {
 		return err
 	}

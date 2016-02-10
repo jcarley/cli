@@ -10,7 +10,11 @@ import (
 	"github.com/catalyzeio/cli/models"
 )
 
-func (j *SJobs) PollForStatus(jobID, svcID string) (string, error) {
+func (j *SJobs) PollTillFinished(jobID, svcID string) (string, error) {
+	return j.PollForStatus("finished", jobID, svcID)
+}
+
+func (j *SJobs) PollForStatus(status, jobID, svcID string) (string, error) {
 	var job models.Job
 	failedAttempts := 0
 poll:
@@ -29,17 +33,20 @@ poll:
 			failedAttempts++
 		}
 		switch job.Status {
-		case "scheduled", "queued", "started", "running":
+		case status:
+			break poll
+		case "scheduled", "queued", "started", "running", "finished":
 			if failedAttempts >= 3 {
 				return "", fmt.Errorf("Error - ended in status '%s'.", job.Status)
 			}
 			logrus.Print(".")
 			time.Sleep(config.JobPollTime * time.Second)
-		case "finished":
-			break poll
 		default:
 			return "", fmt.Errorf("Error - ended in status '%s'.", job.Status)
 		}
+	}
+	if job.Status != status {
+		return "", fmt.Errorf("Error - ended in status '%s'.", job.Status)
 	}
 	return job.Status, nil
 }
