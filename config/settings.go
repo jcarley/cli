@@ -23,7 +23,7 @@ const LocalSettingsFile = "catalyze-config.json"
 // for retrieving settings based on the settings file or generating a settings
 // object based on a directly entered environment ID and service ID.
 type SettingsRetriever interface {
-	GetSettings(string, string, string, string, string, string) *models.Settings
+	GetSettings(string, string, string, string, string, string, string, string) *models.Settings
 }
 
 // FileSettingsRetriever reads in data from the SettingsFile and generates a
@@ -31,7 +31,7 @@ type SettingsRetriever interface {
 type FileSettingsRetriever struct{}
 
 // GetSettings returns a Settings object for the current context
-func (s FileSettingsRetriever) GetSettings(envName, svcName, authHost, paasHost, username, password string) *models.Settings {
+func (s FileSettingsRetriever) GetSettings(envName, svcName, authHost, ignoreAuthHostVersion, paasHost, ignorePaasHostVersion, username, password string) *models.Settings {
 	HomeDir, err := homedir.Dir()
 	if err != nil {
 		logrus.Println(err.Error())

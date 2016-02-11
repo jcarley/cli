@@ -16,6 +16,7 @@ import (
 type IPrompts interface {
 	UsernamePassword() (string, string, error)
 	KeyPassphrase(string) string
+	Password(msg string) string
 	PHI() error
 	YesNo(msg string) error
 }
@@ -105,4 +106,14 @@ func (p *SPrompts) YesNo(msg string) error {
 		return fmt.Errorf("Exiting")
 	}
 	return nil
+}
+
+// Password prompts the user for a password displaying the given message.
+// The password will be hidden while typed. A newline is not added to the given
+// message. If a newline is required, it should be part of the passed in string.
+func (p *SPrompts) Password(msg string) string {
+	fmt.Print(msg)
+	bytes, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
+	fmt.Println("")
+	return string(bytes)
 }

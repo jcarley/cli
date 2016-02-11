@@ -62,9 +62,7 @@ func Run() {
 		updater.AutoUpdater.BackgroundRun()
 	}
 
-	logrus.SetFormatter(&simpleLogger{})
-	logrus.SetOutput(os.Stdout)
-	logrus.SetLevel(config.LogLevel)
+	InitLogrus()
 
 	var app = cli.App("catalyze", fmt.Sprintf("Catalyze CLI. Version %s", config.VERSION))
 
@@ -103,7 +101,7 @@ func Run() {
 
 	app.Before = func() {
 		r := config.FileSettingsRetriever{}
-		*settings = *r.GetSettings(*givenEnvName, "", authHost, paasHost, *username, *password)
+		*settings = *r.GetSettings(*givenEnvName, "", authHost, "", paasHost, "", *username, *password)
 		logrus.Debugf("%+v", settings)
 
 		if settings.Pods == nil || len(*settings.Pods) == 0 {
@@ -111,7 +109,7 @@ func Run() {
 			pods, err := p.List()
 			if err == nil {
 				settings.Pods = pods
-				fmt.Println(settings.Pods)
+				logrus.Debugf("%+v", settings.Pods)
 			} else {
 				logrus.Debugln(err.Error())
 				// TODO check in the cmd wherever settings.Pods is used and check for null/empty
@@ -124,7 +122,6 @@ func Run() {
 		if err != nil {
 			logrus.Fatalln(err.Error())
 		}
-		settings.SessionToken = user.SessionToken
 		settings.Username = user.Username
 		settings.UsersID = user.UsersID
 	}
@@ -153,6 +150,13 @@ func Run() {
 	})
 
 	app.Run(os.Args)
+}
+
+// InitLogrus sets up logrus for the correctly formatted log messages
+func InitLogrus() {
+	logrus.SetFormatter(&simpleLogger{})
+	logrus.SetOutput(os.Stdout)
+	logrus.SetLevel(config.LogLevel)
 }
 
 // InitCLI adds arguments and commands to the given cli instance

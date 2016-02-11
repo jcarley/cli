@@ -47,7 +47,7 @@ func (s *SStatus) Status(env *models.Environment, services *[]models.Service) er
 					displayType = fmt.Sprintf("%s (%s)", service.Label, job.Type)
 					if job.Type == "worker" {
 						// fetch the worker separately to get the procfile target run
-						workerJob, err := s.Jobs.Retrieve(job.ID, service.ID)
+						workerJob, err := s.Jobs.Retrieve(job.ID, service.ID, true)
 						if err != nil {
 							return err
 						}

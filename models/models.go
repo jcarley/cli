@@ -11,7 +11,6 @@ type Org struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	RoleID      int    `json:"roleID"`
 }
 
 type Command struct {
@@ -59,7 +58,7 @@ type Invite struct {
 
 // User is an authenticated User
 type User struct {
-	Username     string `json:"username"`
+	Username     string `json:"name"`
 	Email        string `json:"email"`
 	SessionToken string `json:"sessionToken"`
 	UsersID      string `json:"id"`
@@ -90,7 +89,6 @@ type Environment struct {
 	Name      string `json:"name"`
 	Pod       string `json:"pod"`
 	Namespace string `json:"namespace"`
-	DNSName   string `json:"dns_name"`
 	OrgID     string `json:"organizationId"`
 }
 
@@ -118,17 +116,14 @@ type Payload struct {
 
 // Service service
 type Service struct {
-	ID           string            `json:"id"`
-	Type         string            `json:"type"`
-	Label        string            `json:"label"`
-	Size         interface{}       `json:"size"` // TODO is this guaranteed to be the new format now?
-	BuildStatus  string            `json:"build_status"`
-	DeployStatus string            `json:"deploy_status"`
-	Name         string            `json:"name"`
-	EnvVars      map[string]string `json:"environmentVariables"`
-	Source       string            `json:"source"`
-	LBIP         string            `json:"load_balancer_ip,omitempty"`
-	DockerImage  string            `json:"docker_image,omitempty"`
+	ID      string            `json:"id,omitempty"`
+	Type    string            `json:"type,omitempty"`
+	Label   string            `json:"label"`
+	Size    interface{}       `json:"size"` // TODO is this guaranteed to be the new format now?
+	Name    string            `json:"name"`
+	EnvVars map[string]string `json:"environmentVariables,omitempty"`
+	Source  string            `json:"source,omitempty"`
+	LBIP    string            `json:"load_balancer_ip,omitempty"`
 }
 
 // ServiceSize holds size information for a service

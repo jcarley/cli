@@ -10,7 +10,7 @@ import (
 type IAuth interface {
 	Signin() (*models.User, error)
 	Signout() error
-	Verify() error
+	Verify() (*models.User, error)
 }
 
 // SAuth is a concrete implementation of IAuth

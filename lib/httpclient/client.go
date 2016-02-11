@@ -46,6 +46,7 @@ func GetHeaders(sessionToken, version, pod string) map[string][]string {
 		"X-Pod-ID":            {pod},
 		"X-Request-Nonce":     {nonce},
 		"X-Request-Timestamp": {fmt.Sprintf("%d", timestamp)},
+		"User-Agent":          {fmt.Sprintf("catalyze-cli-%s", version)},
 	}
 }
 

@@ -23,7 +23,6 @@ var Cmd = models.Command{
 			remote := cmd.StringOpt("r remote", "catalyze", "The name of the remote")
 			defaultEnv := cmd.BoolOpt("d default", false, "Specifies whether or not the associated environment will be the default")
 			cmd.Action = func() {
-				logrus.Debugf("%+v", settings)
 				err := CmdAssociate(*envName, *serviceName, *alias, *remote, *defaultEnv, New(settings), git.New(), environments.New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())

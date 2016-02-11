@@ -2,6 +2,7 @@ package invites
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
@@ -15,9 +16,29 @@ var Cmd = models.Command{
 	LongHelp:  "Manage invitations for your organizations",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
+			cmd.Command(AcceptSubCmd.Name, AcceptSubCmd.ShortHelp, AcceptSubCmd.CmdFunc(settings))
 			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
 			cmd.Command(RmSubCmd.Name, RmSubCmd.ShortHelp, RmSubCmd.CmdFunc(settings))
 			cmd.Command(SendSubCmd.Name, SendSubCmd.ShortHelp, SendSubCmd.CmdFunc(settings))
+		}
+	},
+}
+
+var AcceptSubCmd = models.Command{
+	Name:      "accept",
+	ShortHelp: "Accept an organization invite",
+	LongHelp:  "Accept an organization invite",
+	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
+		return func(subCmd *cli.Cmd) {
+			inviteCode := subCmd.StringArg("INVITE_CODE", "", "The invite code that was sent in the invite email")
+			subCmd.Action = func() {
+				p := prompts.New()
+				err := CmdAccept(*inviteCode, New(settings), auth.New(settings, p), p)
+				if err != nil {
+					logrus.Fatal(err.Error())
+				}
+			}
+			subCmd.Spec = "INVITE_CODE"
 		}
 	},
 }
@@ -85,6 +106,7 @@ var SendSubCmd = models.Command{
 
 // IInvites
 type IInvites interface {
+	Accept(inviteCode string) (string, error)
 	List() (*[]models.Invite, error)
 	ListRoles() (*[]models.Role, error)
 	Rm(inviteID string) error

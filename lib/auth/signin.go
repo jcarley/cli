@@ -20,12 +20,8 @@ import (
 // error occurs, nil is returned for the user and the error field is populated.
 func (a *SAuth) Signin() (*models.User, error) {
 	// if we're already signed in with a valid session, don't sign in again
-	if a.Verify() == nil {
-		return &models.User{
-			Username:     "",
-			SessionToken: a.Settings.SessionToken,
-			UsersID:      a.Settings.UsersID,
-		}, nil
+	if user, err := a.Verify(); err == nil {
+		return user, nil
 	}
 	if a.Settings.PrivateKeyPath == "" {
 		return a.signInWithCredentials()
@@ -139,21 +135,17 @@ func (a *SAuth) Signout() error {
 
 // Verify verifies if a given session token is still valid or not. If it is
 // valid, the returned error will be nil.
-func (a *SAuth) Verify() error {
+func (a *SAuth) Verify() (*models.User, error) {
 	headers := httpclient.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/auth/verify", a.Settings.AuthHost, a.Settings.AuthHostVersion), headers)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	m := make(map[string]string)
-	err = httpclient.ConvertResp(resp, statusCode, &m)
+	var user models.User
+	err = httpclient.ConvertResp(resp, statusCode, &user)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	// the verify route returns userId and not usersId like everything else...
-	if m["id"] != "" {
-		a.Settings.UsersID = m["id"]
-		return nil
-	}
-	return fmt.Errorf("Invalid session token: %s", string(resp))
+	a.Settings.UsersID = user.UsersID
+	return &user, nil
 }

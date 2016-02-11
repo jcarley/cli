@@ -7,9 +7,9 @@ import (
 	"github.com/catalyzeio/cli/models"
 )
 
-func (j *SJobs) Retrieve(jobID, svcID string) (*models.Job, error) {
+func (j *SJobs) Retrieve(jobID, svcID string, includeSpec bool) (*models.Job, error) {
 	headers := httpclient.GetHeaders(j.Settings.SessionToken, j.Settings.Version, j.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs/%s", j.Settings.PaasHost, j.Settings.PaasHostVersion, j.Settings.EnvironmentID, svcID, jobID), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs/%s?spec=true", j.Settings.PaasHost, j.Settings.PaasHostVersion, j.Settings.EnvironmentID, svcID, jobID), headers)
 	if err != nil {
 		return nil, err
 	}
