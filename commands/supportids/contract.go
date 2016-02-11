@@ -9,7 +9,7 @@ import (
 // Cmd is the contract between the user and the CLI. This specifies the command
 // name, arguments, and required/optional arguments and flags for the command.
 var Cmd = models.Command{
-	Name:      "supportids",
+	Name:      "support-ids",
 	ShortHelp: "Print out various IDs related to your associated environment to be used when contacting Catalyze support",
 	LongHelp:  "Print out various IDs related to your associated environment to be used when contacting Catalyze support",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {

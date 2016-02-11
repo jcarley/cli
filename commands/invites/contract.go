@@ -86,20 +86,17 @@ var SendSubCmd = models.Command{
 			email := subCmd.StringArg("EMAIL", "", "The email of a user to invite to the associated environment. This user does not need to have a Catalyze account prior to sending the invitation")
 			subCmd.BoolOpt("m member", true, "Whether or not the user will be invited as a basic member")
 			adminRole := subCmd.BoolOpt("a admin", false, "Whether or not the user will be invited as an admin")
-			ownerRole := subCmd.BoolOpt("o owner", false, "Whether or not the user will be invited as an owner")
 			subCmd.Action = func() {
 				role := "member"
 				if *adminRole {
 					role = "admin"
-				} else if *ownerRole {
-					role = "owner"
 				}
 				err := CmdSend(*email, role, settings.EnvironmentName, New(settings), prompts.New())
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "EMAIL [-m | -a | -o]"
+			subCmd.Spec = "EMAIL [-m | -a]"
 		}
 	},
 }
