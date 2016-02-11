@@ -8,9 +8,26 @@ import (
 	"os"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/jobs"
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
+
+func CmdLogs(databaseName, backupID string, id IDb, is services.IServices, ij jobs.IJobs) error {
+	service, err := is.RetrieveByLabel(databaseName)
+	if err != nil {
+		return err
+	}
+	if service == nil {
+		return fmt.Errorf("Could not find a service with the label \"%s\"", databaseName)
+	}
+	job, err := ij.Retrieve(backupID, service.ID, false)
+	if err != nil {
+		return err
+	}
+	return id.DumpLogs("backup", job, service)
+}
 
 // DumpLogs dumps logs from a Backup/Restore/Import/Export job to the console
 func (d *SDb) DumpLogs(taskType string, job *models.Job, service *models.Service) error {

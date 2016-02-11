@@ -23,6 +23,7 @@ var Cmd = models.Command{
 			cmd.Command(ExportSubCmd.Name, ExportSubCmd.ShortHelp, ExportSubCmd.CmdFunc(settings))
 			cmd.Command(ImportSubCmd.Name, ImportSubCmd.ShortHelp, ImportSubCmd.CmdFunc(settings))
 			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
+			cmd.Command(LogsSubCmd.Name, LogsSubCmd.ShortHelp, LogsSubCmd.CmdFunc(settings))
 		}
 	},
 }
@@ -124,6 +125,25 @@ var ListSubCmd = models.Command{
 				}
 			}
 			subCmd.Spec = "DATABASE_NAME [-p] [-n]"
+		}
+	},
+}
+
+var LogsSubCmd = models.Command{
+	Name:      "logs",
+	ShortHelp: "Print out the logs from a previous database backup job",
+	LongHelp:  "Print out the logs from a previous database backup job",
+	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
+		return func(subCmd *cli.Cmd) {
+			databaseName := subCmd.StringArg("DATABASE_NAME", "", "The name of the database service (i.e. 'db01')")
+			backupID := subCmd.StringArg("BACKUP_ID", "", "The ID of the backup to download logs from (found from \"catalyze backup list\")")
+			subCmd.Action = func() {
+				err := CmdLogs(*databaseName, *backupID, New(settings, crypto.New(), jobs.New(settings)), services.New(settings), jobs.New(settings))
+				if err != nil {
+					logrus.Fatal(err.Error())
+				}
+			}
+			subCmd.Spec = "DATABASE_NAME BACKUP_ID"
 		}
 	},
 }
