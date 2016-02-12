@@ -7,7 +7,7 @@ import (
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
-	"github.com/forana/simpletable"
+	"github.com/olekukonko/tablewriter"
 )
 
 func CmdList(is ISites, iservices services.IServices) error {
@@ -23,11 +23,25 @@ func CmdList(is ISites, iservices services.IServices) error {
 		logrus.Println("No sites found")
 		return nil
 	}
-	table, err := simpletable.New(simpletable.HeadersForType(models.Site{}), *sites)
-	if err != nil {
-		return err
+	svcs, err := iservices.List()
+	svcMap := map[string]string{}
+	for _, s := range *svcs {
+		svcMap[s.ID] = s.Label
 	}
-	table.Write(logrus.StandardLogger().Out)
+
+	data := [][]string{{"NAME", "CERT", "UPSTREAM SERVICE"}}
+	for _, s := range *sites {
+		data = append(data, []string{s.Name, s.Cert, svcMap[s.UpstreamService]})
+	}
+
+	table := tablewriter.NewWriter(logrus.StandardLogger().Out)
+	table.SetBorder(false)
+	table.SetRowLine(false)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.AppendBulk(data)
+	table.Render()
 	return nil
 }
 

@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -23,7 +24,7 @@ const LocalSettingsFile = "catalyze-config.json"
 // for retrieving settings based on the settings file or generating a settings
 // object based on a directly entered environment ID and service ID.
 type SettingsRetriever interface {
-	GetSettings(string, string, string, string, string, string, string, string) *models.Settings
+	GetSettings(string, string, string, string, string, string, string, string, string) *models.Settings
 }
 
 // FileSettingsRetriever reads in data from the SettingsFile and generates a
@@ -31,7 +32,7 @@ type SettingsRetriever interface {
 type FileSettingsRetriever struct{}
 
 // GetSettings returns a Settings object for the current context
-func (s FileSettingsRetriever) GetSettings(envName, svcName, authHost, ignoreAuthHostVersion, paasHost, ignorePaasHostVersion, username, password string) *models.Settings {
+func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authHost, ignoreAuthHostVersion, paasHost, ignorePaasHostVersion, username, password string) *models.Settings {
 	HomeDir, err := homedir.Dir()
 	if err != nil {
 		logrus.Println(err.Error())
@@ -83,7 +84,7 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, authHost, ignoreAut
 		fmt.Println("No Catalyze environment has been associated. Run \"catalyze associate\" from a local git repo first")
 		os.Exit(1)
 	}*/
-
+	settings.AccountsHost = accountsHost
 	settings.AuthHost = authHost
 	settings.PaasHost = paasHost
 	settings.Username = username
@@ -101,6 +102,7 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, authHost, ignoreAut
 	}
 	settings.PaasHostVersion = paasHostVersion
 
+	logrus.Debugf("Accounts Host: %s", accountsHost)
 	logrus.Debugf("Auth Host: %s", authHost)
 	logrus.Debugf("Paas Host: %s", paasHost)
 	logrus.Debugf("Auth Host Version: %s", authHostVersion)
@@ -222,7 +224,7 @@ func setFirstAssociatedEnv(settings *models.Settings) {
 // defaultEnvPrompt asks the user when they dont have a default environment and
 // aren't in an associated directory if they would like to proceed with the
 // first environment found.
-func defaultEnvPrompt(envName string) {
+func defaultEnvPrompt(envName string) error {
 	var answer string
 	for {
 		fmt.Printf("No environment was specified and no default environment was found. Falling back to %s\n", envName)
@@ -236,7 +238,25 @@ func defaultEnvPrompt(envName string) {
 		}
 	}
 	if answer == "n" {
-		fmt.Println("Exiting")
-		os.Exit(1)
+		return errors.New("Exiting")
 	}
+	return nil
+}
+
+// CheckRequiredAssociation ensures if an association is required for a command to run,
+// that an appropriate environment has been picked and values assigned to the
+// given settings object before a command is run. This is intended to be called
+// before every command.
+func CheckRequiredAssociation(required, prompt bool, settings *models.Settings) error {
+	if required && (settings.EnvironmentID == "" || settings.ServiceID == "") {
+		err := ErrEnvRequired
+		if prompt {
+			for _, e := range settings.Environments {
+				err = defaultEnvPrompt(e.Name)
+				break
+			}
+		}
+		return err
+	}
+	return nil
 }

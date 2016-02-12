@@ -1,7 +1,10 @@
 package metrics
 
 import (
+	"os"
+
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -21,6 +24,10 @@ var Cmd = models.Command{
 			stream := cmd.BoolOpt("stream", false, "Repeat calls once per minute until this process is interrupted.")
 			mins := cmd.IntOpt("m mins", 1, "How many minutes worth of logs to retrieve.")
 			cmd.Action = func() {
+				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+					logrus.Println(err.Error())
+					os.Exit(1)
+				}
 				/*err := CmdMetrics(*serviceName, *json, *csv, *spark, *stream, *mins, New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())

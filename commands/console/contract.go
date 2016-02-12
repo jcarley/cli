@@ -1,9 +1,12 @@
 package console
 
 import (
+	"os"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/jobs"
 	"github.com/catalyzeio/cli/commands/services"
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -19,6 +22,10 @@ var Cmd = models.Command{
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to open up a console for")
 			command := cmd.StringArg("COMMAND", "", "An optional command to run when the console becomes available")
 			cmd.Action = func() {
+				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+					logrus.Println(err.Error())
+					os.Exit(1)
+				}
 				err := CmdConsole(*serviceName, *command, New(settings, jobs.New(settings)), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())

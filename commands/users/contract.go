@@ -1,7 +1,10 @@
 package users
 
 import (
+	"os"
+
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -27,6 +30,10 @@ var ListSubCmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
+				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+					logrus.Println(err.Error())
+					os.Exit(1)
+				}
 				err := CmdList(settings.UsersID, New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
@@ -44,6 +51,10 @@ var RmSubCmd = models.Command{
 		return func(subCmd *cli.Cmd) {
 			usersID := subCmd.StringArg("USER_ID", "", "The Users ID to revoke access from for the given organization")
 			subCmd.Action = func() {
+				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+					logrus.Println(err.Error())
+					os.Exit(1)
+				}
 				err := CmdRm(*usersID, New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())

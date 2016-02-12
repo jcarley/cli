@@ -23,9 +23,6 @@ func (c *SCrypto) EncryptFile(plainFilePath string, key, iv []byte) (string, err
 	if err != nil {
 		return "", err
 	}
-	// TODO think of something more unique than this without opening a temp file,
-	// taking the name, then opening it with this method.
-	// In the end I need to open a temp file with 0600
 	file, err := os.OpenFile(fmt.Sprintf("%s.encr", plainFilePath), os.O_CREATE|os.O_RDWR, 0600)
 	defer file.Close()
 	if err != nil {

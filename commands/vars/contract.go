@@ -1,7 +1,10 @@
 package vars
 
 import (
+	"os"
+
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -28,6 +31,10 @@ var ListSubCmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
+				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+					logrus.Println(err.Error())
+					os.Exit(1)
+				}
 				err := CmdList(New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
@@ -50,6 +57,10 @@ var SetSubCmd = models.Command{
 				HideValue: true,
 			})
 			subCmd.Action = func() {
+				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+					logrus.Println(err.Error())
+					os.Exit(1)
+				}
 				err := CmdSet(*variables, New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
@@ -68,6 +79,10 @@ var UnsetSubCmd = models.Command{
 		return func(subCmd *cli.Cmd) {
 			variable := subCmd.StringArg("VARIABLE", "", "The name of the environment variable to unset")
 			subCmd.Action = func() {
+				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+					logrus.Println(err.Error())
+					os.Exit(1)
+				}
 				err := CmdUnset(*variable, New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())

@@ -1,10 +1,13 @@
 package status
 
 import (
+	"os"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/environments"
 	"github.com/catalyzeio/cli/commands/jobs"
 	"github.com/catalyzeio/cli/commands/services"
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -18,6 +21,10 @@ var Cmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {
+				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+					logrus.Println(err.Error())
+					os.Exit(1)
+				}
 				err := CmdStatus(settings.EnvironmentID, New(settings, jobs.New(settings)), environments.New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())

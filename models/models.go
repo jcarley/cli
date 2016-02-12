@@ -119,7 +119,7 @@ type Service struct {
 	ID      string            `json:"id,omitempty"`
 	Type    string            `json:"type,omitempty"`
 	Label   string            `json:"label"`
-	Size    interface{}       `json:"size"` // TODO is this guaranteed to be the new format now?
+	Size    ServiceSize       `json:"size"`
 	Name    string            `json:"name"`
 	EnvVars map[string]string `json:"environmentVariables,omitempty"`
 	Source  string            `json:"source,omitempty"`
@@ -128,12 +128,11 @@ type Service struct {
 
 // ServiceSize holds size information for a service
 type ServiceSize struct {
-	ServiceID string `json:"service"`
-	RAM       string `json:"ram"`
-	Storage   string `json:"storage"`
-	Behavior  string `json:"behavior"`
-	Type      string `json:"type"`
-	CPU       string `json:"cpu"`
+	RAM      string `json:"ram"`
+	Storage  string `json:"storage"`
+	Behavior string `json:"behavior"`
+	Type     string `json:"type"`
+	CPU      string `json:"cpu"`
 }
 
 // PodMetadata podmetadata
@@ -148,6 +147,7 @@ type PodMetadata struct {
 // `json:"-"` are never persisted to disk but used in memory for the current
 // command.
 type Settings struct {
+	AccountsHost    string `json:"-"`
 	AuthHost        string `json:"-"`
 	PaasHost        string `json:"-"`
 	AuthHostVersion string `json:"-"`

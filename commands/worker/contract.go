@@ -1,7 +1,10 @@
 package worker
 
 import (
+	"os"
+
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -16,6 +19,10 @@ var Cmd = models.Command{
 		return func(cmd *cli.Cmd) {
 			target := cmd.StringArg("TARGET", "", "The name of the Procfile target to invoke as a worker")
 			cmd.Action = func() {
+				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+					logrus.Println(err.Error())
+					os.Exit(1)
+				}
 				err := CmdWorker(*target, settings.ServiceID, New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())

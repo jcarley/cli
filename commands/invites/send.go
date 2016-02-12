@@ -40,10 +40,9 @@ func CmdSend(email, envName, roleName string, ii IInvites, ip prompts.IPrompts) 
 // Dashboard account in order to accept the invitation.
 func (i *SInvites) Send(email string, role int) error {
 	inv := models.PostInvite{
-		Email: email,
-		Role:  role,
-		// TODO this should be the frontend and not the api itself
-		LinkTemplate: fmt.Sprintf("%s%s/accept-invite?id={inviteCode}", i.Settings.AuthHost, i.Settings.AuthHostVersion),
+		Email:        email,
+		Role:         role,
+		LinkTemplate: fmt.Sprintf("%s/accept-invite?id={inviteCode}", i.Settings.AccountsHost),
 	}
 	b, err := json.Marshal(inv)
 	if err != nil {

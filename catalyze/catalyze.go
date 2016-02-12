@@ -66,6 +66,10 @@ func Run() {
 
 	var app = cli.App("catalyze", fmt.Sprintf("Catalyze CLI. Version %s", config.VERSION))
 
+	accountsHost := os.Getenv(config.AccountsHostEnvVar)
+	if accountsHost == "" {
+		accountsHost = config.AccountsHost
+	}
 	authHost := os.Getenv(config.AuthHostEnvVar)
 	if authHost == "" {
 		authHost = config.AuthHost
@@ -101,7 +105,7 @@ func Run() {
 
 	app.Before = func() {
 		r := config.FileSettingsRetriever{}
-		*settings = *r.GetSettings(*givenEnvName, "", authHost, "", paasHost, "", *username, *password)
+		*settings = *r.GetSettings(*givenEnvName, "", accountsHost, authHost, "", paasHost, "", *username, *password)
 		logrus.Debugf("%+v", settings)
 
 		if settings.Pods == nil || len(*settings.Pods) == 0 {
@@ -111,9 +115,8 @@ func Run() {
 				settings.Pods = pods
 				logrus.Debugf("%+v", settings.Pods)
 			} else {
-				logrus.Debugln(err.Error())
-				// TODO check in the cmd wherever settings.Pods is used and check for null/empty
-				// log this err
+				settings.Pods = &[]models.Pod{}
+				logrus.Debugf("Error listing pods: %s", err.Error())
 			}
 		}
 

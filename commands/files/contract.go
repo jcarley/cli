@@ -1,8 +1,11 @@
 package files
 
 import (
+	"os"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -17,7 +20,6 @@ var Cmd = models.Command{
 		return func(cmd *cli.Cmd) {
 			cmd.Command(DownloadSubCmd.Name, DownloadSubCmd.ShortHelp, DownloadSubCmd.CmdFunc(settings))
 			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
-			//cmd.Command(RmSubCmd.Name, RmSubCmd.ShortHelp, RmSubCmd.CmdFunc(settings))
 		}
 	},
 }
@@ -33,6 +35,10 @@ var DownloadSubCmd = models.Command{
 			output := subCmd.StringOpt("o output", "", "The downloaded file will be saved to the given location with the same file permissions as it has on the remote host. If those file permissions cannot be applied, a warning will be printed and default 0644 permissions applied. If no output is specified, stdout is used.")
 			force := subCmd.BoolOpt("f force", false, "If the specified output file already exists, automatically overwrite it")
 			subCmd.Action = func() {
+				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+					logrus.Println(err.Error())
+					os.Exit(1)
+				}
 				err := CmdDownload(*serviceName, *fileName, *output, *force, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
@@ -51,6 +57,10 @@ var ListSubCmd = models.Command{
 		return func(subCmd *cli.Cmd) {
 			svcName := subCmd.StringArg("SERVICE_NAME", "service_proxy", "The name of the service to list files for")
 			subCmd.Action = func() {
+				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+					logrus.Println(err.Error())
+					os.Exit(1)
+				}
 				err := CmdList(*svcName, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
@@ -61,31 +71,11 @@ var ListSubCmd = models.Command{
 	},
 }
 
-var RmSubCmd = models.Command{
-	Name:      "rm",
-	ShortHelp: "Remove a service file",
-	LongHelp:  "Remove a service file",
-	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
-		return func(subCmd *cli.Cmd) {
-			serviceName := subCmd.StringArg("SERVICE_NAME", "service_proxy", "The name of the service to remove a file from")
-			fileName := subCmd.StringArg("FILE_NAME", "", "The name of the service file from running \"catalyze files list\"")
-			subCmd.Action = func() {
-				err := CmdRm(*serviceName, *fileName, New(settings), services.New(settings))
-				if err != nil {
-					logrus.Fatal(err.Error())
-				}
-			}
-			subCmd.Spec = "[SERVICE_NAME] FILE_NAME"
-		}
-	},
-}
-
 // IFiles
 type IFiles interface {
 	Create(svcID, filePath, name, mode string) (*models.ServiceFile, error)
 	List(svcID string) (*[]models.ServiceFile, error)
 	Retrieve(fileName string, svcID string) (*models.ServiceFile, error)
-	Rm(fileID int, svcID string) error
 	Save(output string, force bool, file *models.ServiceFile) error
 }
 

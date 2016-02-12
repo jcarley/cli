@@ -1,7 +1,10 @@
 package invites
 
 import (
+	"os"
+
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
@@ -50,6 +53,10 @@ var ListSubCmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
+				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+					logrus.Println(err.Error())
+					os.Exit(1)
+				}
 				err := CmdList(settings.EnvironmentName, New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
@@ -67,6 +74,10 @@ var RmSubCmd = models.Command{
 		return func(subCmd *cli.Cmd) {
 			inviteID := subCmd.StringArg("INVITE_ID", "", "The ID of an invitation to remove")
 			subCmd.Action = func() {
+				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+					logrus.Println(err.Error())
+					os.Exit(1)
+				}
 				err := CmdRm(*inviteID, New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
@@ -87,6 +98,10 @@ var SendSubCmd = models.Command{
 			subCmd.BoolOpt("m member", true, "Whether or not the user will be invited as a basic member")
 			adminRole := subCmd.BoolOpt("a admin", false, "Whether or not the user will be invited as an admin")
 			subCmd.Action = func() {
+				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+					logrus.Println(err.Error())
+					os.Exit(1)
+				}
 				role := "member"
 				if *adminRole {
 					role = "admin"
