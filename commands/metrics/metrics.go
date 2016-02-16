@@ -13,6 +13,12 @@ import (
 	ui "github.com/gizak/termui"
 )
 
+var blacklist = map[string]struct{}{
+	"logging":       struct{}{},
+	"service_proxy": struct{}{},
+	"monitoring":    struct{}{},
+}
+
 // Transformer specifies that all concrete implementations should be
 // able to transform an entire environments metrics data (group) or a single
 // service metrics data (single).

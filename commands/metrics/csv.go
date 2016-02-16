@@ -75,7 +75,9 @@ func (csv *CSVTransformer) WriteHeadersNetworkOut() {
 func (csv *CSVTransformer) TransformGroupCPU(metrics *[]models.Metrics) {
 	csv.GroupMode = true
 	for _, metric := range *metrics {
-		csv.TransformSingleCPU(&metric)
+		if _, ok := blacklist[metric.ServiceLabel]; !ok {
+			csv.TransformSingleCPU(&metric)
+		}
 	}
 	csv.Writer.Flush()
 	logrus.Println(csv.Buffer.String())
@@ -87,7 +89,9 @@ func (csv *CSVTransformer) TransformGroupCPU(metrics *[]models.Metrics) {
 func (csv *CSVTransformer) TransformGroupMemory(metrics *[]models.Metrics) {
 	csv.GroupMode = true
 	for _, metric := range *metrics {
-		csv.TransformSingleMemory(&metric)
+		if _, ok := blacklist[metric.ServiceLabel]; !ok {
+			csv.TransformSingleMemory(&metric)
+		}
 	}
 	csv.Writer.Flush()
 	logrus.Println(csv.Buffer.String())
@@ -99,7 +103,9 @@ func (csv *CSVTransformer) TransformGroupMemory(metrics *[]models.Metrics) {
 func (csv *CSVTransformer) TransformGroupNetworkIn(metrics *[]models.Metrics) {
 	csv.GroupMode = true
 	for _, metric := range *metrics {
-		csv.TransformSingleNetworkIn(&metric)
+		if _, ok := blacklist[metric.ServiceLabel]; !ok {
+			csv.TransformSingleNetworkIn(&metric)
+		}
 	}
 	csv.Writer.Flush()
 	logrus.Println(csv.Buffer.String())
@@ -111,7 +117,9 @@ func (csv *CSVTransformer) TransformGroupNetworkIn(metrics *[]models.Metrics) {
 func (csv *CSVTransformer) TransformGroupNetworkOut(metrics *[]models.Metrics) {
 	csv.GroupMode = true
 	for _, metric := range *metrics {
-		csv.TransformSingleNetworkOut(&metric)
+		if _, ok := blacklist[metric.ServiceLabel]; !ok {
+			csv.TransformSingleNetworkOut(&metric)
+		}
 	}
 	csv.Writer.Flush()
 	logrus.Println(csv.Buffer.String())

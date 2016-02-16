@@ -23,7 +23,9 @@ type SparkTransformer struct {
 // lines. This outputs TransformSingleCPU for every service in the environment.
 func (spark *SparkTransformer) TransformGroupCPU(metrics *[]models.Metrics) {
 	for _, metric := range *metrics {
-		spark.TransformSingleCPU(&metric)
+		if _, ok := blacklist[metric.ServiceLabel]; !ok {
+			spark.TransformSingleCPU(&metric)
+		}
 	}
 }
 
@@ -32,7 +34,9 @@ func (spark *SparkTransformer) TransformGroupCPU(metrics *[]models.Metrics) {
 // environment.
 func (spark *SparkTransformer) TransformGroupMemory(metrics *[]models.Metrics) {
 	for _, metric := range *metrics {
-		spark.TransformSingleMemory(&metric)
+		if _, ok := blacklist[metric.ServiceLabel]; !ok {
+			spark.TransformSingleMemory(&metric)
+		}
 	}
 }
 
@@ -41,7 +45,9 @@ func (spark *SparkTransformer) TransformGroupMemory(metrics *[]models.Metrics) {
 // service in the environment.
 func (spark *SparkTransformer) TransformGroupNetworkIn(metrics *[]models.Metrics) {
 	for _, metric := range *metrics {
-		spark.TransformSingleNetworkIn(&metric)
+		if _, ok := blacklist[metric.ServiceLabel]; !ok {
+			spark.TransformSingleNetworkIn(&metric)
+		}
 	}
 }
 
@@ -50,7 +56,9 @@ func (spark *SparkTransformer) TransformGroupNetworkIn(metrics *[]models.Metrics
 // every service in the environment.
 func (spark *SparkTransformer) TransformGroupNetworkOut(metrics *[]models.Metrics) {
 	for _, metric := range *metrics {
-		spark.TransformSingleNetworkOut(&metric)
+		if _, ok := blacklist[metric.ServiceLabel]; !ok {
+			spark.TransformSingleNetworkOut(&metric)
+		}
 	}
 }
 

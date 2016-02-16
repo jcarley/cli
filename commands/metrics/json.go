@@ -48,7 +48,7 @@ type netout struct {
 func (j *JSONTransformer) TransformGroupCPU(metrics *[]models.Metrics) {
 	var data []cpu
 	for _, m := range *metrics {
-		if m.Data != nil && m.Data.CPUUsage != nil {
+		if _, ok := blacklist[m.ServiceLabel]; !ok && m.Data != nil && m.Data.CPUUsage != nil {
 			for _, d := range *m.Data.CPUUsage {
 				data = append(data, cpu{m.ServiceLabel, d.TS, d.Min / 1000.0, d.Max / 1000.0, d.AVG / 1000.0, d.Total / 1000.0})
 			}
@@ -64,7 +64,7 @@ func (j *JSONTransformer) TransformGroupCPU(metrics *[]models.Metrics) {
 func (j *JSONTransformer) TransformGroupMemory(metrics *[]models.Metrics) {
 	var data []mem
 	for _, m := range *metrics {
-		if m.Data != nil && m.Data.MemoryUsage != nil {
+		if _, ok := blacklist[m.ServiceLabel]; !ok && m.Data != nil && m.Data.MemoryUsage != nil {
 			for _, d := range *m.Data.MemoryUsage {
 				data = append(data, mem{m.ServiceLabel, d.TS, d.Min / 1024.0, d.Max / 1024.0, d.AVG / 1024.0, d.Total / 1024.0})
 			}
@@ -80,7 +80,7 @@ func (j *JSONTransformer) TransformGroupMemory(metrics *[]models.Metrics) {
 func (j *JSONTransformer) TransformGroupNetworkIn(metrics *[]models.Metrics) {
 	var data []netin
 	for _, m := range *metrics {
-		if m.Data != nil && m.Data.NetworkUsage != nil {
+		if _, ok := blacklist[m.ServiceLabel]; !ok && m.Data != nil && m.Data.NetworkUsage != nil {
 			for _, d := range *m.Data.NetworkUsage {
 				data = append(data, netin{m.ServiceLabel, d.TS, d.RXKB, d.RXPackets})
 			}
@@ -96,7 +96,7 @@ func (j *JSONTransformer) TransformGroupNetworkIn(metrics *[]models.Metrics) {
 func (j *JSONTransformer) TransformGroupNetworkOut(metrics *[]models.Metrics) {
 	var data []netout
 	for _, m := range *metrics {
-		if m.Data != nil && m.Data.NetworkUsage != nil {
+		if _, ok := blacklist[m.ServiceLabel]; !ok && m.Data != nil && m.Data.NetworkUsage != nil {
 			for _, d := range *m.Data.NetworkUsage {
 				data = append(data, netout{m.ServiceLabel, d.TS, d.TXKB, d.TXPackets})
 			}

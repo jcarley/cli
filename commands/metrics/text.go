@@ -16,8 +16,10 @@ type TextTransformer struct{}
 // format. This outputs TransformSingleCPU for every service in the environment.
 func (text *TextTransformer) TransformGroupCPU(metrics *[]models.Metrics) {
 	for _, metric := range *metrics {
-		logrus.Printf("%s:", metric.ServiceLabel)
-		text.TransformSingleCPU(&metric)
+		if _, ok := blacklist[metric.ServiceLabel]; !ok {
+			logrus.Printf("%s:", metric.ServiceLabel)
+			text.TransformSingleCPU(&metric)
+		}
 	}
 }
 
@@ -26,8 +28,10 @@ func (text *TextTransformer) TransformGroupCPU(metrics *[]models.Metrics) {
 // environment.
 func (text *TextTransformer) TransformGroupMemory(metrics *[]models.Metrics) {
 	for _, metric := range *metrics {
-		logrus.Printf("%s:", metric.ServiceLabel)
-		text.TransformSingleMemory(&metric)
+		if _, ok := blacklist[metric.ServiceLabel]; !ok {
+			logrus.Printf("%s:", metric.ServiceLabel)
+			text.TransformSingleMemory(&metric)
+		}
 	}
 }
 
@@ -36,8 +40,10 @@ func (text *TextTransformer) TransformGroupMemory(metrics *[]models.Metrics) {
 // service in the environment.
 func (text *TextTransformer) TransformGroupNetworkIn(metrics *[]models.Metrics) {
 	for _, metric := range *metrics {
-		logrus.Printf("%s:", metric.ServiceLabel)
-		text.TransformSingleNetworkIn(&metric)
+		if _, ok := blacklist[metric.ServiceLabel]; !ok {
+			logrus.Printf("%s:", metric.ServiceLabel)
+			text.TransformSingleNetworkIn(&metric)
+		}
 	}
 }
 
@@ -46,8 +52,10 @@ func (text *TextTransformer) TransformGroupNetworkIn(metrics *[]models.Metrics) 
 // every service in the environment.
 func (text *TextTransformer) TransformGroupNetworkOut(metrics *[]models.Metrics) {
 	for _, metric := range *metrics {
-		logrus.Printf("%s:", metric.ServiceLabel)
-		text.TransformSingleNetworkOut(&metric)
+		if _, ok := blacklist[metric.ServiceLabel]; !ok {
+			logrus.Printf("%s:", metric.ServiceLabel)
+			text.TransformSingleNetworkOut(&metric)
+		}
 	}
 }
 
