@@ -16,6 +16,8 @@ Once downloaded, the CLI will automatically update itself when a new version bec
 
 For all 64 bit users, choose the `amd64` version of your OS. For all 32 bit users, choose the `386` version of your OS.
 
+Warning: The ARM version of our cli is purely presented here for people who are interested, we will not work to fix any bugs it might have.
+
 ### Darwin (Apple Mac)
 
  * [catalyze\_2.2.0\_darwin\_386.zip](https://github.com/catalyzeio/cli/releases/download/2.2.0/catalyze_2.2.0_darwin_386.zip)
