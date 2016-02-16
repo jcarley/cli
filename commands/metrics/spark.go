@@ -1,21 +1,14 @@
 package metrics
 
 import (
-	"sort"
-
 	"github.com/catalyzeio/cli/models"
-	ui "gopkg.in/gizak/termui.v1"
+	ui "github.com/gizak/termui"
 )
 
 // SparkTransformer is a concrete implementation of Transformer transforming
 // data using spark lines.
 type SparkTransformer struct {
-	Redraw     chan bool
 	SparkLines map[string]*ui.Sparklines
-}
-
-func (m *SMetrics) Spark() error {
-	return nil
 }
 
 // deltas computes the change between each datapoint. Since there will be
@@ -32,63 +25,143 @@ func (spark *SparkTransformer) deltas(items []int) []int {
 
 // TransformGroup transforms an entire environment's metrics data using
 // spark lines.
-func (spark *SparkTransformer) TransformGroup(metrics *[]models.Metrics) {
+func (spark *SparkTransformer) TransformGroupCPU(metrics *[]models.Metrics) {
 	for _, metric := range *metrics {
-		spark.TransformSingle(&metric)
+		spark.TransformSingleCPU(&metric)
+	}
+}
+
+func (spark *SparkTransformer) TransformGroupMemory(metrics *[]models.Metrics) {
+	for _, metric := range *metrics {
+		spark.TransformSingleMemory(&metric)
+	}
+}
+
+func (spark *SparkTransformer) TransformGroupNetworkIn(metrics *[]models.Metrics) {
+	for _, metric := range *metrics {
+		spark.TransformSingleNetworkIn(&metric)
+	}
+}
+
+func (spark *SparkTransformer) TransformGroupNetworkOut(metrics *[]models.Metrics) {
+	for _, metric := range *metrics {
+		spark.TransformSingleNetworkOut(&metric)
 	}
 }
 
 // TransformSingle transforms a single service's metrics data using spark lines.
-func (spark *SparkTransformer) TransformSingle(metric *models.Metrics) {
-	for _, job := range *metric.Jobs {
-		sparkData := make(map[string][]int)
-		for i := len(*job.MetricsData) - 1; i >= 0; i-- {
-			data := (*job.MetricsData)[i]
-			sparkData["CPU"] = append(sparkData["CPU"], int(data.CPU.Usage))
-			sparkData["Disk Read"] = append(sparkData["Disk Read"], int(data.DiskIO.Read))
-			sparkData["Disk Write"] = append(sparkData["Disk Write"], int(data.DiskIO.Write))
-			sparkData["Memory"] = append(sparkData["Memory"], int(data.Memory.Avg))
-			sparkData["Net RX"] = append(sparkData["Net RX"], int(data.Network.RXKb))
-			sparkData["Net TX"] = append(sparkData["Net TX"], int(data.Network.TXKb))
-		}
-		sparkData["Net RX"] = spark.deltas(sparkData["Net RX"])
-		sparkData["Net TX"] = spark.deltas(sparkData["Net TX"])
-		var sortedKeys []string
-		for k := range sparkData {
-			sortedKeys = append(sortedKeys, k)
-		}
-		sort.Strings(sortedKeys)
-		var slData [][]int
-		for _, key := range sortedKeys {
-			value := sparkData[key]
-			slData = append(slData, value)
-		}
-		var sparkLines = spark.SparkLines[metric.ServiceName]
-		if sparkLines == nil {
-			sparkLines = addSparkLine(metric.ServiceName, slData)
-			spark.SparkLines[metric.ServiceName] = sparkLines
-		} else {
-			for i := range sparkLines.Lines {
-				sparkLines.Lines[i].Data = slData[i]
-			}
-		}
-		spark.Redraw <- true
+func (spark *SparkTransformer) TransformSingleCPU(metric *models.Metrics) {
+	var cpuMin []int
+	var cpuMax []int
+	var cpuAvg []int
+	var cpuTotal []int
+	for _, data := range *metric.Data.CPULoad {
+		cpuMin = append(cpuMin, int(data.Min/1000.0))
+		cpuMax = append(cpuMax, int(data.Max/1000.0))
+		cpuAvg = append(cpuAvg, int(data.AVG/1000.0))
+		cpuTotal = append(cpuTotal, int(data.Total/1000.0))
 	}
+	var sparkLines = spark.SparkLines[metric.ServiceName]
+	if sparkLines == nil {
+		sparkLines = addSparkLine(metric.ServiceName, []string{"CPU Min", "CPU Max", "CPU AVG", "CPU Total"})
+		spark.SparkLines[metric.ServiceName] = sparkLines
+	}
+	for i := range sparkLines.Lines {
+		if sparkLines.Lines[i].Title == "CPU Min" {
+			sparkLines.Lines[i].Data = cpuMin
+		} else if sparkLines.Lines[i].Title == "CPU Max" {
+			sparkLines.Lines[i].Data = cpuMax
+		} else if sparkLines.Lines[i].Title == "CPU AVG" {
+			sparkLines.Lines[i].Data = cpuAvg
+		} else if sparkLines.Lines[i].Title == "CPU Total" {
+			sparkLines.Lines[i].Data = cpuTotal
+		}
+	}
+	ui.Render(ui.Body)
 }
 
-func addSparkLine(serviceName string, data [][]int) *ui.Sparklines {
-	titles := []string{"CPU", "Disk Read", "Disk Write", "Memory", "Net RX", "Net TX"}
+func (spark *SparkTransformer) TransformSingleMemory(metric *models.Metrics) {
+	var memMin []int
+	var memMax []int
+	var memAvg []int
+	for _, data := range *metric.Data.MemoryUsage {
+		memMin = append(memMin, int(data.Min/1024.0))
+		memMax = append(memMax, int(data.Max/1024.0))
+		memAvg = append(memAvg, int(data.AVG/1024.0))
+	}
+	var sparkLines = spark.SparkLines[metric.ServiceName]
+	if sparkLines == nil {
+		sparkLines = addSparkLine(metric.ServiceName, []string{"Mem Min", "Mem Max", "Mem AVG"})
+		spark.SparkLines[metric.ServiceName] = sparkLines
+	}
+	for i := range sparkLines.Lines {
+		if sparkLines.Lines[i].Title == "Mem Min" {
+			sparkLines.Lines[i].Data = memMin
+		} else if sparkLines.Lines[i].Title == "Mem Max" {
+			sparkLines.Lines[i].Data = memMax
+		} else if sparkLines.Lines[i].Title == "Mem AVG" {
+			sparkLines.Lines[i].Data = memAvg
+		}
+	}
+	ui.Render(ui.Body)
+}
+
+func (spark *SparkTransformer) TransformSingleNetworkIn(metric *models.Metrics) {
+	var netinKB []int
+	var netinPackets []int
+	for _, data := range *metric.Data.NetworkUsage {
+		netinKB = append(netinKB, int(data.RXKB))
+		netinPackets = append(netinPackets, int(data.RXPackets))
+	}
+	var sparkLines = spark.SparkLines[metric.ServiceName]
+	if sparkLines == nil {
+		sparkLines = addSparkLine(metric.ServiceName, []string{"Received KB", "Received Packets"})
+		spark.SparkLines[metric.ServiceName] = sparkLines
+	}
+	for i := range sparkLines.Lines {
+		if sparkLines.Lines[i].Title == "Received KB" {
+			sparkLines.Lines[i].Data = netinKB
+		} else if sparkLines.Lines[i].Title == "Received Packets" {
+			sparkLines.Lines[i].Data = netinPackets
+		}
+	}
+	ui.Render(ui.Body)
+}
+
+func (spark *SparkTransformer) TransformSingleNetworkOut(metric *models.Metrics) {
+	var netoutKB []int
+	var netoutPackets []int
+	for _, data := range *metric.Data.NetworkUsage {
+		netoutKB = append(netoutKB, int(data.TXKB))
+		netoutPackets = append(netoutPackets, int(data.TXPackets))
+	}
+	var sparkLines = spark.SparkLines[metric.ServiceName]
+	if sparkLines == nil {
+		sparkLines = addSparkLine(metric.ServiceName, []string{"Transmitted KB", "Transmitted Packets"})
+		spark.SparkLines[metric.ServiceName] = sparkLines
+	}
+	for i := range sparkLines.Lines {
+		if sparkLines.Lines[i].Title == "Transmitted KB" {
+			sparkLines.Lines[i].Data = netoutKB
+		} else if sparkLines.Lines[i].Title == "Transmitted Packets" {
+			sparkLines.Lines[i].Data = netoutPackets
+		}
+	}
+	ui.Render(ui.Body)
+}
+
+func addSparkLine(serviceName string, titles []string) *ui.Sparklines {
 	var sparkLines []ui.Sparkline
-	for i, title := range titles {
+	for _, title := range titles {
 		sparkLine := ui.NewSparkline()
 		sparkLine.Height = 1
-		sparkLine.Data = data[i]
+		sparkLine.Data = []int{}
 		sparkLine.Title = title
 		sparkLines = append(sparkLines, sparkLine)
 	}
 	sp := ui.NewSparklines(sparkLines...)
 	sp.Height = 14
-	sp.Border.Label = serviceName
+	sp.BorderLabel = serviceName
 
 	ui.Body.AddRows(
 		ui.NewRow(ui.NewCol(12, 0, sp)),
@@ -96,26 +169,15 @@ func addSparkLine(serviceName string, data [][]int) *ui.Sparklines {
 
 	ui.Body.Align()
 	ui.Render(sp)
+	ui.Render(ui.Body)
 
 	return sp
 }
 
-func maintainSparkLines(redraw chan bool, quit chan bool) {
-	evt := ui.EventCh()
-	for {
-		select {
-		case e := <-evt:
-			if e.Type == ui.EventKey && e.Ch == 'q' {
-				quit <- true
-				return
-			}
-			if e.Type == ui.EventResize {
-				ui.Body.Width = ui.TermWidth()
-				ui.Body.Align()
-				go func() { redraw <- true }()
-			}
-		case <-redraw:
-			ui.Render(ui.Body)
-		}
-	}
+func sparkLinesEventLoop() {
+	ui.Handle("/sys/kbd/q", func(ui.Event) {
+		ui.StopLoop()
+	})
+
+	ui.Loop() // blocking call
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/catalyzeio/cli/commands/dashboard"
 	"github.com/catalyzeio/cli/commands/db"
 	"github.com/catalyzeio/cli/commands/default"
+	"github.com/catalyzeio/cli/commands/deploykeys"
 	"github.com/catalyzeio/cli/commands/disassociate"
 	"github.com/catalyzeio/cli/commands/environments"
 	"github.com/catalyzeio/cli/commands/files"
@@ -58,8 +59,10 @@ func (s *simpleLogger) Format(entry *logrus.Entry) ([]byte, error) {
 
 // Run runs the Catalyze CLI
 func Run() {
-	if updater.AutoUpdater != nil {
-		updater.AutoUpdater.BackgroundRun()
+	if !config.Beta {
+		if updater.AutoUpdater != nil {
+			updater.AutoUpdater.BackgroundRun()
+		}
 	}
 
 	InitLogrus()
@@ -171,6 +174,7 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.Command(dashboard.Cmd.Name, dashboard.Cmd.ShortHelp, dashboard.Cmd.CmdFunc(settings))
 	app.Command(db.Cmd.Name, db.Cmd.ShortHelp, db.Cmd.CmdFunc(settings))
 	app.Command(defaultcmd.Cmd.Name, defaultcmd.Cmd.ShortHelp, defaultcmd.Cmd.CmdFunc(settings))
+	app.Command(deploykeys.Cmd.Name, deploykeys.Cmd.ShortHelp, deploykeys.Cmd.CmdFunc(settings))
 	app.Command(disassociate.Cmd.Name, disassociate.Cmd.ShortHelp, disassociate.Cmd.CmdFunc(settings))
 	app.Command(environments.Cmd.Name, environments.Cmd.ShortHelp, environments.Cmd.CmdFunc(settings))
 	app.Command(files.Cmd.Name, files.Cmd.ShortHelp, files.Cmd.CmdFunc(settings))
@@ -186,7 +190,9 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.Command(ssl.Cmd.Name, ssl.Cmd.ShortHelp, ssl.Cmd.CmdFunc(settings))
 	app.Command(status.Cmd.Name, status.Cmd.ShortHelp, status.Cmd.CmdFunc(settings))
 	app.Command(supportids.Cmd.Name, supportids.Cmd.ShortHelp, supportids.Cmd.CmdFunc(settings))
-	app.Command(update.Cmd.Name, update.Cmd.ShortHelp, update.Cmd.CmdFunc(settings))
+	if !config.Beta {
+		app.Command(update.Cmd.Name, update.Cmd.ShortHelp, update.Cmd.CmdFunc(settings))
+	}
 	app.Command(users.Cmd.Name, users.Cmd.ShortHelp, users.Cmd.CmdFunc(settings))
 	app.Command(vars.Cmd.Name, vars.Cmd.ShortHelp, vars.Cmd.CmdFunc(settings))
 	app.Command(whoami.Cmd.Name, whoami.Cmd.ShortHelp, whoami.Cmd.CmdFunc(settings))

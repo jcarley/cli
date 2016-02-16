@@ -9,56 +9,21 @@ import (
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
-	ui "gopkg.in/gizak/termui.v1"
+	ui "github.com/gizak/termui"
 )
-
-// Transformer outlines an interface that takes in metrics data and transforms
-// it into a specific data type. Suggested concrete implementations might
-// include a CSVTransformer or a JSONTransformer.
-type Transformer struct {
-	Stream          bool
-	GroupMode       bool
-	Mins            int
-	GroupRetriever  func(int) (*[]models.Metrics, error)
-	SingleRetriever func(int) (*models.Metrics, error)
-	DataTransformer MetricsTransformer
-
-	settings *models.Settings
-}
 
 // MetricsTransformer specifies that all concrete implementations should be
 // able to transform an entire environments metrics data (group) or a single
 // service metrics data (single).
 type MetricsTransformer interface {
-	TransformGroup(*[]models.Metrics)
-	TransformSingle(*models.Metrics)
-}
-
-func (transformer *Transformer) process() {
-	for {
-		transformer.transform()
-		if !transformer.Stream {
-			break
-		}
-		time.Sleep(time.Minute)
-	}
-}
-
-func (transformer *Transformer) transform() error {
-	if transformer.GroupMode {
-		data, err := transformer.GroupRetriever(transformer.Mins)
-		if err != nil {
-			return err
-		}
-		transformer.DataTransformer.TransformGroup(data)
-	} else {
-		data, err := transformer.SingleRetriever(transformer.Mins)
-		if err != nil {
-			return err
-		}
-		transformer.DataTransformer.TransformSingle(data)
-	}
-	return nil
+	TransformGroupCPU(*[]models.Metrics)
+	TransformGroupMemory(*[]models.Metrics)
+	TransformGroupNetworkIn(*[]models.Metrics)
+	TransformGroupNetworkOut(*[]models.Metrics)
+	TransformSingleCPU(*models.Metrics)
+	TransformSingleMemory(*models.Metrics)
+	TransformSingleNetworkIn(*models.Metrics)
+	TransformSingleNetworkOut(*models.Metrics)
 }
 
 // go unfortunately doesn't have anything except comparisons for floats
@@ -71,46 +36,23 @@ func max(a, b int) int {
 
 // CmdMetrics prints out metrics for a given service or if the service is not
 // specified, metrics for the entire environment are printed.
-func CmdMetrics(svcName string, jsonFlag, csvFlag, sparkFlag, streamFlag bool, mins int, im IMetrics, is services.IServices) error {
-	var service *models.Service
-	if svcName != "" {
-		service, err := is.RetrieveByLabel(svcName)
-		if err != nil {
-			return err
-		}
-		if service == nil {
-			return fmt.Errorf("Could not find a service with the label \"%s\"\n", svcName)
-		}
-	}
-	return im.Metrics(jsonFlag, csvFlag, sparkFlag, streamFlag, mins, service)
-}
-
-func (m *SMetrics) Metrics(jsonFlag bool, csvFlag bool, sparkFlag bool, streamFlag bool, mins int, service *models.Service) error {
+func CmdMetrics(svcName string, metricType MetricType, jsonFlag, csvFlag, sparkFlag, streamFlag bool, mins int, im IMetrics, is services.IServices) error {
 	if streamFlag && (jsonFlag || csvFlag || mins != 1) {
 		return fmt.Errorf("--stream cannot be used with a custom format and multiple records")
 	}
-	var singleRetriever func(mins int) (*models.Metrics, error)
-	if service != nil {
-		m.Settings.ServiceID = service.ID
-		singleRetriever = m.RetrieveServiceMetrics
+	if mins > 1440 {
+		return fmt.Errorf("--mins cannot be greater than 1440")
 	}
-	var transformer Transformer
-	redraw := make(chan bool)
+	var mt MetricsTransformer
 	if jsonFlag {
-		transformer = Transformer{
-			SingleRetriever: singleRetriever,
-			DataTransformer: &JSONTransformer{},
-		}
+		mt = &JSONTransformer{}
 	} else if csvFlag {
 		buffer := &bytes.Buffer{}
-		transformer = Transformer{
-			SingleRetriever: singleRetriever,
-			DataTransformer: &CSVTransformer{
-				HeadersWritten: false,
-				GroupMode:      service == nil,
-				Buffer:         buffer,
-				Writer:         csv.NewWriter(buffer),
-			},
+		mt = &CSVTransformer{
+			HeadersWritten: false,
+			GroupMode:      false,
+			Buffer:         buffer,
+			Writer:         csv.NewWriter(buffer),
 		}
 	} else if sparkFlag {
 		// the spark lines interface stays up until closed by the user, so
@@ -122,54 +64,109 @@ func (m *SMetrics) Metrics(jsonFlag bool, csvFlag bool, sparkFlag bool, streamFl
 			return err
 		}
 		defer ui.Close()
-		ui.UseTheme("helloworld")
+		//ui.UseTheme("helloworld")
 
 		p := ui.NewPar("PRESS q TO QUIT")
-		p.HasBorder = false
-		p.TextFgColor = ui.Theme().SparklineTitle
+		p.Border = false
+
 		ui.Body.AddRows(
 			ui.NewRow(ui.NewCol(12, 0, p)),
 		)
-
-		transformer = Transformer{
-			SingleRetriever: singleRetriever,
-			DataTransformer: &SparkTransformer{
-				Redraw:     redraw,
-				SparkLines: make(map[string]*ui.Sparklines),
-			},
-		}
-	} else {
-		transformer = Transformer{
-			SingleRetriever: singleRetriever,
-			DataTransformer: &TextTransformer{},
-		}
-	}
-	transformer.GroupRetriever = m.RetrieveEnvironmentMetrics
-	transformer.Stream = streamFlag
-	transformer.GroupMode = service == nil
-	transformer.Mins = mins
-	transformer.settings = m.Settings
-
-	// TODO why is this here? -> helpers.SignIn(m.Settings)
-
-	if sparkFlag {
-		go transformer.process()
-
 		ui.Body.Align()
 		ui.Render(ui.Body)
 
-		quit := make(chan bool)
-		go maintainSparkLines(redraw, quit)
-		<-quit
+		mt = &SparkTransformer{
+			SparkLines: map[string]*ui.Sparklines{},
+		}
 	} else {
-		transformer.process()
+		mt = &TextTransformer{}
+	}
+	if svcName != "" {
+		service, err := is.RetrieveByLabel(svcName)
+		if err != nil {
+			return err
+		}
+		if service == nil {
+			return fmt.Errorf("Could not find a service with the label \"%s\"", svcName)
+		}
+		return CmdServiceMetrics(metricType, streamFlag, sparkFlag, mins, service, mt, im)
+	}
+	return CmdEnvironmentMetrics(metricType, streamFlag, sparkFlag, mins, mt, im)
+}
+
+func CmdEnvironmentMetrics(metricType MetricType, stream, sparkLines bool, mins int, mt MetricsTransformer, im IMetrics) error {
+	done := make(chan struct{})
+	go func() error {
+		for {
+			metrics, err := im.RetrieveEnvironmentMetrics(mins)
+			if err != nil {
+				done <- struct{}{}
+				return err
+			}
+			switch metricType {
+			case CPU:
+				mt.TransformGroupCPU(metrics)
+			case Memory:
+				mt.TransformGroupMemory(metrics)
+			case NetworkIn:
+				mt.TransformGroupNetworkIn(metrics)
+			case NetworkOut:
+				mt.TransformGroupNetworkOut(metrics)
+			}
+			if !stream {
+				break
+			}
+			time.Sleep(time.Minute)
+		}
+		done <- struct{}{}
+		return nil
+	}()
+	if sparkLines {
+		sparkLinesEventLoop()
+	} else {
+		<-done
+	}
+	return nil
+}
+
+func CmdServiceMetrics(metricType MetricType, stream, sparkLines bool, mins int, service *models.Service, mt MetricsTransformer, im IMetrics) error {
+	done := make(chan struct{})
+	go func() error {
+		for {
+			metrics, err := im.RetrieveServiceMetrics(mins, service.ID)
+			if err != nil {
+				done <- struct{}{}
+				return err
+			}
+			switch metricType {
+			case CPU:
+				mt.TransformSingleCPU(metrics)
+			case Memory:
+				mt.TransformSingleMemory(metrics)
+			case NetworkIn:
+				mt.TransformSingleNetworkIn(metrics)
+			case NetworkOut:
+				mt.TransformSingleNetworkOut(metrics)
+			}
+			if !stream {
+				break
+			}
+			time.Sleep(time.Minute)
+		}
+		done <- struct{}{}
+		return nil
+	}()
+	if sparkLines {
+		sparkLinesEventLoop()
+	} else {
+		<-done
 	}
 	return nil
 }
 
 func (m *SMetrics) RetrieveEnvironmentMetrics(mins int) (*[]models.Metrics, error) {
 	headers := httpclient.GetHeaders(m.Settings.SessionToken, m.Settings.Version, m.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/metrics?time=%d", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, mins), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/metrics?time=%dm", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, mins), headers)
 	if err != nil {
 		return nil, err
 	}
@@ -181,9 +178,9 @@ func (m *SMetrics) RetrieveEnvironmentMetrics(mins int) (*[]models.Metrics, erro
 	return &metrics, nil
 }
 
-func (m *SMetrics) RetrieveServiceMetrics(mins int) (*models.Metrics, error) {
+func (m *SMetrics) RetrieveServiceMetrics(mins int, svcID string) (*models.Metrics, error) {
 	headers := httpclient.GetHeaders(m.Settings.SessionToken, m.Settings.Version, m.Settings.Pod)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/metrics?time=%d", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, m.Settings.ServiceID, mins), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/metrics?time=%dm", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, svcID, mins), headers)
 	if err != nil {
 		return nil, err
 	}

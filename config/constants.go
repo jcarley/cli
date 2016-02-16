@@ -8,7 +8,9 @@ import (
 
 const (
 	// VERSION is the current cli version
-	VERSION = "dev"
+	VERSION = "3.0.0-beta"
+	// Beta determines whether or not this is a beta build of the CLI
+	Beta = true
 	// AccountsHost is the production accounts URL
 	AccountsHost = "https://accounts.catalyze.io"
 	// AuthHost is the production auth URL

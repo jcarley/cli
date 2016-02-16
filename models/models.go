@@ -128,19 +128,11 @@ type Service struct {
 
 // ServiceSize holds size information for a service
 type ServiceSize struct {
-	RAM      string `json:"ram"`
-	Storage  string `json:"storage"`
+	RAM      int    `json:"ram"`
+	Storage  int    `json:"storage"`
 	Behavior string `json:"behavior"`
 	Type     string `json:"type"`
-	CPU      string `json:"cpu"`
-}
-
-// PodMetadata podmetadata
-type PodMetadata struct {
-	ID                   string `json:"id"`
-	Name                 string `json:"name"`
-	PHISafe              bool   `json:"phiSafe"`
-	ImportRequiresLength bool   `json:"importRequiresLength"`
+	CPU      int    `json:"cpu"`
 }
 
 // Settings holds various settings for the current context. All items with
@@ -209,25 +201,62 @@ type ConsoleCredentials struct {
 
 // Metrics holds all metrics data for an entire environment or a single service
 type Metrics struct {
-	ServiceName  string `json:"serviceName"`
-	ServiceType  string `json:"serviceType"`
-	ServiceID    string `json:"serviceId"`
-	ServiceLabel string `json:"serviceLabel"`
-	Jobs         *[]Job `json:"jobs"`
+	ServiceName  string       `json:"serviceName"`
+	ServiceType  string       `json:"serviceType"`
+	ServiceID    string       `json:"serviceId"`
+	ServiceLabel string       `json:"serviceLabel"`
+	Data         *MetricsData `json:"metrics"`
+	//Jobs         *[]Job `json:"jobs"`
 }
 
 // MetricsData is a container for each type of metrics: network, memory, etc.
 type MetricsData struct {
+	CPULoad      *[]CPULoad      `json:"cpu.load"`
+	MemoryUsage  *[]MemoryUsage  `json:"memory.usage"`
+	NetworkUsage *[]NetworkUsage `json:"network.usage"`
+}
+
+type CPULoad struct {
+	JobID string  `json:"job"`
+	Total float64 `json:"total"`
+	AVG   float64 `json:"ave"`
+	Max   float64 `json:"max"`
+	Min   float64 `json:"min"`
+	TS    int     `json:"ts"`
+}
+
+type MemoryUsage struct {
+	JobID string  `json:"job"`
+	AVG   float64 `json:"ave"`
+	Max   float64 `json:"max"`
+	Min   float64 `json:"min"`
+	TS    int     `json:"ts"`
+}
+
+type NetworkUsage struct {
+	JobID     string  `json:"job"`
+	RXDropped float64 `json:"rx_dropped"`
+	RXErrors  float64 `json:"rx_errors"`
+	RXKB      float64 `json:"rx_kb"`
+	RXPackets float64 `json:"rx_packets"`
+	TXDropped float64 `json:"tx_dropped"`
+	TXErrors  float64 `json:"tx_errors"`
+	TXKB      float64 `json:"tx_kb"`
+	TXPackets float64 `json:"tx_packets"`
+	TS        int     `json:"ts"`
+}
+
+/*type MetricsData struct {
 	Network *NetworkData `json:"network"`
 	Memory  *MinMaxAvg   `json:"memory"`
 	DiskIO  *DiskIOData  `json:"diskio"`
 	TS      int64        `json:"ts"`
 	Name    string       `json:"name"`
 	CPU     *CPUData     `json:"cpu"`
-}
+}*/
 
 // NetworkData holds metrics data for the network category
-type NetworkData struct {
+/*type NetworkData struct {
 	TXKb      float64 `json:"tx_kb"`
 	TXPackets float64 `json:"tx_packets"`
 	TXDropped float64 `json:"tx_dropped"`
@@ -258,7 +287,7 @@ type DiskIOData struct {
 type CPUData struct {
 	Usage float64    `json:"usage"`
 	Load  *MinMaxAvg `json:"load"`
-}
+}*/
 
 // Logs hold the log values from a successful LogQuery
 type Logs struct {
@@ -314,4 +343,11 @@ type Cert struct {
 type UserKey struct {
 	Name string `json:"name"`
 	Key  string `json:"key"`
+}
+
+// DeployKey is an ssh key belonging to an environment's code service
+type DeployKey struct {
+	Name string `json:"name"`
+	Key  string `json:"value"`
+	Type string `json:"type"`
 }
