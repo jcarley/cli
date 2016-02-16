@@ -10,11 +10,20 @@ import (
 	"github.com/catalyzeio/cli/models"
 )
 
-func (j *SJobs) PollTillFinished(jobID, svcID string) (string, error) {
-	return j.PollForStatus("finished", jobID, svcID)
+func contains(v string, a []string) bool {
+	for _, i := range a {
+		if i == v {
+			return true
+		}
+	}
+	return false
 }
 
-func (j *SJobs) PollForStatus(status, jobID, svcID string) (string, error) {
+func (j *SJobs) PollTillFinished(jobID, svcID string) (string, error) {
+	return j.PollForStatus([]string{"finished"}, jobID, svcID)
+}
+
+func (j *SJobs) PollForStatus(statuses []string, jobID, svcID string) (string, error) {
 	var job models.Job
 	failedAttempts := 0
 poll:
@@ -32,10 +41,11 @@ poll:
 		if failed {
 			failedAttempts++
 		}
-		switch job.Status {
-		case status:
+		s := job.Status
+		switch {
+		case contains(s, statuses):
 			break poll
-		case "scheduled", "queued", "started", "running", "finished":
+		case contains(s, []string{"scheduled", "queued", "started", "running", "stopped", "waiting"}):
 			if failedAttempts >= 3 {
 				return "", fmt.Errorf("Error - ended in status '%s'.", job.Status)
 			}
@@ -46,7 +56,7 @@ poll:
 			return "", fmt.Errorf("Error - ended in status '%s'.", job.Status)
 		}
 	}
-	if job.Status != status {
+	if !contains(job.Status, statuses) {
 		return "", fmt.Errorf("Error - ended in status '%s'.", job.Status)
 	}
 	return job.Status, nil

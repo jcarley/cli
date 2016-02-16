@@ -44,15 +44,22 @@ func (c *SConsole) Open(command string, service *models.Service) error {
 	// all because logrus treats print, println, and printf the same
 	logrus.StandardLogger().Out.Write([]byte(fmt.Sprintf("Waiting for the console (job ID = %s) to be ready. This might take a minute.", job.ID)))
 
-	runningStatus := "running"
-	status, err := c.Jobs.PollForStatus(runningStatus, job.ID, service.ID)
+	validStatuses := []string{"running", "finished", "failed"}
+	status, err := c.Jobs.PollForStatus(validStatuses, job.ID, service.ID)
 	if err != nil {
 		return err
 	}
-	if status != runningStatus {
+	found := false
+	for _, validStatus := range validStatuses {
+		if status == validStatus {
+			found = true
+			break
+		}
+	}
+	if !found {
 		return fmt.Errorf("\nCould not open a console connection. Entered state '%s'", status)
 	}
-	job.Status = runningStatus
+	job.Status = status
 	defer c.Destroy(job.ID, service)
 	creds, err := c.RetrieveTokens(job.ID, service)
 	if err != nil {

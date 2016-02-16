@@ -8,7 +8,7 @@ type IJobs interface {
 	Retrieve(jobID, svcID string, includeSpec bool) (*models.Job, error)
 	RetrieveByStatus(status string) (*[]models.Job, error)
 	RetrieveByType(jobType string, page, pageSize int) (*[]models.Job, error)
-	PollForStatus(status, jobID, svcID string) (string, error)
+	PollForStatus(statuses []string, jobID, svcID string) (string, error)
 	PollTillFinished(jobID, svcID string) (string, error)
 	List(svcID string, page, pageSize int) (*[]models.Job, error)
 }

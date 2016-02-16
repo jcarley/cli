@@ -16,9 +16,10 @@ func CmdAssociated(ia IAssociated) error {
     Environment Name: %s
     Service ID:       %s
     Associated at:    %s
-    Default:          %v
+    Default:          %t
     Pod:              %s
-`, envAlias, env.EnvironmentID, env.Name, env.ServiceID, env.Directory, defaultEnv == envAlias, env.Pod)
+    Organization ID:  %s
+`, envAlias, env.EnvironmentID, env.Name, env.ServiceID, env.Directory, defaultEnv == envAlias, env.Pod, env.OrgID)
 	}
 	if len(envs) == 0 {
 		logrus.Println("No environments have been associated")
