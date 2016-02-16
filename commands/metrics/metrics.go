@@ -6,16 +6,17 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 	ui "github.com/gizak/termui"
 )
 
-// MetricsTransformer specifies that all concrete implementations should be
+// Transformer specifies that all concrete implementations should be
 // able to transform an entire environments metrics data (group) or a single
 // service metrics data (single).
-type MetricsTransformer interface {
+type Transformer interface {
 	TransformGroupCPU(*[]models.Metrics)
 	TransformGroupMemory(*[]models.Metrics)
 	TransformGroupNetworkIn(*[]models.Metrics)
@@ -24,14 +25,6 @@ type MetricsTransformer interface {
 	TransformSingleMemory(*models.Metrics)
 	TransformSingleNetworkIn(*models.Metrics)
 	TransformSingleNetworkOut(*models.Metrics)
-}
-
-// go unfortunately doesn't have anything except comparisons for floats
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
 }
 
 // CmdMetrics prints out metrics for a given service or if the service is not
@@ -43,7 +36,7 @@ func CmdMetrics(svcName string, metricType MetricType, jsonFlag, csvFlag, sparkF
 	if mins > 1440 {
 		return fmt.Errorf("--mins cannot be greater than 1440")
 	}
-	var mt MetricsTransformer
+	var mt Transformer
 	if jsonFlag {
 		mt = &JSONTransformer{}
 	} else if csvFlag {
@@ -58,19 +51,22 @@ func CmdMetrics(svcName string, metricType MetricType, jsonFlag, csvFlag, sparkF
 		// the spark lines interface stays up until closed by the user, so
 		// we might as well keep updating it as long as it is there
 		streamFlag = true
-		mins = 60
+		mins = 30
 		err := ui.Init()
 		if err != nil {
 			return err
 		}
 		defer ui.Close()
-		//ui.UseTheme("helloworld")
 
 		p := ui.NewPar("PRESS q TO QUIT")
 		p.Border = false
 
+		p2 := ui.NewPar(fmt.Sprintf("%s Usage Metrics", metricsTypeToString(metricType)))
+		p2.Border = false
+
 		ui.Body.AddRows(
 			ui.NewRow(ui.NewCol(12, 0, p)),
+			ui.NewRow(ui.NewCol(12, 0, p2)),
 		)
 		ui.Body.Align()
 		ui.Render(ui.Body)
@@ -94,24 +90,23 @@ func CmdMetrics(svcName string, metricType MetricType, jsonFlag, csvFlag, sparkF
 	return CmdEnvironmentMetrics(metricType, streamFlag, sparkFlag, mins, mt, im)
 }
 
-func CmdEnvironmentMetrics(metricType MetricType, stream, sparkLines bool, mins int, mt MetricsTransformer, im IMetrics) error {
+func CmdEnvironmentMetrics(metricType MetricType, stream, sparkLines bool, mins int, t Transformer, im IMetrics) error {
 	done := make(chan struct{})
-	go func() error {
+	go func() {
 		for {
 			metrics, err := im.RetrieveEnvironmentMetrics(mins)
 			if err != nil {
-				done <- struct{}{}
-				return err
+				logrus.Fatal(err.Error())
 			}
 			switch metricType {
 			case CPU:
-				mt.TransformGroupCPU(metrics)
+				t.TransformGroupCPU(metrics)
 			case Memory:
-				mt.TransformGroupMemory(metrics)
+				t.TransformGroupMemory(metrics)
 			case NetworkIn:
-				mt.TransformGroupNetworkIn(metrics)
+				t.TransformGroupNetworkIn(metrics)
 			case NetworkOut:
-				mt.TransformGroupNetworkOut(metrics)
+				t.TransformGroupNetworkOut(metrics)
 			}
 			if !stream {
 				break
@@ -119,7 +114,6 @@ func CmdEnvironmentMetrics(metricType MetricType, stream, sparkLines bool, mins 
 			time.Sleep(time.Minute)
 		}
 		done <- struct{}{}
-		return nil
 	}()
 	if sparkLines {
 		sparkLinesEventLoop()
@@ -129,24 +123,23 @@ func CmdEnvironmentMetrics(metricType MetricType, stream, sparkLines bool, mins 
 	return nil
 }
 
-func CmdServiceMetrics(metricType MetricType, stream, sparkLines bool, mins int, service *models.Service, mt MetricsTransformer, im IMetrics) error {
+func CmdServiceMetrics(metricType MetricType, stream, sparkLines bool, mins int, service *models.Service, t Transformer, im IMetrics) error {
 	done := make(chan struct{})
-	go func() error {
+	go func() {
 		for {
 			metrics, err := im.RetrieveServiceMetrics(mins, service.ID)
 			if err != nil {
-				done <- struct{}{}
-				return err
+				logrus.Fatal(err.Error())
 			}
 			switch metricType {
 			case CPU:
-				mt.TransformSingleCPU(metrics)
+				t.TransformSingleCPU(metrics)
 			case Memory:
-				mt.TransformSingleMemory(metrics)
+				t.TransformSingleMemory(metrics)
 			case NetworkIn:
-				mt.TransformSingleNetworkIn(metrics)
+				t.TransformSingleNetworkIn(metrics)
 			case NetworkOut:
-				mt.TransformSingleNetworkOut(metrics)
+				t.TransformSingleNetworkOut(metrics)
 			}
 			if !stream {
 				break
@@ -154,7 +147,6 @@ func CmdServiceMetrics(metricType MetricType, stream, sparkLines bool, mins int,
 			time.Sleep(time.Minute)
 		}
 		done <- struct{}{}
-		return nil
 	}()
 	if sparkLines {
 		sparkLinesEventLoop()
@@ -164,6 +156,23 @@ func CmdServiceMetrics(metricType MetricType, stream, sparkLines bool, mins int,
 	return nil
 }
 
+func metricsTypeToString(metricType MetricType) string {
+	switch metricType {
+	case CPU:
+		return "CPU"
+	case Memory:
+		return "Memory"
+	case NetworkIn:
+		return "Network In"
+	case NetworkOut:
+		return "Network Out"
+	default:
+		return ""
+	}
+}
+
+// RetrieveEnvironmentMetrics retrieves metrics data for all services in
+// the associated environment.
 func (m *SMetrics) RetrieveEnvironmentMetrics(mins int) (*[]models.Metrics, error) {
 	headers := httpclient.GetHeaders(m.Settings.SessionToken, m.Settings.Version, m.Settings.Pod)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/metrics?time=%dm", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, mins), headers)
@@ -178,6 +187,7 @@ func (m *SMetrics) RetrieveEnvironmentMetrics(mins int) (*[]models.Metrics, erro
 	return &metrics, nil
 }
 
+// RetrieveServiceMetrics retrieves metrics data for the given service.
 func (m *SMetrics) RetrieveServiceMetrics(mins int, svcID string) (*models.Metrics, error) {
 	headers := httpclient.GetHeaders(m.Settings.SessionToken, m.Settings.Version, m.Settings.Pod)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/metrics?time=%dm", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, svcID, mins), headers)

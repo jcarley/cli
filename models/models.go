@@ -206,27 +206,18 @@ type Metrics struct {
 	ServiceID    string       `json:"serviceId"`
 	ServiceLabel string       `json:"serviceLabel"`
 	Data         *MetricsData `json:"metrics"`
-	//Jobs         *[]Job `json:"jobs"`
 }
 
 // MetricsData is a container for each type of metrics: network, memory, etc.
 type MetricsData struct {
-	CPULoad      *[]CPULoad      `json:"cpu.load"`
-	MemoryUsage  *[]MemoryUsage  `json:"memory.usage"`
+	CPUUsage     *[]MetricUsage  `json:"cpu.usage"`
+	MemoryUsage  *[]MetricUsage  `json:"memory.usage"`
 	NetworkUsage *[]NetworkUsage `json:"network.usage"`
 }
 
-type CPULoad struct {
+type MetricUsage struct {
 	JobID string  `json:"job"`
 	Total float64 `json:"total"`
-	AVG   float64 `json:"ave"`
-	Max   float64 `json:"max"`
-	Min   float64 `json:"min"`
-	TS    int     `json:"ts"`
-}
-
-type MemoryUsage struct {
-	JobID string  `json:"job"`
 	AVG   float64 `json:"ave"`
 	Max   float64 `json:"max"`
 	Min   float64 `json:"min"`
@@ -245,49 +236,6 @@ type NetworkUsage struct {
 	TXPackets float64 `json:"tx_packets"`
 	TS        int     `json:"ts"`
 }
-
-/*type MetricsData struct {
-	Network *NetworkData `json:"network"`
-	Memory  *MinMaxAvg   `json:"memory"`
-	DiskIO  *DiskIOData  `json:"diskio"`
-	TS      int64        `json:"ts"`
-	Name    string       `json:"name"`
-	CPU     *CPUData     `json:"cpu"`
-}*/
-
-// NetworkData holds metrics data for the network category
-/*type NetworkData struct {
-	TXKb      float64 `json:"tx_kb"`
-	TXPackets float64 `json:"tx_packets"`
-	TXDropped float64 `json:"tx_dropped"`
-	TXErrors  float64 `json:"tx_errors"`
-	RXKb      float64 `json:"rx_kb"`
-	RXPackets float64 `json:"rx_packets"`
-	RXDropped float64 `json:"rx_dropped"`
-	RXErrors  float64 `json:"rx_errors"`
-}
-
-// MinMaxAvg is a generic metrics data structure holding the minimum, maximum,
-// and average values.
-type MinMaxAvg struct {
-	Min float64 `json:"min"`
-	Max float64 `json:"max"`
-	Avg float64 `json:"ave"`
-}
-
-// DiskIOData is a data structure holding metrics values for the DiskIO category
-type DiskIOData struct {
-	Read  float64 `json:"read"`
-	Async float64 `json:"async"`
-	Write float64 `json:"write"`
-	Sync  float64 `json:"sync"`
-}
-
-// CPUData is a data structure holding metrics values for the CPU category
-type CPUData struct {
-	Usage float64    `json:"usage"`
-	Load  *MinMaxAvg `json:"load"`
-}*/
 
 // Logs hold the log values from a successful LogQuery
 type Logs struct {
