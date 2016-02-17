@@ -1,8 +1,6 @@
 package rake
 
 import (
-	"os"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/models"
@@ -20,8 +18,7 @@ var Cmd = models.Command{
 			taskName := cmd.StringArg("TASK_NAME", "", "The name of the rake task to run")
 			cmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdRake(*taskName, New(settings))
 				if err != nil {

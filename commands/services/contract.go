@@ -1,8 +1,6 @@
 package services
 
 import (
-	"os"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/models"
@@ -19,8 +17,7 @@ var Cmd = models.Command{
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdServices(New(settings))
 				if err != nil {

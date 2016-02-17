@@ -1,8 +1,6 @@
 package certs
 
 import (
-	"os"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/commands/ssl"
@@ -40,8 +38,7 @@ var CreateSubCmd = models.Command{
 			resolve := subCmd.BoolOpt("r resolve", true, "Whether or not to attempt to automatically resolve incomplete SSL certificate issues")
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdCreate(*name, *pubKeyPath, *privKeyPath, *selfSigned, *resolve, New(settings), services.New(settings), ssl.New(settings))
 				if err != nil {
@@ -61,8 +58,7 @@ var ListSubCmd = models.Command{
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdList(New(settings), services.New(settings))
 				if err != nil {
@@ -82,8 +78,7 @@ var RmSubCmd = models.Command{
 			name := subCmd.StringArg("HOSTNAME", "", "The hostname of the domain and SSL certificate and private key pair")
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdRm(*name, New(settings), services.New(settings))
 				if err != nil {
@@ -108,8 +103,7 @@ var UpdateSubCmd = models.Command{
 			resolve := subCmd.BoolOpt("r resolve", true, "Whether or not to attempt to automatically resolve incomplete SSL certificate issues")
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdUpdate(*name, *pubKeyPath, *privKeyPath, *selfSigned, *resolve, New(settings), services.New(settings), ssl.New(settings))
 				if err != nil {

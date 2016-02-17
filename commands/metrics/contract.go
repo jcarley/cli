@@ -1,8 +1,6 @@
 package metrics
 
 import (
-	"os"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/config"
@@ -49,8 +47,7 @@ var CPUSubCmd = models.Command{
 			mins := subCmd.IntOpt("m mins", 1, "How many minutes worth of metrics to retrieve.")
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdMetrics(*serviceName, CPU, *json, *csv, *spark, *stream, *mins, New(settings), services.New(settings))
 				if err != nil {
@@ -76,8 +73,7 @@ var MemorySubCmd = models.Command{
 			mins := subCmd.IntOpt("m mins", 1, "How many minutes worth of metrics to retrieve.")
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdMetrics(*serviceName, Memory, *json, *csv, *spark, *stream, *mins, New(settings), services.New(settings))
 				if err != nil {
@@ -103,8 +99,7 @@ var NetworkInSubCmd = models.Command{
 			mins := subCmd.IntOpt("m mins", 1, "How many minutes worth of metrics to retrieve.")
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdMetrics(*serviceName, NetworkIn, *json, *csv, *spark, *stream, *mins, New(settings), services.New(settings))
 				if err != nil {
@@ -130,8 +125,7 @@ var NetworkOutSubCmd = models.Command{
 			mins := subCmd.IntOpt("m mins", 1, "How many minutes worth of metrics to retrieve.")
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdMetrics(*serviceName, NetworkOut, *json, *csv, *spark, *stream, *mins, New(settings), services.New(settings))
 				if err != nil {

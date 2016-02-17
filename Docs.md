@@ -440,6 +440,75 @@ Arguments:
 catalyze default prod
 ```
 
+# Deploy Keys
+
+The `deploy-keys` command gives access to SSH deploy keys for environment services. The deploy-keys command can not be run directly but has sub commands.
+
+# Deploy Keys Add
+
+```
+Usage: catalyze deploy-keys add NAME KEY_PATH SERVICE_NAME [-p]
+
+Add a new deploy key
+
+Arguments:
+  NAME=""              The name for the new key, for your own purposes
+  PUBLIC_KEY_PATH=""   Relative path to the public key file
+  SERVICE_NAME=""      The name of the code service to add this deploy key to
+
+Options:
+  -p, --private=false   Whether or not this is a private key
+```
+
+`deploy-keys add` allows you to upload an SSH public key or SSH private key in OpenSSH format. These keys are used for pushing code to your code services but are not required. You may use personal SSH keys with the [keys](https://resources.catalyze.io/paas/cli/sections/keys/) command instead. Deploy keys are useful for Continuous Integration or Continuous Deployment scenarios and are intended to be shared among an organization. Here are some sample commands
+
+```
+catalyze deploy-keys add app01_public ~/.ssh/app01_rsa.pub app01
+catalyze deploy-keys add app01_private ~/.ssh/app01_rsa app01 -p
+```
+
+# Deploy Keys List
+
+```
+Usage: catalyze deploy-keys list SERVICE_NAME [--include-keys]
+
+List all deploy keys
+
+Arguments:
+  SERVICE_NAME=""   The name of the code service to list deploy keys
+
+Options:
+  --include-keys=false   Print out the values of the deploy keys, as well as names
+```
+
+`deploy-keys list` will list all of your previously uploaded deploy keys by name. Optionally including the key's fingerprint in SHA256 format if the `--include-keys` flag is specified as well. Here is a sample command
+
+```
+catalyze deploy-keys list app01 --include-keys
+```
+
+# Deploy Keys Rm
+
+```
+Usage: catalyze deploy-keys rm NAME SERVICE_NAME [-p]
+
+Remove a deploy key
+
+Arguments:
+  NAME=""           The name of the key to remove
+  SERVICE_NAME=""   The name of the code service to remove this deploy key from
+
+Options:
+  -p, --private=false   Whether or not this is a private key
+```
+
+`deploy-keys rm` will remove a previously created deploy key by name. It is a good idea to rotate deploy keys on a set schedule as they are intended to be shared among an organization. Here are some sample commands
+
+```
+catalyze deploy-keys rm app01_public app01
+catalyze deploy-keys rm app01_private app01 -p
+```
+
 # Disassociate
 
 ```
@@ -700,10 +769,14 @@ catalyze logs -f --hours=6 --minutes=30
 
 # Metrics
 
-```
-Usage: catalyze metrics [SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]
+The `metrics` command gives access to environment metrics or individual service metrics through a variety of formats. This is useful for checking on the status and performance of your application or environment as a whole. The metrics command cannot be run directly but has sub commands.
 
-Print service and environment metrics in your local time zone
+# Metrics CPU
+
+```
+Usage: catalyze metrics cpu [SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]
+
+Print service and environment CPU metrics in your local time zone
 
 Arguments:
   SERVICE_NAME=""   The name of the service to print metrics for
@@ -713,16 +786,97 @@ Options:
   --csv=false      Output the data as csv
   --spark=false    Output the data using spark lines
   --stream=false   Repeat calls once per minute until this process is interrupted.
-  -m, --mins=1     How many minutes worth of logs to retrieve.
+  -m, --mins=1     How many minutes worth of metrics to retrieve.
 ```
 
-`metrics` prints out various metrics for your environment or individual service. Metrics included are CPU metrics, Memory metrics, Disk I/O metrics, and Network metrics. You can print out metrics in csv, json, plain text, or spark lines format. If you want plain text format, simply omit the json, csv, and spark options. You can only stream metrics using plain text or spark lines formats. To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands
+`metrics cpu` prints out CPU metrics for your environment or individual services. You can print out metrics in csv, json, plain text, or spark lines format. If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. You can only stream metrics using plain text or spark lines formats. To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands
 
 ```
-catalyze metrics
-catalyze metrics app01 --stream
-catalyze metrics --json
-catalyze metrics db01 --csv -m 60
+catalyze metrics cpu
+catalyze metrics cpu app01 --stream
+catalyze metrics cpu --json
+catalyze metrics cpu db01 --csv -m 60
+```
+
+# Metrics Memory
+
+```
+Usage: catalyze metrics memory [SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]
+
+Print service and environment memory metrics in your local time zone
+
+Arguments:
+  SERVICE_NAME=""   The name of the service to print metrics for
+
+Options:
+  --json=false     Output the data as json
+  --csv=false      Output the data as csv
+  --spark=false    Output the data using spark lines
+  --stream=false   Repeat calls once per minute until this process is interrupted.
+  -m, --mins=1     How many minutes worth of metrics to retrieve.
+```
+
+`metrics memory` prints out memory metrics for your environment or individual services. You can print out metrics in csv, json, plain text, or spark lines format. If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. You can only stream metrics using plain text or spark lines formats. To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands
+
+```
+catalyze metrics memory
+catalyze metrics memory app01 --stream
+catalyze metrics memory --json
+catalyze metrics memory db01 --csv -m 60
+```
+
+# Metrics Network-In
+
+```
+Usage: catalyze metrics network-in [SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]
+
+Print service and environment received network data metrics in your local time zone
+
+Arguments:
+  SERVICE_NAME=""   The name of the service to print metrics for
+
+Options:
+  --json=false     Output the data as json
+  --csv=false      Output the data as csv
+  --spark=false    Output the data using spark lines
+  --stream=false   Repeat calls once per minute until this process is interrupted.
+  -m, --mins=1     How many minutes worth of metrics to retrieve.
+```
+
+`metrics network-in` prints out received network metrics for your environment or individual services. You can print out metrics in csv, json, plain text, or spark lines format. If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. You can only stream metrics using plain text or spark lines formats. To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands
+
+```
+catalyze metrics network-in
+catalyze metrics network-in app01 --stream
+catalyze metrics network-in --json
+catalyze metrics network-in db01 --csv -m 60
+```
+
+# Metrics Network-Out
+
+```
+Usage: catalyze metrics network-out [SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]
+
+Print service and environment transmitted network data metrics in your local time zone
+
+Arguments:
+  SERVICE_NAME=""   The name of the service to print metrics for
+
+Options:
+  --json=false     Output the data as json
+  --csv=false      Output the data as csv
+  --spark=false    Output the data using spark lines
+  --stream=false   Repeat calls once per minute until this process is interrupted.
+  -m, --mins=1     How many minutes worth of metrics to retrieve.
+```
+
+`metrics network-out` prints out transmitted network metrics for your environment or individual services. You can print out metrics in csv, json, plain text, or spark lines format. If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. You can only stream metrics using plain text or spark lines formats. To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands
+
+```
+catalyze metrics network-out
+catalyze metrics network-out app01 --stream
+catalyze metrics network-out --json
+catalyze metrics network-out db01 --csv -m 60
 ```
 
 # Rake

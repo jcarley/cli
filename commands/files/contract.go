@@ -1,8 +1,6 @@
 package files
 
 import (
-	"os"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/config"
@@ -36,8 +34,7 @@ var DownloadSubCmd = models.Command{
 			force := subCmd.BoolOpt("f force", false, "If the specified output file already exists, automatically overwrite it")
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdDownload(*serviceName, *fileName, *output, *force, New(settings), services.New(settings))
 				if err != nil {
@@ -58,8 +55,7 @@ var ListSubCmd = models.Command{
 			svcName := subCmd.StringArg("SERVICE_NAME", "service_proxy", "The name of the service to list files for")
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdList(*svcName, New(settings), services.New(settings))
 				if err != nil {

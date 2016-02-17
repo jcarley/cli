@@ -1,8 +1,6 @@
 package sites
 
 import (
-	"os"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/config"
@@ -38,8 +36,7 @@ var CreateSubCmd = models.Command{
 
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdCreate(*name, *serviceName, *hostname, New(settings), services.New(settings))
 				if err != nil {
@@ -59,8 +56,7 @@ var ListSubCmd = models.Command{
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdList(New(settings), services.New(settings))
 				if err != nil {
@@ -80,8 +76,7 @@ var RmSubCmd = models.Command{
 			name := subCmd.StringArg("NAME", "", "The name of the site configuration to delete")
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdRm(*name, New(settings), services.New(settings))
 				if err != nil {
@@ -102,8 +97,7 @@ var ShowSubCmd = models.Command{
 			name := subCmd.StringArg("NAME", "", "The name of the site configuration to show")
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdShow(*name, New(settings), services.New(settings))
 				if err != nil {

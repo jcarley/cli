@@ -1,8 +1,6 @@
 package defaultcmd
 
 import (
-	"os"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/models"
@@ -20,8 +18,7 @@ var Cmd = models.Command{
 			alias := cmd.StringArg("ENV_ALIAS", "", "The alias of an already associated environment to set as the default")
 			cmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, false, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdDefault(*alias, New(settings))
 				if err != nil {

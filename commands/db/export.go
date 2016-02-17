@@ -8,8 +8,8 @@ import (
 	"os"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/jobs"
 	"github.com/catalyzeio/cli/commands/services"
+	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
 )

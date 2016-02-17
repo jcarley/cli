@@ -1,8 +1,6 @@
 package disassociate
 
 import (
-	"os"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/models"
@@ -20,8 +18,7 @@ var Cmd = models.Command{
 			alias := cmd.StringArg("ENV_ALIAS", "", "The alias of an already associated environment to disassociate")
 			cmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, false, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdDisassociate(*alias, New(settings))
 				if err != nil {

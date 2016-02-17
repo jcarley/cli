@@ -2,7 +2,6 @@ package deploykeys
 
 import (
 	"crypto/rsa"
-	"os"
 
 	"golang.org/x/crypto/ssh"
 
@@ -33,20 +32,19 @@ var AddSubCmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name for the new key, for your own purposes")
-			path := subCmd.StringArg("PUBLIC_KEY_PATH", "", "Relative path to the public key file")
+			path := subCmd.StringArg("KEY_PATH", "", "Relative path to the SSH key file")
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the code service to add this deploy key to")
 			private := subCmd.BoolOpt("p private", false, "Whether or not this is a private key")
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdAdd(*name, *path, *serviceName, *private, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "NAME PUBLIC_KEY_PATH SERVICE_NAME [-p]"
+			subCmd.Spec = "NAME KEY_PATH SERVICE_NAME [-p]"
 		}
 	},
 }
@@ -61,8 +59,7 @@ var ListSubCmd = models.Command{
 			printKeys := subCmd.BoolOpt("include-keys", false, "Print out the values of the deploy keys, as well as names")
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdList(*serviceName, *printKeys, New(settings), services.New(settings))
 				if err != nil {
@@ -85,8 +82,7 @@ var RmSubCmd = models.Command{
 			private := subCmd.BoolOpt("p private", false, "Whether or not this is a private key")
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdRm(*name, *serviceName, *private, New(settings), services.New(settings))
 				if err != nil {

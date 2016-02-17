@@ -1,7 +1,6 @@
 package logs
 
 import (
-	"os"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -30,8 +29,7 @@ var Cmd = models.Command{
 			secs := cmd.IntOpt("seconds", 0, "The number of seconds before now (in combination with hours and minutes) to retrieve logs")
 			cmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Println(err.Error())
-					os.Exit(1)
+					logrus.Fatal(err.Error())
 				}
 				err := CmdLogs(*query, *follow || *tail, *hours, *mins, *secs, settings.EnvironmentID, New(settings), prompts.New(), environments.New(settings), services.New(settings), sites.New(settings))
 				if err != nil {
