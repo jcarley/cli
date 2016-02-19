@@ -205,6 +205,7 @@ type Metrics struct {
 	ServiceType  string       `json:"serviceType"`
 	ServiceID    string       `json:"serviceId"`
 	ServiceLabel string       `json:"serviceLabel"`
+	Size         ServiceSize  `json:"size"`
 	Data         *MetricsData `json:"metrics"`
 }
 

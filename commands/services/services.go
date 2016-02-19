@@ -6,6 +6,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
+	"github.com/olekukonko/tablewriter"
 )
 
 // CmdServices lists the names of all services for an environment.
@@ -14,10 +15,19 @@ func CmdServices(is IServices) error {
 	if err != nil {
 		return err
 	}
-	logrus.Println("NAME")
+	data := [][]string{{"NAME", "RAM (GB)", "CPU", "STORAGE (GB)"}}
 	for _, s := range *svcs {
-		logrus.Printf("%s", s.Label)
+		data = append(data, []string{s.Label, fmt.Sprintf("%d", s.Size.RAM), fmt.Sprintf("%d", s.Size.CPU), fmt.Sprintf("%d", s.Size.Storage)})
 	}
+
+	table := tablewriter.NewWriter(logrus.StandardLogger().Out)
+	table.SetBorder(false)
+	table.SetRowLine(false)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.AppendBulk(data)
+	table.Render()
 	return nil
 }
 

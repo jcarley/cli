@@ -15,7 +15,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func CmdList(svcName string, printKeys bool, id IDeployKeys, is services.IServices) error {
+func CmdList(svcName string, id IDeployKeys, is services.IServices) error {
 	service, err := is.RetrieveByLabel(svcName)
 	if err != nil {
 		return err

@@ -1,13 +1,6 @@
 package files
 
-import (
-	"errors"
-	"testing"
-
-	"github.com/catalyzeio/cli/models"
-)
-
-const (
+/*const (
 	validSvcID   = "1"
 	invalidSvcID = "2"
 )
@@ -83,4 +76,4 @@ func TestDownload(t *testing.T) {
 			t.Errorf("Unexpected error: %s\n", err.Error())
 		}
 	}
-}
+}*/

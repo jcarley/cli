@@ -107,7 +107,7 @@ func (spark *SparkTransformer) TransformSingleMemory(metric *models.Metrics) {
 			memMin = append(memMin, int(data.Min/1024.0))
 			memMax = append(memMax, int(data.Max/1024.0))
 			memAvg = append(memAvg, int(data.AVG/1024.0))
-			memTotal = append(memTotal, int(data.Total/1024.0))
+			memTotal = append(memTotal, int(metric.Size.RAM*1024.0))
 		}
 	}
 	var sparkLines = spark.SparkLines[metric.ServiceLabel]

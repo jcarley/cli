@@ -1,13 +1,6 @@
 package environments
 
-import (
-	"errors"
-	"testing"
-
-	"github.com/catalyzeio/cli/models"
-)
-
-const (
+/*const (
 	validPod   = "pod01"
 	emptyPod   = "pod02"
 	invalidPod = "pod03"
@@ -24,7 +17,6 @@ func (m *MEnvironments) List() (*[]models.Environment, error) {
 				Name:      m.Name,
 				Pod:       m.Pod,
 				Namespace: m.Namespace,
-				DNSName:   m.DNSName,
 				OrgID:     m.OrgID,
 			},
 		}, nil
@@ -71,4 +63,4 @@ func getSettings(pod string) *models.Settings {
 		Environments: make(map[string]models.AssociatedEnv, 0),
 		Pods:         &[]models.Pod{},
 	}
-}
+}*/

@@ -56,17 +56,16 @@ var ListSubCmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the code service to list deploy keys")
-			printKeys := subCmd.BoolOpt("include-keys", false, "Print out the values of the deploy keys, as well as names")
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdList(*serviceName, *printKeys, New(settings), services.New(settings))
+				err := CmdList(*serviceName, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "SERVICE_NAME [--include-keys]"
+			subCmd.Spec = "SERVICE_NAME"
 		}
 	},
 }

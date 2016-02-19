@@ -64,8 +64,8 @@ func (text *TextTransformer) TransformSingleCPU(metric *models.Metrics) {
 	prefix := "    "
 	if metric.Data != nil && metric.Data.CPUUsage != nil {
 		for _, data := range *metric.Data.CPUUsage {
-			ts := time.Unix(int64(data.TS), 0)
-			logrus.Printf("%s%s | CPU Min: %6.2fs | CPU Max: %6.2fs | CPU AVG: %6.2fs | CPU Total: %6.2fs",
+			ts := time.Unix(int64(data.TS/1000.0), 0)
+			logrus.Printf("%s%s | CPU Min: %6.2f | CPU Max: %6.2f | CPU AVG: %6.2f | CPU Total: %6.2f",
 				prefix,
 				fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d", ts.Year(), ts.Month(), ts.Day(), ts.Hour(), ts.Minute(), ts.Second()),
 				data.Min/1000.0,
@@ -82,14 +82,14 @@ func (text *TextTransformer) TransformSingleMemory(metric *models.Metrics) {
 	prefix := "    "
 	if metric.Data != nil && metric.Data.MemoryUsage != nil {
 		for _, data := range *metric.Data.MemoryUsage {
-			ts := time.Unix(int64(data.TS), 0)
-			logrus.Printf("%s%s | Memory Min: %.2f KB | Memory Max: %.2f KB | Memory AVG: %.2f KB | Memory Total: %.2f KB",
+			ts := time.Unix(int64(data.TS/1000.0), 0)
+			logrus.Printf("%s%s | Memory Min: %.2f MB | Memory Max: %.2f MB | Memory AVG: %.2f MB | Memory Total: %.2f MB",
 				prefix,
 				fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d", ts.Year(), ts.Month(), ts.Day(), ts.Hour(), ts.Minute(), ts.Second()),
 				data.Min/1024.0,
 				data.Max/1024.0,
 				data.AVG/1024.0,
-				data.Total/1024.0)
+				float64(metric.Size.RAM)*1024.0)
 		}
 	}
 }
@@ -100,7 +100,7 @@ func (text *TextTransformer) TransformSingleNetworkIn(metric *models.Metrics) {
 	prefix := "    "
 	if metric.Data != nil && metric.Data.NetworkUsage != nil {
 		for _, data := range *metric.Data.NetworkUsage {
-			ts := time.Unix(int64(data.TS), 0)
+			ts := time.Unix(int64(data.TS/1000.0), 0)
 			logrus.Printf("%s%s | Received Bytes: %.2f KB | Received Packets: %.2f",
 				prefix,
 				fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d", ts.Year(), ts.Month(), ts.Day(), ts.Hour(), ts.Minute(), ts.Second()),
@@ -116,7 +116,7 @@ func (text *TextTransformer) TransformSingleNetworkOut(metric *models.Metrics) {
 	prefix := "    "
 	if metric.Data != nil && metric.Data.NetworkUsage != nil {
 		for _, data := range *metric.Data.NetworkUsage {
-			ts := time.Unix(int64(data.TS), 0)
+			ts := time.Unix(int64(data.TS/1000.0), 0)
 			logrus.Printf("%s%s | Transmitted Bytes: %.2f KB | Transmitted Packets: %.2f",
 				prefix,
 				fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d", ts.Year(), ts.Month(), ts.Day(), ts.Hour(), ts.Minute(), ts.Second()),

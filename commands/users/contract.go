@@ -2,6 +2,7 @@ package users
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/invites"
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
@@ -31,7 +32,7 @@ var ListSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdList(settings.UsersID, New(settings))
+				err := CmdList(settings.UsersID, New(settings), invites.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -46,17 +47,17 @@ var RmSubCmd = models.Command{
 	LongHelp:  "Revoke access to the given organization for the given user",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
-			usersID := subCmd.StringArg("USER_ID", "", "The Users ID to revoke access from for the given organization")
+			email := subCmd.StringArg("EMAIL", "", "The email address of the user to revoke access from for the given organization")
 			subCmd.Action = func() {
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdRm(*usersID, New(settings))
+				err := CmdRm(*email, New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "USER_ID"
+			subCmd.Spec = "EMAIL"
 		}
 	},
 }

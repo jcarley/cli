@@ -1,49 +1,58 @@
 package keys
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/deploykeys"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/olekukonko/tablewriter"
 )
 
-var ListSubCmd = models.Command{
-	Name:      "list",
-	ShortHelp: "List your public keys",
-	LongHelp:  "List the names of all public keys currently attached to your user",
-	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
-		return func(cmd *cli.Cmd) {
-			printKeys := cmd.BoolOpt("include-keys", false, "Print out the values of the public keys, as well as names.")
-
-			cmd.Action = func() {
-				err := CmdList(New(settings), *printKeys)
-				if err != nil {
-					logrus.Fatal(err)
-				}
-			}
-		}
-	},
-}
-
-func CmdList(k IKeys, printKeys bool) error {
-	keys, err := k.List()
+func CmdList(ik IKeys, id deploykeys.IDeployKeys) error {
+	keys, err := ik.List()
 	if err != nil {
 		return err
 	}
 
-	for _, key := range keys {
-		if printKeys {
-			logrus.Printf("%s = %s\n", key.Name, key.Key)
-		} else {
-			logrus.Printf("%s", key.Name)
+	invalidKeys := map[string]string{}
+
+	data := [][]string{{"NAME", "FINGERPRINT"}}
+	for _, key := range *keys {
+		s, err := id.ParsePublicKey([]byte(key.Key))
+		if err != nil {
+			invalidKeys[key.Name] = err.Error()
+			continue
+		}
+		h := sha256.New()
+		h.Write(s.Marshal())
+		fingerprint := base64.StdEncoding.EncodeToString(h.Sum(nil))
+		data = append(data, []string{key.Name, fmt.Sprintf("SHA256:%s", strings.TrimRight(fingerprint, "="))})
+	}
+
+	table := tablewriter.NewWriter(logrus.StandardLogger().Out)
+	table.SetBorder(false)
+	table.SetRowLine(false)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.AppendBulk(data)
+	table.Render()
+
+	if len(invalidKeys) > 0 {
+		logrus.Println("\nInvalid Keys:")
+		for keyName, reason := range invalidKeys {
+			logrus.Printf("%s: %s", keyName, reason)
 		}
 	}
 	return nil
 }
 
-func (k *SKeys) List() ([]models.UserKey, error) {
+func (k *SKeys) List() (*[]models.UserKey, error) {
 	headers := httpclient.GetHeaders(k.Settings.SessionToken, k.Settings.Version, k.Settings.Pod)
 	resp, status, err := httpclient.Get(nil, fmt.Sprintf("%s%s/keys", k.Settings.AuthHost, k.Settings.AuthHostVersion), headers)
 	if err != nil {
@@ -52,5 +61,5 @@ func (k *SKeys) List() ([]models.UserKey, error) {
 
 	keys := []models.UserKey{}
 	err = httpclient.ConvertResp(resp, status, &keys)
-	return keys, err
+	return &keys, err
 }

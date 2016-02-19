@@ -160,7 +160,7 @@ func (csv *CSVTransformer) TransformSingleMemory(metric *models.Metrics) {
 				fmt.Sprintf("%f", data.Min/1024.0),
 				fmt.Sprintf("%f", data.Max/1024.0),
 				fmt.Sprintf("%f", data.AVG/1024.0),
-				fmt.Sprintf("%f", data.Total/1024.0),
+				fmt.Sprintf("%f", float64(metric.Size.RAM*1024.0)),
 			}
 			if csv.GroupMode {
 				row = append([]string{metric.ServiceLabel}, row...)

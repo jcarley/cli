@@ -8,29 +8,10 @@ import (
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
 	"github.com/mitchellh/go-homedir"
 )
 
-var SetSubCmd = models.Command{
-	Name:      "set",
-	ShortHelp: "Set your auth key",
-	LongHelp:  "Set the private key used to sign in instead of username and password. This is expected to correspond to an OpenSSH-formatted RSA public key in the same directory.",
-	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
-		return func(cmd *cli.Cmd) {
-			path := cmd.StringArg("PRIVATE_KEY_PATH", "", "Relative path to the private key file.")
-
-			cmd.Action = func() {
-				err := CmdSet(settings, *path)
-				if err != nil {
-					logrus.Fatal(err)
-				}
-			}
-		}
-	},
-}
-
-func CmdSet(settings *models.Settings, path string) error {
+func CmdSet(path string, settings *models.Settings) error {
 	fullPath, err := homedir.Expand(path)
 	if err != nil {
 		return err

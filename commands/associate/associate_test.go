@@ -1,14 +1,6 @@
 package associate
 
-import (
-	"testing"
-
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/git"
-	"github.com/catalyzeio/cli/models"
-)
-
-const validEnvName = "env"
+/*const validEnvName = "env"
 const invalidEnvName = "badEnv"
 
 const validAppName = "app01"
@@ -23,7 +15,6 @@ func (m *MEnvironments) List() (*[]models.Environment, error) {
 			Name:      m.Name,
 			Pod:       m.Pod,
 			Namespace: m.Namespace,
-			DNSName:   m.DNSName,
 			OrgID:     m.OrgID,
 		},
 	}, nil
@@ -39,17 +30,14 @@ type MServices models.Service
 func (m *MServices) List() (*[]models.Service, error) {
 	return &[]models.Service{
 		models.Service{
-			ID:           m.ID,
-			Type:         m.Type,
-			Label:        m.Label,
-			Size:         m.Size,
-			BuildStatus:  m.BuildStatus,
-			DeployStatus: m.DeployStatus,
-			Name:         m.Name,
-			EnvVars:      m.EnvVars,
-			Source:       m.Source,
-			LBIP:         m.LBIP,
-			DockerImage:  m.DockerImage,
+			ID:      m.ID,
+			Type:    m.Type,
+			Label:   m.Label,
+			Size:    m.Size,
+			Name:    m.Name,
+			EnvVars: m.EnvVars,
+			Source:  m.Source,
+			LBIP:    m.LBIP,
 		},
 	}, nil
 }
@@ -179,4 +167,4 @@ func createGitRepo(name string, create bool) {
 
 func destroyGitRepo(name string) {
 
-}
+}*/

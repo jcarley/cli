@@ -7,8 +7,23 @@ import (
 	"github.com/catalyzeio/cli/lib/httpclient"
 )
 
-func CmdRm(usersID string, iu IUsers) error {
-	err := iu.Rm(usersID)
+func CmdRm(email string, iu IUsers) error {
+	orgUsers, err := iu.List()
+	if err != nil {
+		return err
+	}
+	usersID := ""
+	for _, u := range *orgUsers {
+		if u.Email == email {
+			usersID = u.ID
+			break
+		}
+	}
+	if usersID == "" {
+		return fmt.Errorf("A user with email %s was not found", email)
+	}
+
+	err = iu.Rm(usersID)
 	if err != nil {
 		return err
 	}

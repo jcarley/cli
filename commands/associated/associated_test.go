@@ -1,12 +1,6 @@
 package associated
 
-import (
-	"testing"
-
-	"github.com/catalyzeio/cli/models"
-)
-
-var associatedTests = []struct {
+/*var associatedTests = []struct {
 	envs       map[string]models.AssociatedEnv
 	defaultEnv string
 	expectErr  bool
@@ -50,4 +44,4 @@ func getSettings(associatedEnvs map[string]models.AssociatedEnv) *models.Setting
 		Environments: associatedEnvs,
 		Pods:         &[]models.Pod{},
 	}
-}
+}*/

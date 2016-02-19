@@ -8,31 +8,10 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
 	"github.com/mitchellh/go-homedir"
 )
 
-var AddSubCmd = models.Command{
-	Name:      "add",
-	ShortHelp: "Add a public key",
-	LongHelp:  "Add a new RSA public key to your own user account",
-	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
-		return func(cmd *cli.Cmd) {
-			name := cmd.StringArg("NAME", "", "The name for the new key, for your own purposes")
-			path := cmd.StringArg("PUBLIC_KEY_PATH", "", "Relative path to the public key file")
-
-			cmd.Action = func() {
-				err := CmdAdd(New(settings), *name, *path)
-				if err != nil {
-					logrus.Fatal(err)
-				}
-				logrus.Printf("Key '%s' added to your account.", *name)
-			}
-		}
-	},
-}
-
-func CmdAdd(k IKeys, name string, path string) error {
+func CmdAdd(name, path string, ik IKeys) error {
 	fullPath, err := homedir.Expand(path)
 	if err != nil {
 		return err
@@ -41,15 +20,16 @@ func CmdAdd(k IKeys, name string, path string) error {
 	if err != nil {
 		return err
 	}
-	err = k.Add(name, string(keyBytes))
+	err = ik.Add(name, string(keyBytes))
 	if err != nil {
 		return err
 	}
+	logrus.Printf("Key '%s' added to your account.", name)
 	return nil
 }
 
 // Add adds a new public key to the authenticated user's account
-func (k *SKeys) Add(name string, publicKey string) error {
+func (k *SKeys) Add(name, publicKey string) error {
 	body, err := json.Marshal(models.UserKey{
 		Key:  publicKey,
 		Name: name,

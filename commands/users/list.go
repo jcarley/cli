@@ -4,22 +4,46 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/invites"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
+	"github.com/olekukonko/tablewriter"
+	"github.com/pmylund/sortutil"
 )
 
-func CmdList(myUsersID string, iu IUsers) error {
+func CmdList(myUsersID string, iu IUsers, ii invites.IInvites) error {
 	orgUsers, err := iu.List()
 	if err != nil {
 		return err
 	}
+	roles, err := ii.ListRoles()
+	if err != nil {
+		return err
+	}
+	rolesMap := map[int]string{}
+	for _, r := range *roles {
+		rolesMap[r.ID] = r.Name
+	}
+
+	sortutil.DescByField(*orgUsers, "RoleID")
+
+	data := [][]string{{"EMAIL", "ROLE"}}
 	for _, user := range *orgUsers {
 		if user.ID == myUsersID {
-			logrus.Printf("%s (you)", user.ID)
+			data = append(data, []string{user.Email, fmt.Sprintf("%s (you)", rolesMap[user.RoleID])})
 		} else {
-			defer logrus.Printf("%s", user.ID)
+			data = append(data, []string{user.Email, rolesMap[user.RoleID]})
 		}
 	}
+
+	table := tablewriter.NewWriter(logrus.StandardLogger().Out)
+	table.SetBorder(false)
+	table.SetRowLine(false)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.AppendBulk(data)
+	table.Render()
 	return nil
 }
 

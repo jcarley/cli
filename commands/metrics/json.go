@@ -66,7 +66,7 @@ func (j *JSONTransformer) TransformGroupMemory(metrics *[]models.Metrics) {
 	for _, m := range *metrics {
 		if _, ok := blacklist[m.ServiceLabel]; !ok && m.Data != nil && m.Data.MemoryUsage != nil {
 			for _, d := range *m.Data.MemoryUsage {
-				data = append(data, mem{m.ServiceLabel, d.TS, d.Min / 1024.0, d.Max / 1024.0, d.AVG / 1024.0, d.Total / 1024.0})
+				data = append(data, mem{m.ServiceLabel, d.TS, d.Min / 1024.0, d.Max / 1024.0, d.AVG / 1024.0, float64(m.Size.RAM) * 1024.0})
 			}
 		}
 	}
@@ -124,7 +124,7 @@ func (j *JSONTransformer) TransformSingleMemory(metric *models.Metrics) {
 	var data []mem
 	if metric.Data != nil && metric.Data.MemoryUsage != nil {
 		for _, d := range *metric.Data.MemoryUsage {
-			data = append(data, mem{TS: d.TS, Min: d.Min / 1024.0, Max: d.Max / 1024.0, AVG: d.AVG / 1024.0, Total: d.Total / 1024.0})
+			data = append(data, mem{TS: d.TS, Min: d.Min / 1024.0, Max: d.Max / 1024.0, AVG: d.AVG / 1024.0, Total: float64(metric.Size.RAM) * 1024.0})
 		}
 	}
 	b, _ := json.MarshalIndent(data, "", "    ")
