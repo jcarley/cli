@@ -20,7 +20,14 @@
 		},
 		"tag": {
 			"prefix": ""
-		}
+		},
+                "deb": {
+                    "metadata": {
+                        "maintainer": "Catalyze",
+                        "maintainer-email": "support@catalyze.io",
+                        "description": "Catalyze CLI"
+                    }
+                }
 	},
 	"ConfigVersion": "0.9"
 }

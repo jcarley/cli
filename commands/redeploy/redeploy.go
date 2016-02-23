@@ -17,6 +17,9 @@ func CmdRedeploy(svcName string, ir IRedeploy, is services.IServices) error {
 	if service == nil {
 		return fmt.Errorf("Could not find a service with the name \"%s\"", svcName)
 	}
+	if service.Name != "code" && service.Name != "service_proxy" {
+		return fmt.Errorf("You cannot redeploy a %s service", service.Name)
+	}
 	logrus.Printf("Redeploying %s (ID = %s)", svcName, service.ID)
 	err = ir.Redeploy(service)
 	if err != nil {
