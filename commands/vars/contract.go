@@ -3,6 +3,8 @@ package vars
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/config"
+	"github.com/catalyzeio/cli/lib/auth"
+	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -29,6 +31,9 @@ var ListSubCmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -54,6 +59,9 @@ var SetSubCmd = models.Command{
 				HideValue: true,
 			})
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -75,6 +83,9 @@ var UnsetSubCmd = models.Command{
 		return func(subCmd *cli.Cmd) {
 			variable := subCmd.StringArg("VARIABLE", "", "The name of the environment variable to unset")
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}

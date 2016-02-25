@@ -4,6 +4,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/config"
+	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/crypto"
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/lib/prompts"
@@ -38,6 +39,9 @@ var BackupSubCmd = models.Command{
 			databaseName := subCmd.StringArg("DATABASE_NAME", "", "The name of the database service to create a backup for (i.e. 'db01')")
 			skipPoll := subCmd.BoolOpt("s skip-poll", false, "Whether or not to wait for the backup to finish")
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -62,6 +66,9 @@ var DownloadSubCmd = models.Command{
 			filePath := subCmd.StringArg("FILEPATH", "", "The location to save the downloaded backup to. This location must NOT already exist unless -f is specified")
 			force := subCmd.BoolOpt("f force", false, "If a file previously exists at \"filepath\", overwrite it and download the backup")
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -85,6 +92,9 @@ var ExportSubCmd = models.Command{
 			filePath := subCmd.StringArg("FILEPATH", "", "The location to save the exported data. This location must NOT already exist unless -f is specified")
 			force := subCmd.BoolOpt("f force", false, "If a file previously exists at `filepath`, overwrite it and export data")
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -109,6 +119,9 @@ var ImportSubCmd = models.Command{
 			mongoCollection := subCmd.StringOpt("c mongo-collection", "", "If importing into a mongo service, the name of the collection to import into")
 			mongoDatabase := subCmd.StringOpt("d mongo-database", "", "If importing into a mongo service, the name of the database to import into")
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -132,6 +145,9 @@ var ListSubCmd = models.Command{
 			page := subCmd.IntOpt("p page", 1, "The page to view")
 			pageSize := subCmd.IntOpt("n page-size", 10, "The number of items to show per page")
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -154,6 +170,9 @@ var LogsSubCmd = models.Command{
 			databaseName := subCmd.StringArg("DATABASE_NAME", "", "The name of the database service (i.e. 'db01')")
 			backupID := subCmd.StringArg("BACKUP_ID", "", "The ID of the backup to download logs from (found from \"catalyze backup list\")")
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}

@@ -3,6 +3,8 @@ package keys
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/deploykeys"
+	"github.com/catalyzeio/cli/lib/auth"
+	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -31,6 +33,9 @@ var AddSubCmd = models.Command{
 			name := cmd.StringArg("NAME", "", "The name for the new key, for your own purposes")
 			path := cmd.StringArg("PUBLIC_KEY_PATH", "", "Relative path to the public key file")
 			cmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				err := CmdAdd(*name, *path, New(settings))
 				if err != nil {
 					logrus.Fatal(err)
@@ -47,6 +52,9 @@ var ListSubCmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				err := CmdList(New(settings), deploykeys.New(settings))
 				if err != nil {
 					logrus.Fatal(err)
@@ -64,6 +72,9 @@ var RemoveSubCmd = models.Command{
 		return func(cmd *cli.Cmd) {
 			name := cmd.StringArg("NAME", "", "The name of the key to remove.")
 			cmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				err := CmdRemove(*name, New(settings))
 				if err != nil {
 					logrus.Fatal(err)
@@ -81,6 +92,9 @@ var SetSubCmd = models.Command{
 		return func(cmd *cli.Cmd) {
 			path := cmd.StringArg("PRIVATE_KEY_PATH", "", "Relative path to the private key file")
 			cmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				err := CmdSet(*path, settings)
 				if err != nil {
 					logrus.Fatal(err)

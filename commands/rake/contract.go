@@ -3,6 +3,8 @@ package rake
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/config"
+	"github.com/catalyzeio/cli/lib/auth"
+	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -17,6 +19,9 @@ var Cmd = models.Command{
 		return func(cmd *cli.Cmd) {
 			taskName := cmd.StringArg("TASK_NAME", "", "The name of the rake task to run")
 			cmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}

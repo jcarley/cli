@@ -4,6 +4,8 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/config"
+	"github.com/catalyzeio/cli/lib/auth"
+	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -46,6 +48,9 @@ var CPUSubCmd = models.Command{
 			stream := subCmd.BoolOpt("stream", false, "Repeat calls once per minute until this process is interrupted.")
 			mins := subCmd.IntOpt("m mins", 1, "How many minutes worth of metrics to retrieve.")
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -72,6 +77,9 @@ var MemorySubCmd = models.Command{
 			stream := subCmd.BoolOpt("stream", false, "Repeat calls once per minute until this process is interrupted.")
 			mins := subCmd.IntOpt("m mins", 1, "How many minutes worth of metrics to retrieve.")
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -98,6 +106,9 @@ var NetworkInSubCmd = models.Command{
 			stream := subCmd.BoolOpt("stream", false, "Repeat calls once per minute until this process is interrupted.")
 			mins := subCmd.IntOpt("m mins", 1, "How many minutes worth of metrics to retrieve.")
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -124,6 +135,9 @@ var NetworkOutSubCmd = models.Command{
 			stream := subCmd.BoolOpt("stream", false, "Repeat calls once per minute until this process is interrupted.")
 			mins := subCmd.IntOpt("m mins", 1, "How many minutes worth of metrics to retrieve.")
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}

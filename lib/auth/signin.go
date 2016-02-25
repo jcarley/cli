@@ -61,6 +61,7 @@ func (a *SAuth) signInWithCredentials() (*models.User, error) {
 	}
 	a.Settings.SessionToken = user.SessionToken
 	a.Settings.UsersID = user.UsersID
+	a.Settings.Username = user.Username
 	return &user, nil
 }
 
@@ -120,6 +121,7 @@ func (a *SAuth) signInWithKey() (*models.User, error) {
 	}
 	a.Settings.SessionToken = user.SessionToken
 	a.Settings.UsersID = user.UsersID
+	a.Settings.Username = user.Username
 	return &user, nil
 }
 

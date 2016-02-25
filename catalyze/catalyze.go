@@ -37,9 +37,7 @@ import (
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/models"
 
-	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/pods"
-	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/lib/updater"
 
 	"github.com/Sirupsen/logrus"
@@ -122,14 +120,6 @@ func Run() {
 				logrus.Debugf("Error listing pods: %s", err.Error())
 			}
 		}
-
-		a := auth.New(settings, prompts.New())
-		user, err := a.Signin()
-		if err != nil {
-			logrus.Fatalln(err.Error())
-		}
-		settings.Username = user.Username
-		settings.UsersID = user.UsersID
 	}
 	app.After = func() {
 		config.SaveSettings(settings)

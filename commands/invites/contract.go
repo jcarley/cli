@@ -34,7 +34,12 @@ var AcceptSubCmd = models.Command{
 			inviteCode := subCmd.StringArg("INVITE_CODE", "", "The invite code that was sent in the invite email")
 			subCmd.Action = func() {
 				p := prompts.New()
-				err := CmdAccept(*inviteCode, New(settings), auth.New(settings, p), p)
+				a := auth.New(settings, p)
+				if _, err := a.Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
+
+				err := CmdAccept(*inviteCode, New(settings), a, p)
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -51,6 +56,9 @@ var ListSubCmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -71,6 +79,9 @@ var RmSubCmd = models.Command{
 		return func(subCmd *cli.Cmd) {
 			inviteID := subCmd.StringArg("INVITE_ID", "", "The ID of an invitation to remove")
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -94,6 +105,9 @@ var SendSubCmd = models.Command{
 			subCmd.BoolOpt("m member", true, "Whether or not the user will be invited as a basic member")
 			adminRole := subCmd.BoolOpt("a admin", false, "Whether or not the user will be invited as an admin")
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}

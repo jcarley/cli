@@ -8,6 +8,8 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/config"
+	"github.com/catalyzeio/cli/lib/auth"
+	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
 )
@@ -36,6 +38,9 @@ var AddSubCmd = models.Command{
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the code service to add this deploy key to")
 			private := subCmd.BoolOpt("p private", false, "Whether or not this is a private key")
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -57,6 +62,9 @@ var ListSubCmd = models.Command{
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the code service to list deploy keys")
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -80,6 +88,9 @@ var RmSubCmd = models.Command{
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the code service to remove this deploy key from")
 			private := subCmd.BoolOpt("p private", false, "Whether or not this is a private key")
 			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}

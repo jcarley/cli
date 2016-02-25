@@ -3,6 +3,7 @@ package vars
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/Sirupsen/logrus"
@@ -11,12 +12,17 @@ import (
 
 func CmdSet(variables []string, iv IVars) error {
 	envVarsMap := make(map[string]string, len(variables))
+	r := regexp.MustCompile("^[a-zA-Z_]+[a-zA-Z0-9_]*$")
 	for _, envVar := range variables {
 		pieces := strings.SplitN(envVar, "=", 2)
 		if len(pieces) != 2 {
 			return fmt.Errorf("Invalid variable format. Expected <key>=<value> but got %s", envVar)
 		}
-		envVarsMap[pieces[0]] = pieces[1]
+		name, value := pieces[0], pieces[1]
+		if !r.MatchString(name) {
+			return fmt.Errorf("Invalid environment variable name '%s'. Environment variable names must only contain letters, numbers, and underscores and must not start with a number.", name)
+		}
+		envVarsMap[name] = value
 	}
 
 	err := iv.Set(envVarsMap)
