@@ -36,7 +36,7 @@ var AddSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdAdd(*name, *path, New(settings))
+				err := CmdAdd(*name, *path, New(settings), deploykeys.New(settings))
 				if err != nil {
 					logrus.Fatal(err)
 				}

@@ -5,13 +5,16 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"golang.org/x/crypto/ssh"
+
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/deploykeys"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/mitchellh/go-homedir"
 )
 
-func CmdAdd(name, path string, ik IKeys) error {
+func CmdAdd(name, path string, ik IKeys, id deploykeys.IDeployKeys) error {
 	fullPath, err := homedir.Expand(path)
 	if err != nil {
 		return err
@@ -20,7 +23,15 @@ func CmdAdd(name, path string, ik IKeys) error {
 	if err != nil {
 		return err
 	}
-	err = ik.Add(name, string(keyBytes))
+	k, err := id.ParsePublicKey(keyBytes)
+	if err != nil {
+		return err
+	}
+	key := ssh.MarshalAuthorizedKey(k)
+	if err != nil {
+		return err
+	}
+	err = ik.Add(name, string(key))
 	if err != nil {
 		return err
 	}

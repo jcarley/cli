@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"os"
 
+	"golang.org/x/crypto/ssh"
+
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
@@ -32,12 +34,21 @@ func CmdAdd(name, keyPath, svcName string, private bool, id IDeployKeys, is serv
 	keyType := "ssh"
 	if private {
 		keyType = "ssh_private"
-		_, err := id.ParsePrivateKey(key)
+		k, err := id.ParsePrivateKey(key)
+		if err != nil {
+			return err
+		}
+		pk, err := id.ExtractPublicKey(k)
+		if err != nil {
+			return err
+		}
+		key = ssh.MarshalAuthorizedKey(pk)
 		if err != nil {
 			return err
 		}
 	} else {
-		_, err := id.ParsePublicKey(key)
+		k, err := id.ParsePublicKey(key)
+		key = ssh.MarshalAuthorizedKey(k)
 		if err != nil {
 			return err
 		}
