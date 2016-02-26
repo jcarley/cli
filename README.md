@@ -14,6 +14,12 @@ Once downloaded, the CLI will automatically update itself when a new version bec
 
 ## Version 3.0.1
 
+***Due to changes to Catalyze's API and authentication, existing environment associations need to be recreated if you have previously made them with an earlier version of the CLI (< 3.0)***
+
+To disassociate environments go [here](https://resources.catalyze.io/paas/paas-cli-reference/disassociate/)
+
+To reassociate environments, go [here](https://resources.catalyze.io/paas/paas-cli-reference/associate/)
+
 For all 64 bit users, choose the `amd64` version of your OS. For all 32 bit users, choose the `386` version of your OS.
 
 Warning: The ARM version of our cli is purely presented here for people who are interested, we will not work to fix any bugs it might have.
