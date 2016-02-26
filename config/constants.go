@@ -8,9 +8,9 @@ import (
 
 const (
 	// VERSION is the current cli version
-	VERSION = "3.0.0-beta"
+	VERSION = "3.0.0"
 	// Beta determines whether or not this is a beta build of the CLI
-	Beta = true
+	Beta = false
 	// AccountsHost is the production accounts URL
 	AccountsHost = "https://stratum.catalyze.io"
 	// AuthHost is the production auth URL
@@ -18,7 +18,7 @@ const (
 	// AuthHostVersion is the version path for the auth host
 	AuthHostVersion = ""
 	// PaasHost is the production PaaS URL
-	PaasHost = "https://darwin.catalyze.io"
+	PaasHost = "https://paas-api.catalyze.io"
 	// PaasHostVersion is the version path for the PaaS host
 	PaasHostVersion = ""
 	// LogLevel is the amount of logging to enable
@@ -26,7 +26,7 @@ const (
 	// JobPollTime is the amount of time in seconds to wait between polls for a job status
 	JobPollTime = 5
 	// LogPollTime is the amount of time in seconds to wait between polls for new logs
-	LogPollTime = 2
+	LogPollTime = 3
 
 	// AccountsHostEnvVar is the env variable used to override AccountsHost
 	AccountsHostEnvVar = "ACCOUNTS_HOST"
