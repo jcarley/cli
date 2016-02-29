@@ -22,7 +22,7 @@ func (c *SCrypto) DecryptFile(encryptedFilePath, key, iv, outputFilePath string)
 	binary.Read(encryptedFile, binary.LittleEndian, sizeBytes)
 	var origSize int64
 	binary.Read(bytes.NewBuffer(sizeBytes), binary.LittleEndian, &origSize)
-	block, err := aes.NewCipher(c.Unhex(c.Base64Decode([]byte(key))))
+	block, err := aes.NewCipher(c.Unhex(c.Base64Decode([]byte(key), KeySize*2), KeySize))
 	if err != nil {
 		return err
 	}
@@ -36,7 +36,7 @@ func (c *SCrypto) DecryptFile(encryptedFilePath, key, iv, outputFilePath string)
 	}
 	defer file.Close()
 
-	decrypter := cipher.NewCBCDecrypter(block, c.Unhex(c.Base64Decode([]byte(iv))))
+	decrypter := cipher.NewCBCDecrypter(block, c.Unhex(c.Base64Decode([]byte(iv), IVSize*2), IVSize))
 	chunkSize := 24 * 1024
 	for {
 		chunk := make([]byte, chunkSize)

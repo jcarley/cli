@@ -36,7 +36,6 @@ var AddSubCmd = models.Command{
 			name := subCmd.StringArg("NAME", "", "The name for the new key, for your own purposes")
 			path := subCmd.StringArg("KEY_PATH", "", "Relative path to the SSH key file")
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the code service to add this deploy key to")
-			private := subCmd.BoolOpt("p private", false, "Whether or not this is a private key")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -44,12 +43,12 @@ var AddSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdAdd(*name, *path, *serviceName, *private, New(settings), services.New(settings))
+				err := CmdAdd(*name, *path, *serviceName, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "NAME KEY_PATH SERVICE_NAME [-p]"
+			subCmd.Spec = "NAME KEY_PATH SERVICE_NAME"
 		}
 	},
 }
@@ -86,7 +85,6 @@ var RmSubCmd = models.Command{
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of the key to remove")
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the code service to remove this deploy key from")
-			private := subCmd.BoolOpt("p private", false, "Whether or not this is a private key")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -94,12 +92,12 @@ var RmSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdRm(*name, *serviceName, *private, New(settings), services.New(settings))
+				err := CmdRm(*name, *serviceName, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "NAME SERVICE_NAME [-p]"
+			subCmd.Spec = "NAME SERVICE_NAME"
 		}
 	},
 }
