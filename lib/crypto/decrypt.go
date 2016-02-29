@@ -22,6 +22,9 @@ func (c *SCrypto) DecryptFile(encryptedFilePath, key, iv, outputFilePath string)
 	binary.Read(encryptedFile, binary.LittleEndian, sizeBytes)
 	var origSize int64
 	binary.Read(bytes.NewBuffer(sizeBytes), binary.LittleEndian, &origSize)
+	fmt.Println(key)
+	fmt.Println(c.Base64Decode([]byte(key)))
+	fmt.Println(c.Unhex(c.Base64Decode([]byte(key))))
 	block, err := aes.NewCipher(c.Unhex(c.Base64Decode([]byte(key))))
 	if err != nil {
 		return err

@@ -1,6 +1,7 @@
 package deploykeys
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/catalyzeio/cli/commands/services"
@@ -8,6 +9,9 @@ import (
 )
 
 func CmdRm(name, svcName string, private bool, id IDeployKeys, is services.IServices) error {
+	if name == "catalyze_deploy" {
+		return errors.New("You cannot remove catalyze deploy keys")
+	}
 	service, err := is.RetrieveByLabel(svcName)
 	if err != nil {
 		return err

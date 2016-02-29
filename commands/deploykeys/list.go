@@ -36,6 +36,9 @@ func CmdList(svcName string, id IDeployKeys, is services.IServices) error {
 
 	data := [][]string{{"NAME", "TYPE", "FINGERPRINT"}}
 	for _, key := range *keys {
+		if key.Name == "catalyze_deploy" {
+			continue
+		}
 		var s ssh.PublicKey
 		if key.Type == "ssh_private" {
 			privKey, err := id.ParsePrivateKey([]byte(key.Key))

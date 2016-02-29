@@ -14,6 +14,9 @@ import (
 )
 
 func CmdAdd(name, keyPath, svcName string, private bool, id IDeployKeys, is services.IServices) error {
+	if name == "catalyze_deploy" {
+		return fmt.Errorf("You cannot add deploy keys named '%s'", name)
+	}
 	if _, err := os.Stat(keyPath); os.IsNotExist(err) {
 		return fmt.Errorf("A file does not exist at path '%s'", keyPath)
 	}
