@@ -5,7 +5,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
@@ -118,7 +120,8 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	for key, value := range options {
 		importParams[key] = value
 	}
-	importParams["filename"] = tempURL.URL
+	u, _ := url.Parse(tempURL.URL)
+	importParams["filename"] = strings.TrimLeft(u.Path, "/")
 	importParams["encryptionKey"] = string(d.Crypto.Base64Encode(d.Crypto.Hex(key, crypto.KeySize*2), base64.StdEncoding.EncodedLen(crypto.KeySize*2)))
 	importParams["encryptionIV"] = string(d.Crypto.Base64Encode(d.Crypto.Hex(iv, crypto.IVSize*2), base64.StdEncoding.EncodedLen(crypto.IVSize*2)))
 	importParams["dropDatabase"] = false
