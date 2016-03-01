@@ -90,7 +90,7 @@ func (d *SDb) Export(filePath string, job *models.Job, service *models.Service) 
 	io.Copy(tmpFile, resp.Body)
 	logrus.Println("Decrypting...")
 	tmpFile.Close()
-	err = d.Crypto.DecryptFile(tmpFile.Name(), job.Backup.Key, job.Backup.IV, filePath)
+	err = d.Crypto.DecryptFile(tmpFile.Name(), job.Backup.Key, []string{job.Backup.IV}, filePath)
 	if err != nil {
 		return err
 	}

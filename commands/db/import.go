@@ -5,9 +5,15 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/crypto"
 	"github.com/catalyzeio/cli/lib/httpclient"
@@ -26,7 +32,7 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id
 	if service == nil {
 		return fmt.Errorf("Could not find a service with the label \"%s\"", databaseName)
 	}
-	logrus.Printf("Backing up \"%s\" before performing the import", databaseName)
+	/*logrus.Printf("Backing up \"%s\" before performing the import", databaseName)
 	job, err := id.Backup(service)
 	if err != nil {
 		return err
@@ -47,16 +53,16 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id
 	}
 	if job.Status != "finished" {
 		return fmt.Errorf("Job finished with invalid status %s", job.Status)
-	}
+	}*/
 	logrus.Printf("Importing '%s' into %s (ID = %s)", filePath, databaseName, service.ID)
-	job, err = id.Import(filePath, mongoCollection, mongoDatabase, service)
+	job, err := id.Import(filePath, mongoCollection, mongoDatabase, service)
 	if err != nil {
 		return err
 	}
 	// all because logrus treats print, println, and printf the same
 	logrus.StandardLogger().Out.Write([]byte(fmt.Sprintf("Processing import (job ID = %s).", job.ID)))
 
-	status, err = ij.PollTillFinished(job.ID, service.ID)
+	status, err := ij.PollTillFinished(job.ID, service.ID)
 	if err != nil {
 		return err
 	}
@@ -83,11 +89,11 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id
 // that you want to import.
 func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *models.Service) (*models.Job, error) {
 	key := make([]byte, crypto.KeySize)
-	iv := make([]byte, crypto.IVSize)
+	//iv := make([]byte, crypto.IVSize)
 	rand.Read(key)
-	rand.Read(iv)
+	//rand.Read(iv)
 	logrus.Println("Encrypting...")
-	encrFilePath, err := d.Crypto.EncryptFile(filePath, key, iv)
+	encrFilePath, iv, err := d.Crypto.EncryptFile(filePath, key)
 	if err != nil {
 		return nil, err
 	}
@@ -104,30 +110,42 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	if err != nil {
 		return nil, err
 	}
+	encrFile, _ := os.Open(encrFilePath)
+	defer encrFile.Close()
 
-	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
-	resp, statusCode, err := httpclient.PutFile(encrFilePath, tempURL.URL, headers)
+	u, _ := url.Parse(tempURL.URL)
+	svc := s3.New(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.AnonymousCredentials}))
+	req, _ := svc.PutObjectRequest(&s3.PutObjectInput{
+		Bucket: aws.String(strings.Split(u.Host, ".")[0]),
+		Key:    aws.String(strings.TrimLeft(u.Path, "/")),
+		Body:   encrFile,
+	})
+	req.HTTPRequest.URL.RawQuery = u.RawQuery
+	err = req.Send()
 	if err != nil {
 		return nil, err
 	}
-	err = httpclient.ConvertResp(resp, statusCode, nil)
-	if err != nil {
-		return nil, err
-	}
+
 	importParams := map[string]interface{}{}
 	for key, value := range options {
 		importParams[key] = value
 	}
 	importParams["filename"] = tempURL.URL
 	importParams["encryptionKey"] = string(d.Crypto.Base64Encode(d.Crypto.Hex(key, crypto.KeySize*2), base64.StdEncoding.EncodedLen(crypto.KeySize*2)))
-	importParams["encryptionIV"] = string(d.Crypto.Base64Encode(d.Crypto.Hex(iv, crypto.IVSize*2), base64.StdEncoding.EncodedLen(crypto.IVSize*2)))
+	ivs := []string{}
+	for _, i := range iv {
+		ivs = append(ivs, string(d.Crypto.Base64Encode(d.Crypto.Hex(i, crypto.IVSize*2), base64.StdEncoding.EncodedLen(crypto.IVSize*2))))
+	}
+	//importParams["encryptionIV"] = string(d.Crypto.Base64Encode(d.Crypto.Hex(iv, crypto.IVSize*2), base64.StdEncoding.EncodedLen(crypto.IVSize*2)))
+	importParams["encryptionIV"] = ivs
 	importParams["dropDatabase"] = false
 
 	b, err := json.Marshal(importParams)
 	if err != nil {
 		return nil, err
 	}
-	resp, statusCode, err = httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/import", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
+	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
+	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/import", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
 	if err != nil {
 		return nil, err
 	}

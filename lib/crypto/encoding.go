@@ -1,7 +1,6 @@
 package crypto
 
 import (
-	"crypto/aes"
 	"encoding/base64"
 	"encoding/hex"
 )
@@ -10,7 +9,10 @@ const (
 	// KeySize is the size of the encryption key in bytes
 	KeySize = 32
 	// IVSize is the size of the IV in bytes
-	IVSize = aes.BlockSize
+	IVSize = 12
+	// ChunkSize is the size of encrypted chunks for a file in bytes. This is not
+	// BlockSize but a further partition above that.
+	ChunkSize = 1024 * 1024 * 2 // 2 MB
 )
 
 // Hex encode bytes

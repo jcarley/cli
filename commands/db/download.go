@@ -4,10 +4,15 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net/http"
+	"net/url"
 	"os"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/prompts"
@@ -65,15 +70,24 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 	if err != nil {
 		return err
 	}
-	resp, err := http.Get(tempURL.URL)
+
+	u, _ := url.Parse(tempURL.URL)
+	svc := s3.New(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.AnonymousCredentials}))
+	req, resp := svc.GetObjectRequest(&s3.GetObjectInput{
+		Bucket: aws.String(strings.Split(u.Host, ".")[0]),
+		Key:    aws.String(strings.TrimLeft(u.Path, "/")),
+	})
+	req.HTTPRequest.URL.RawQuery = u.RawQuery
+	err = req.Send()
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 	io.Copy(tmpFile, resp.Body)
 	tmpFile.Close()
+
 	logrus.Println("Decrypting...")
-	err = d.Crypto.DecryptFile(tmpFile.Name(), job.Backup.Key, job.Backup.IV, filePath)
+	err = d.Crypto.DecryptFile(tmpFile.Name(), job.Backup.Key, []string{job.Backup.IV}, filePath)
 	if err != nil {
 		return err
 	}
