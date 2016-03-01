@@ -7,7 +7,7 @@ import (
 	"github.com/catalyzeio/cli/lib/httpclient"
 )
 
-func CmdRm(name, svcName string, private bool, id IDeployKeys, is services.IServices) error {
+func CmdRm(name, svcName string, id IDeployKeys, is services.IServices) error {
 	service, err := is.RetrieveByLabel(svcName)
 	if err != nil {
 		return err
@@ -18,11 +18,7 @@ func CmdRm(name, svcName string, private bool, id IDeployKeys, is services.IServ
 	if service.Type != "code" {
 		return fmt.Errorf("You can only remove a deploy keys from code services, not %s services", service.Type)
 	}
-	keyType := "ssh"
-	if private {
-		keyType = "ssh_private"
-	}
-	return id.Rm(name, keyType, service.ID)
+	return id.Rm(name, "ssh", service.ID)
 }
 
 func (d *SDeployKeys) Rm(name, keyType, svcID string) error {

@@ -13,7 +13,7 @@ import (
 	"github.com/catalyzeio/cli/models"
 )
 
-func CmdAdd(name, keyPath, svcName string, private bool, id IDeployKeys, is services.IServices) error {
+func CmdAdd(name, keyPath, svcName string, id IDeployKeys, is services.IServices) error {
 	if _, err := os.Stat(keyPath); os.IsNotExist(err) {
 		return fmt.Errorf("A file does not exist at path '%s'", keyPath)
 	}
@@ -31,29 +31,12 @@ func CmdAdd(name, keyPath, svcName string, private bool, id IDeployKeys, is serv
 	if err != nil {
 		return err
 	}
-	keyType := "ssh"
-	if private {
-		keyType = "ssh_private"
-		k, err := id.ParsePrivateKey(key)
-		if err != nil {
-			return err
-		}
-		pk, err := id.ExtractPublicKey(k)
-		if err != nil {
-			return err
-		}
-		key = ssh.MarshalAuthorizedKey(pk)
-		if err != nil {
-			return err
-		}
-	} else {
-		k, err := id.ParsePublicKey(key)
-		key = ssh.MarshalAuthorizedKey(k)
-		if err != nil {
-			return err
-		}
+	k, err := id.ParsePublicKey(key)
+	key = ssh.MarshalAuthorizedKey(k)
+	if err != nil {
+		return err
 	}
-	return id.Add(name, keyType, string(key), service.ID)
+	return id.Add(name, "ssh", string(key), service.ID)
 }
 
 // Add adds a new public key to the authenticated user's account

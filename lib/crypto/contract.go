@@ -4,10 +4,10 @@ package crypto
 type ICrypto interface {
 	DecryptFile(encryptedFilePath, key, iv, outputFilePath string) error
 	EncryptFile(plainFilePath string, key, iv []byte) (string, error)
-	Hex(src []byte) []byte
-	Unhex(src []byte) []byte
-	Base64Encode(src []byte) []byte
-	Base64Decode(src []byte) []byte
+	Hex(src []byte, maxLen int) []byte
+	Unhex(src []byte, maxLen int) []byte
+	Base64Encode(src []byte, maxLen int) []byte
+	Base64Decode(src []byte, maxLen int) []byte
 }
 
 // SCrypto is an implementor of ICrypto

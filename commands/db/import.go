@@ -1,14 +1,17 @@
 package db
 
 import (
-	"crypto/aes"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
+	"github.com/catalyzeio/cli/lib/crypto"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/models"
@@ -81,8 +84,8 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id
 // should be a single tar'ed, gzipped archive (`.tar.gz`) of the database dump
 // that you want to import.
 func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *models.Service) (*models.Job, error) {
-	key := make([]byte, 32)
-	iv := make([]byte, aes.BlockSize)
+	key := make([]byte, crypto.KeySize)
+	iv := make([]byte, crypto.IVSize)
 	rand.Read(key)
 	rand.Read(iv)
 	logrus.Println("Encrypting...")
@@ -117,9 +120,10 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	for key, value := range options {
 		importParams[key] = value
 	}
-	importParams["filename"] = tempURL.URL
-	importParams["encryptionKey"] = string(d.Crypto.Base64Encode(d.Crypto.Hex(key)))
-	importParams["encryptionIV"] = string(d.Crypto.Base64Encode(d.Crypto.Hex(iv)))
+	u, _ := url.Parse(tempURL.URL)
+	importParams["filename"] = strings.TrimLeft(u.Path, "/")
+	importParams["encryptionKey"] = string(d.Crypto.Base64Encode(d.Crypto.Hex(key, crypto.KeySize*2), base64.StdEncoding.EncodedLen(crypto.KeySize*2)))
+	importParams["encryptionIV"] = string(d.Crypto.Base64Encode(d.Crypto.Hex(iv, crypto.IVSize*2), base64.StdEncoding.EncodedLen(crypto.IVSize*2)))
 	importParams["dropDatabase"] = false
 
 	b, err := json.Marshal(importParams)

@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/crypto/ssh"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
@@ -36,24 +34,13 @@ func CmdList(svcName string, id IDeployKeys, is services.IServices) error {
 
 	data := [][]string{{"NAME", "TYPE", "FINGERPRINT"}}
 	for _, key := range *keys {
-		var s ssh.PublicKey
-		if key.Type == "ssh_private" {
-			privKey, err := id.ParsePrivateKey([]byte(key.Key))
-			if err != nil {
-				invalidKeys[key.Name] = err.Error()
-				continue
-			}
-			s, err = id.ExtractPublicKey(privKey)
-			if err != nil {
-				invalidKeys[key.Name] = err.Error()
-				continue
-			}
-		} else {
-			s, err = id.ParsePublicKey([]byte(key.Key))
-			if err != nil {
-				invalidKeys[key.Name] = err.Error()
-				continue
-			}
+		if key.Type != "ssh" {
+			continue
+		}
+		s, err := id.ParsePublicKey([]byte(key.Key))
+		if err != nil {
+			invalidKeys[key.Name] = err.Error()
+			continue
 		}
 		h := sha256.New()
 		h.Write(s.Marshal())
