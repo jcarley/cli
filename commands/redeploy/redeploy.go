@@ -17,7 +17,10 @@ func CmdRedeploy(svcName string, ir IRedeploy, is services.IServices) error {
 	if service == nil {
 		return fmt.Errorf("Could not find a service with the name \"%s\"", svcName)
 	}
-	if service.Name != "code" && service.Name != "service_proxy" {
+	if service.Name == "service_proxy" {
+		return fmt.Errorf("Please contact the Catalyze support team at support@catalyze.io to help redeploy your service proxy", service.Name)
+	}
+	if service.Name != "code" {
 		return fmt.Errorf("You cannot redeploy a %s service", service.Name)
 	}
 	logrus.Printf("Redeploying %s (ID = %s)", svcName, service.ID)
