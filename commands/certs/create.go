@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
@@ -14,14 +13,14 @@ import (
 	"github.com/catalyzeio/cli/models"
 )
 
-func CmdCreate(givenHostname, pubKeyPath, privKeyPath string, selfSigned, resolve bool, ic ICerts, is services.IServices, issl ssl.ISSL) error {
+func CmdCreate(hostname, pubKeyPath, privKeyPath string, selfSigned, resolve bool, ic ICerts, is services.IServices, issl ssl.ISSL) error {
 	if _, err := os.Stat(pubKeyPath); os.IsNotExist(err) {
 		return fmt.Errorf("A cert does not exist at path '%s'", pubKeyPath)
 	}
 	if _, err := os.Stat(privKeyPath); os.IsNotExist(err) {
 		return fmt.Errorf("A private key does not exist at path '%s'", privKeyPath)
 	}
-	err := issl.Verify(pubKeyPath, privKeyPath, givenHostname, selfSigned)
+	err := issl.Verify(pubKeyPath, privKeyPath, hostname, selfSigned)
 	var pubKeyBytes []byte
 	var privKeyBytes []byte
 	if err != nil {
@@ -50,12 +49,11 @@ func CmdCreate(givenHostname, pubKeyPath, privKeyPath string, selfSigned, resolv
 			return err
 		}
 	}
-	modifiedHostname := strings.Replace(givenHostname, "*", "star", -1)
-	err = ic.Create(modifiedHostname, string(pubKeyBytes), string(privKeyBytes), service.ID)
+	err = ic.Create(hostname, string(pubKeyBytes), string(privKeyBytes), service.ID)
 	if err != nil {
 		return err
 	}
-	logrus.Printf("Created '%s'", modifiedHostname)
+	logrus.Printf("Created '%s'", hostname)
 	return nil
 }
 

@@ -2,7 +2,6 @@ package certs
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
@@ -14,7 +13,6 @@ func CmdRm(hostname string, ic ICerts, is services.IServices) error {
 	if err != nil {
 		return err
 	}
-	hostname = strings.Replace(hostname, "*", "star", -1)
 	err = ic.Rm(hostname, service.ID)
 	if err != nil {
 		return err

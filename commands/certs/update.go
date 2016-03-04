@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
@@ -50,7 +49,6 @@ func CmdUpdate(hostname, pubKeyPath, privKeyPath string, selfSigned, resolve boo
 			return err
 		}
 	}
-	hostname = strings.Replace(hostname, "*", "star", -1)
 	err = ic.Update(hostname, string(pubKeyBytes), string(privKeyBytes), service.ID)
 	if err != nil {
 		return err
