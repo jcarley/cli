@@ -96,10 +96,10 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	defer os.Remove(encrFilePath)
 	options := map[string]string{}
 	if mongoCollection != "" {
-		options["mongoCollection"] = mongoCollection
+		options["databaseCollection"] = mongoCollection
 	}
 	if mongoDatabase != "" {
-		options["mongoDatabase"] = mongoDatabase
+		options["database"] = mongoDatabase
 	}
 	logrus.Println("Uploading...")
 	tempURL, err := d.TempUploadURL(service)
