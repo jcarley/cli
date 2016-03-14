@@ -5,15 +5,20 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/commands/ssl"
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
 
 func CmdCreate(hostname, pubKeyPath, privKeyPath string, selfSigned, resolve bool, ic ICerts, is services.IServices, issl ssl.ISSL) error {
+	if strings.ContainsAny(hostname, config.InvalidChars) {
+		return fmt.Errorf("Invalid cert hostname. Hostnames must not contain the following characters: %s", config.InvalidChars)
+	}
 	if _, err := os.Stat(pubKeyPath); os.IsNotExist(err) {
 		return fmt.Errorf("A cert does not exist at path '%s'", pubKeyPath)
 	}
