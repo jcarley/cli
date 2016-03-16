@@ -42,7 +42,7 @@ func (i *SInvites) Send(email string, role int) error {
 	inv := models.PostInvite{
 		Email:        email,
 		Role:         role,
-		LinkTemplate: fmt.Sprintf("%s/accept-invite?id={inviteCode}", i.Settings.AccountsHost),
+		LinkTemplate: fmt.Sprintf("%s/accept-invite?code={inviteCode}", i.Settings.AccountsHost),
 	}
 	b, err := json.Marshal(inv)
 	if err != nil {
