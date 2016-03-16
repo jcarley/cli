@@ -30,7 +30,7 @@ func CmdList(ic ICerts, is services.IServices) error {
 }
 
 func (c *SCerts) List(svcID string) (*[]models.Cert, error) {
-	headers := httpclient.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod)
+	headers := httpclient.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod, c.Settings.UsersID)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/certs", c.Settings.PaasHost, c.Settings.PaasHostVersion, c.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return nil, err

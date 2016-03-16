@@ -22,7 +22,7 @@ func CmdRm(name, svcName string, id IDeployKeys, is services.IServices) error {
 }
 
 func (d *SDeployKeys) Rm(name, keyType, svcID string) error {
-	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
+	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
 	resp, statusCode, err := httpclient.Delete(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/ssh_keys/%s/type/%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, svcID, name, keyType), headers)
 	if err != nil {
 		return err

@@ -41,7 +41,7 @@ func CmdShow(name string, is ISites, iservices services.IServices) error {
 }
 
 func (s *SSites) Retrieve(siteID int, svcID string) (*models.Site, error) {
-	headers := httpclient.GetHeaders(s.Settings.SessionToken, s.Settings.Version, s.Settings.Pod)
+	headers := httpclient.GetHeaders(s.Settings.SessionToken, s.Settings.Version, s.Settings.Pod, s.Settings.UsersID)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/sites/%d", s.Settings.PaasHost, s.Settings.PaasHostVersion, s.Settings.EnvironmentID, svcID, siteID), headers)
 	if err != nil {
 		return nil, err

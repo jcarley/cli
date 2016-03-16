@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"runtime"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -50,3 +51,18 @@ const (
 
 // ErrEnvRequired is thrown when a command is run that requires an environment to be associated first
 var ErrEnvRequired = errors.New("No Catalyze environment has been associated. Run \"catalyze associate\" from a local git repo first")
+
+// ArchString translates the current architecture into an easier to read value.
+// amd64 becomes 64-bit, 386 becomes 32-bit, etc.
+func ArchString() string {
+	archString := "other"
+	switch runtime.GOARCH {
+	case "386":
+		archString = "32-bit"
+	case "amd64":
+		archString = "64-bit"
+	case "arm":
+		archString = "arm"
+	}
+	return archString
+}

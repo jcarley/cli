@@ -26,7 +26,7 @@ func CmdEnvironments(environments IEnvironments) error {
 func (e *SEnvironments) List() (*[]models.Environment, error) {
 	var allEnvs []models.Environment
 	for _, pod := range *e.Settings.Pods {
-		headers := httpclient.GetHeaders(e.Settings.SessionToken, e.Settings.Version, pod.Name)
+		headers := httpclient.GetHeaders(e.Settings.SessionToken, e.Settings.Version, pod.Name, e.Settings.UsersID)
 		resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments", e.Settings.PaasHost, e.Settings.PaasHostVersion), headers)
 		if err != nil {
 			return nil, err
@@ -45,7 +45,7 @@ func (e *SEnvironments) List() (*[]models.Environment, error) {
 }
 
 func (e *SEnvironments) Retrieve(envID string) (*models.Environment, error) {
-	headers := httpclient.GetHeaders(e.Settings.SessionToken, e.Settings.Version, e.Settings.Pod)
+	headers := httpclient.GetHeaders(e.Settings.SessionToken, e.Settings.Version, e.Settings.Pod, e.Settings.UsersID)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s", e.Settings.PaasHost, e.Settings.PaasHostVersion, envID), headers)
 	if err != nil {
 		return nil, err

@@ -26,7 +26,7 @@ func (f *SFiles) Create(svcID, filePath, name, mode string) (*models.ServiceFile
 	if err != nil {
 		return nil, err
 	}
-	headers := httpclient.GetHeaders(f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod)
+	headers := httpclient.GetHeaders(f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod, f.Settings.UsersID)
 	resp, statusCode, err := httpclient.Post(body, fmt.Sprintf("%s%s/environments/%s/services/%s/files", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return nil, err

@@ -48,7 +48,7 @@ func CmdList(myUsersID string, iu IUsers, ii invites.IInvites) error {
 }
 
 func (u *SUsers) List() (*[]models.OrgUser, error) {
-	headers := httpclient.GetHeaders(u.Settings.SessionToken, u.Settings.Version, u.Settings.Pod)
+	headers := httpclient.GetHeaders(u.Settings.SessionToken, u.Settings.Version, u.Settings.Pod, u.Settings.UsersID)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/orgs/%s/users", u.Settings.AuthHost, u.Settings.AuthHostVersion, u.Settings.OrgID), headers)
 	if err != nil {
 		return nil, err

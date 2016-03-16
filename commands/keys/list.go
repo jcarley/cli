@@ -53,7 +53,7 @@ func CmdList(ik IKeys, id deploykeys.IDeployKeys) error {
 }
 
 func (k *SKeys) List() (*[]models.UserKey, error) {
-	headers := httpclient.GetHeaders(k.Settings.SessionToken, k.Settings.Version, k.Settings.Pod)
+	headers := httpclient.GetHeaders(k.Settings.SessionToken, k.Settings.Version, k.Settings.Pod, k.Settings.UsersID)
 	resp, status, err := httpclient.Get(nil, fmt.Sprintf("%s%s/keys", k.Settings.AuthHost, k.Settings.AuthHostVersion), headers)
 	if err != nil {
 		return nil, err

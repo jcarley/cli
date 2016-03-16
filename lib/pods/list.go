@@ -8,7 +8,7 @@ import (
 )
 
 func (p *SPods) List() (*[]models.Pod, error) {
-	headers := httpclient.GetHeaders(p.Settings.SessionToken, p.Settings.Version, p.Settings.Pod)
+	headers := httpclient.GetHeaders(p.Settings.SessionToken, p.Settings.Version, p.Settings.Pod, p.Settings.UsersID)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/pods", p.Settings.PaasHost, p.Settings.PaasHostVersion), headers)
 	if err != nil {
 		return nil, err

@@ -124,14 +124,15 @@ type Service struct {
 	EnvVars map[string]string `json:"environmentVariables,omitempty"`
 	Source  string            `json:"source,omitempty"`
 	LBIP    string            `json:"load_balancer_ip,omitempty"`
+	Scale   int               `json:"scale,omitempty"`
 }
 
 // ServiceSize holds size information for a service
 type ServiceSize struct {
 	RAM      int    `json:"ram"`
 	Storage  int    `json:"storage"`
-	Behavior string `json:"behavior"`
-	Type     string `json:"type"`
+	Behavior string `json:"behavior,omitempty"`
+	Type     string `json:"type,omitempty"`
 	CPU      int    `json:"cpu"`
 }
 

@@ -112,7 +112,7 @@ func (c *SConsole) Request(command string, service *models.Service) (*models.Job
 	if err != nil {
 		return nil, err
 	}
-	headers := httpclient.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod)
+	headers := httpclient.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod, c.Settings.UsersID)
 	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/console", c.Settings.PaasHost, c.Settings.PaasHostVersion, c.Settings.EnvironmentID, service.ID), headers)
 	if err != nil {
 		return nil, err
@@ -126,7 +126,7 @@ func (c *SConsole) Request(command string, service *models.Service) (*models.Job
 }
 
 func (c *SConsole) RetrieveTokens(jobID string, service *models.Service) (*models.ConsoleCredentials, error) {
-	headers := httpclient.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod)
+	headers := httpclient.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod, c.Settings.UsersID)
 	resp, statusCode, err := httpclient.Post(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs/%s/console-token", c.Settings.PaasHost, c.Settings.PaasHostVersion, c.Settings.EnvironmentID, service.ID, jobID), headers)
 	if err != nil {
 		return nil, err

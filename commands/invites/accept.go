@@ -29,7 +29,7 @@ func CmdAccept(inviteCode string, ii IInvites, ia auth.IAuth, ip prompts.IPrompt
 }
 
 func (i *SInvites) Accept(inviteCode string) (string, error) {
-	headers := httpclient.GetHeaders(i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod)
+	headers := httpclient.GetHeaders(i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod, i.Settings.UsersID)
 	resp, statusCode, err := httpclient.Post(nil, fmt.Sprintf("%s%s/orgs/accept-invite/%s", i.Settings.AuthHost, i.Settings.AuthHostVersion, inviteCode), headers)
 	if err != nil {
 		return "", err

@@ -8,7 +8,7 @@ import (
 )
 
 func (j *SJobs) Retrieve(jobID, svcID string, includeSpec bool) (*models.Job, error) {
-	headers := httpclient.GetHeaders(j.Settings.SessionToken, j.Settings.Version, j.Settings.Pod)
+	headers := httpclient.GetHeaders(j.Settings.SessionToken, j.Settings.Version, j.Settings.Pod, j.Settings.UsersID)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs/%s?spec=true", j.Settings.PaasHost, j.Settings.PaasHostVersion, j.Settings.EnvironmentID, svcID, jobID), headers)
 	if err != nil {
 		return nil, err
@@ -22,7 +22,7 @@ func (j *SJobs) Retrieve(jobID, svcID string, includeSpec bool) (*models.Job, er
 }
 
 func (j *SJobs) RetrieveByStatus(status string) (*[]models.Job, error) {
-	headers := httpclient.GetHeaders(j.Settings.SessionToken, j.Settings.Version, j.Settings.Pod)
+	headers := httpclient.GetHeaders(j.Settings.SessionToken, j.Settings.Version, j.Settings.Pod, j.Settings.UsersID)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs?status=%s", j.Settings.PaasHost, j.Settings.PaasHostVersion, j.Settings.EnvironmentID, j.Settings.ServiceID, status), headers)
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func (j *SJobs) RetrieveByStatus(status string) (*[]models.Job, error) {
 }
 
 func (j *SJobs) RetrieveByType(jobType string, page, pageSize int) (*[]models.Job, error) {
-	headers := httpclient.GetHeaders(j.Settings.SessionToken, j.Settings.Version, j.Settings.Pod)
+	headers := httpclient.GetHeaders(j.Settings.SessionToken, j.Settings.Version, j.Settings.Pod, j.Settings.UsersID)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs?type=%s&pageNumber=%d&pageSize=%d", j.Settings.PaasHost, j.Settings.PaasHostVersion, j.Settings.EnvironmentID, j.Settings.ServiceID, jobType, page, pageSize), headers)
 	if err != nil {
 		return nil, err
