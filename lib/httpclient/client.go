@@ -20,7 +20,7 @@ import (
 	"github.com/catalyzeio/cli/models"
 )
 
-const defaultRedirectLimit = 30
+const defaultRedirectLimit = 10
 
 func getClient() *http.Client {
 	var tr = &http.Transport{
