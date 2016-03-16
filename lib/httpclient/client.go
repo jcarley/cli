@@ -15,9 +15,12 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/updater"
 	"github.com/catalyzeio/cli/models"
 )
+
+const defaultRedirectLimit = 30
 
 func getClient() *http.Client {
 	var tr = &http.Transport{
@@ -28,12 +31,30 @@ func getClient() *http.Client {
 	}
 
 	return &http.Client{
-		Transport: tr,
+		Transport:     tr,
+		CheckRedirect: redirectPolicyFunc,
 	}
 }
 
+func redirectPolicyFunc(req *http.Request, via []*http.Request) error {
+	if len(via) == 0 {
+		// No redirects
+		return nil
+	}
+
+	if len(via) > defaultRedirectLimit {
+		return fmt.Errorf("%d consecutive requests(redirects)", len(via))
+	}
+
+	// mutate the subsequent redirect requests with the first Header
+	for key, val := range via[0].Header {
+		req.Header[key] = val
+	}
+	return nil
+}
+
 // GetHeaders builds a map of headers for a new request.
-func GetHeaders(sessionToken, version, pod string) map[string][]string {
+func GetHeaders(sessionToken, version, pod, userID string) map[string][]string {
 	b := make([]byte, 32)
 	rand.Read(b)
 	nonce := base64.StdEncoding.EncodeToString(b)
@@ -46,7 +67,7 @@ func GetHeaders(sessionToken, version, pod string) map[string][]string {
 		"X-Pod-ID":            {pod},
 		"X-Request-Nonce":     {nonce},
 		"X-Request-Timestamp": {fmt.Sprintf("%d", timestamp)},
-		"User-Agent":          {fmt.Sprintf("catalyze-cli-%s", version)},
+		"User-Agent":          {fmt.Sprintf("catalyze-cli-%s %s %s", version, config.ArchString(), userID)},
 	}
 }
 

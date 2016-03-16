@@ -50,7 +50,7 @@ func (d *SDeployKeys) Add(name, keyType, key, svcID string) error {
 	if err != nil {
 		return err
 	}
-	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
+	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
 	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/ssh_keys", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return err

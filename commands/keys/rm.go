@@ -17,7 +17,7 @@ func CmdRemove(name string, ik IKeys) error {
 }
 
 func (k *SKeys) Remove(name string) error {
-	headers := httpclient.GetHeaders(k.Settings.SessionToken, k.Settings.Version, k.Settings.Pod)
+	headers := httpclient.GetHeaders(k.Settings.SessionToken, k.Settings.Version, k.Settings.Pod, k.Settings.UsersID)
 	resp, status, err := httpclient.Delete(nil, fmt.Sprintf("%s%s/keys/%s", k.Settings.AuthHost, k.Settings.AuthHostVersion, name), headers)
 	if err != nil {
 		return err

@@ -48,7 +48,7 @@ func (k *SKeys) Add(name, publicKey string) error {
 	if err != nil {
 		return err
 	}
-	headers := httpclient.GetHeaders(k.Settings.SessionToken, k.Settings.Version, k.Settings.Pod)
+	headers := httpclient.GetHeaders(k.Settings.SessionToken, k.Settings.Version, k.Settings.Pod, k.Settings.UsersID)
 	resp, status, err := httpclient.Post(body, fmt.Sprintf("%s%s/keys", k.Settings.AuthHost, k.Settings.AuthHostVersion), headers)
 	if err != nil {
 		return err

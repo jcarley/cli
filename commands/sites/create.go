@@ -42,7 +42,7 @@ func (s *SSites) Create(name, cert, upstreamServiceID, svcID string) (*models.Si
 	if err != nil {
 		return nil, err
 	}
-	headers := httpclient.GetHeaders(s.Settings.SessionToken, s.Settings.Version, s.Settings.Pod)
+	headers := httpclient.GetHeaders(s.Settings.SessionToken, s.Settings.Version, s.Settings.Pod, s.Settings.UsersID)
 	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/sites", s.Settings.PaasHost, s.Settings.PaasHostVersion, s.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return nil, err

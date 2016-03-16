@@ -107,7 +107,7 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 		return nil, err
 	}
 
-	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
+	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
 	resp, statusCode, err := httpclient.PutFile(encrFilePath, tempURL.URL, headers)
 	if err != nil {
 		return nil, err
@@ -143,7 +143,7 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 }
 
 func (d *SDb) TempUploadURL(service *models.Service) (*models.TempURL, error) {
-	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
+	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/restore-url", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
 	if err != nil {
 		return nil, err
