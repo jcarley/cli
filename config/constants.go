@@ -47,6 +47,9 @@ const (
 	CatalyzeEnvironmentEnvVar = "CATALYZE_ENV"
 	// LogLevelEnvVar is the env variable used to override the logging level used
 	LogLevelEnvVar = "CATALYZE_LOG_LEVEL"
+
+	// InvalidChars is a string containing all invalid characters for naming
+	InvalidChars = "/?%"
 )
 
 // ErrEnvRequired is thrown when a command is run that requires an environment to be associated first

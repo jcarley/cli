@@ -2,12 +2,17 @@ package deploykeys
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/catalyzeio/cli/commands/services"
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/httpclient"
 )
 
 func CmdRm(name, svcName string, id IDeployKeys, is services.IServices) error {
+	if strings.ContainsAny(name, config.InvalidChars) {
+		return fmt.Errorf("Invalid SSH key name. Names must not contain the following characters: %s", config.InvalidChars)
+	}
 	service, err := is.RetrieveByLabel(svcName)
 	if err != nil {
 		return err

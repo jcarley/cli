@@ -2,13 +2,18 @@ package certs
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/httpclient"
 )
 
 func CmdRm(hostname string, ic ICerts, is services.IServices) error {
+	if strings.ContainsAny(hostname, config.InvalidChars) {
+		return fmt.Errorf("Invalid cert hostname. Hostnames must not contain the following characters: %s", config.InvalidChars)
+	}
 	service, err := is.RetrieveByLabel("service_proxy")
 	if err != nil {
 		return err
