@@ -60,7 +60,6 @@ func (c *SCrypto) decryptLegacy(encryptedFilePath, key, iv, outputFilePath strin
 			return fmt.Errorf("Logs unavailable for this job")
 		}
 		if read == 0 {
-			previousBlock = pkcs7Unpad(previousBlock)
 			break
 		}
 		plainChunk := make([]byte, read)
@@ -70,14 +69,7 @@ func (c *SCrypto) decryptLegacy(encryptedFilePath, key, iv, outputFilePath strin
 		}
 		previousBlock = plainChunk
 	}
-	file.Write(previousBlock)
-	// trim the null bytes
-	file.Truncate(origSize)
-	// now trim the pkcs7 padding
-	file.Seek(-1, 2)
-	paddingByte := make([]byte, 1)
-	file.Read(paddingByte)
-	file.Truncate(origSize - int64(paddingByte[0]))
+	file.Write(previousBlock[:origSize%aes.BlockSize])
 	return nil
 }
 
@@ -98,14 +90,9 @@ func isLegacy(encryptedFilePath string) bool {
 	if err != nil {
 		return false
 	}
-	if stat.Size()-24 == origSize {
+	logrus.Debugf("%d vs %d", stat.Size(), origSize)
+	if origSize+8+(aes.BlockSize-origSize%aes.BlockSize) == stat.Size() {
 		return true
 	}
 	return false
-}
-
-func pkcs7Unpad(chunk []byte) []byte {
-	trimBytes := int(chunk[len(chunk)-1])
-	chunk = chunk[:len(chunk)-trimBytes]
-	return chunk
 }
