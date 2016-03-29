@@ -49,7 +49,7 @@ func (a *SAuth) signInWithCredentials() (*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	headers := httpclient.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod)
+	headers := httpclient.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod, a.Settings.UsersID)
 	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/auth/signin", a.Settings.AuthHost, a.Settings.AuthHostVersion), headers)
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func (a *SAuth) signInWithKey() (*models.User, error) {
 	}
 	body.PublicKey = string(publicKey)
 
-	headers := httpclient.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod)
+	headers := httpclient.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod, a.Settings.UsersID)
 	message := fmt.Sprintf("%s&%s", headers["X-Request-Nonce"][0], headers["X-Request-Timestamp"][0])
 	hashedMessage := sha256.Sum256([]byte(message))
 	signature, err := privateKey.Sign(rand.Reader, hashedMessage[:], crypto.SHA256)
@@ -127,7 +127,7 @@ func (a *SAuth) signInWithKey() (*models.User, error) {
 
 // Signout signs out a user by their session token.
 func (a *SAuth) Signout() error {
-	headers := httpclient.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod)
+	headers := httpclient.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod, a.Settings.UsersID)
 	resp, statusCode, err := httpclient.Delete(nil, fmt.Sprintf("%s%s/auth/signout", a.Settings.AuthHost, a.Settings.AuthHostVersion), headers)
 	if err != nil {
 		return err
@@ -138,7 +138,7 @@ func (a *SAuth) Signout() error {
 // Verify verifies if a given session token is still valid or not. If it is
 // valid, the returned error will be nil.
 func (a *SAuth) Verify() (*models.User, error) {
-	headers := httpclient.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod)
+	headers := httpclient.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod, a.Settings.UsersID)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/auth/verify", a.Settings.AuthHost, a.Settings.AuthHostVersion), headers)
 	if err != nil {
 		return nil, err

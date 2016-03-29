@@ -10,18 +10,22 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/commands/ssl"
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
 
-func CmdCreate(givenHostname, pubKeyPath, privKeyPath string, selfSigned, resolve bool, ic ICerts, is services.IServices, issl ssl.ISSL) error {
+func CmdCreate(hostname, pubKeyPath, privKeyPath string, selfSigned, resolve bool, ic ICerts, is services.IServices, issl ssl.ISSL) error {
+	if strings.ContainsAny(hostname, config.InvalidChars) {
+		return fmt.Errorf("Invalid cert hostname. Hostnames must not contain the following characters: %s", config.InvalidChars)
+	}
 	if _, err := os.Stat(pubKeyPath); os.IsNotExist(err) {
 		return fmt.Errorf("A cert does not exist at path '%s'", pubKeyPath)
 	}
 	if _, err := os.Stat(privKeyPath); os.IsNotExist(err) {
 		return fmt.Errorf("A private key does not exist at path '%s'", privKeyPath)
 	}
-	err := issl.Verify(pubKeyPath, privKeyPath, givenHostname, selfSigned)
+	err := issl.Verify(pubKeyPath, privKeyPath, hostname, selfSigned)
 	var pubKeyBytes []byte
 	var privKeyBytes []byte
 	if err != nil {
@@ -50,12 +54,11 @@ func CmdCreate(givenHostname, pubKeyPath, privKeyPath string, selfSigned, resolv
 			return err
 		}
 	}
-	modifiedHostname := strings.Replace(givenHostname, "*", "star", -1)
-	err = ic.Create(modifiedHostname, string(pubKeyBytes), string(privKeyBytes), service.ID)
+	err = ic.Create(hostname, string(pubKeyBytes), string(privKeyBytes), service.ID)
 	if err != nil {
 		return err
 	}
-	logrus.Printf("Created '%s'", modifiedHostname)
+	logrus.Printf("Created '%s'", hostname)
 	return nil
 }
 
@@ -69,7 +72,7 @@ func (c *SCerts) Create(hostname, pubKey, privKey, svcID string) error {
 	if err != nil {
 		return err
 	}
-	headers := httpclient.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod)
+	headers := httpclient.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod, c.Settings.UsersID)
 	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/certs", c.Settings.PaasHost, c.Settings.PaasHostVersion, c.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return err

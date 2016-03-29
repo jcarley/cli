@@ -42,13 +42,13 @@ func (i *SInvites) Send(email string, role int) error {
 	inv := models.PostInvite{
 		Email:        email,
 		Role:         role,
-		LinkTemplate: fmt.Sprintf("%s/accept-invite?id={inviteCode}", i.Settings.AccountsHost),
+		LinkTemplate: fmt.Sprintf("%s/accept-invite?code={inviteCode}", i.Settings.AccountsHost),
 	}
 	b, err := json.Marshal(inv)
 	if err != nil {
 		return err
 	}
-	headers := httpclient.GetHeaders(i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod)
+	headers := httpclient.GetHeaders(i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod, i.Settings.UsersID)
 	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/orgs/%s/invites", i.Settings.AuthHost, i.Settings.AuthHostVersion, i.Settings.OrgID), headers)
 	if err != nil {
 		return err

@@ -2,7 +2,6 @@ package db
 
 import (
 	"crypto/rand"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -32,7 +31,7 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id
 	if service == nil {
 		return fmt.Errorf("Could not find a service with the label \"%s\"", databaseName)
 	}
-	/*logrus.Printf("Backing up \"%s\" before performing the import", databaseName)
+	logrus.Printf("Backing up \"%s\" before performing the import", databaseName)
 	job, err := id.Backup(service)
 	if err != nil {
 		return err
@@ -53,16 +52,16 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id
 	}
 	if job.Status != "finished" {
 		return fmt.Errorf("Job finished with invalid status %s", job.Status)
-	}*/
+	}
 	logrus.Printf("Importing '%s' into %s (ID = %s)", filePath, databaseName, service.ID)
-	job, err := id.Import(filePath, mongoCollection, mongoDatabase, service)
+	job, err = id.Import(filePath, mongoCollection, mongoDatabase, service)
 	if err != nil {
 		return err
 	}
 	// all because logrus treats print, println, and printf the same
 	logrus.StandardLogger().Out.Write([]byte(fmt.Sprintf("Processing import (job ID = %s).", job.ID)))
 
-	status, err := ij.PollTillFinished(job.ID, service.ID)
+	status, err = ij.PollTillFinished(job.ID, service.ID)
 	if err != nil {
 		return err
 	}
@@ -89,21 +88,21 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id
 // that you want to import.
 func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *models.Service) (*models.Job, error) {
 	key := make([]byte, crypto.KeySize)
-	//iv := make([]byte, crypto.IVSize)
+	iv := make([]byte, crypto.IVSize)
 	rand.Read(key)
-	//rand.Read(iv)
+	rand.Read(iv)
 	logrus.Println("Encrypting...")
-	encrFilePath, iv, err := d.Crypto.EncryptFile(filePath, key)
+	encrFilePath, err := d.Crypto.EncryptFile(filePath, key, iv)
 	if err != nil {
 		return nil, err
 	}
 	defer os.Remove(encrFilePath)
 	options := map[string]string{}
 	if mongoCollection != "" {
-		options["mongoCollection"] = mongoCollection
+		options["databaseCollection"] = mongoCollection
 	}
 	if mongoDatabase != "" {
-		options["mongoDatabase"] = mongoDatabase
+		options["database"] = mongoDatabase
 	}
 	logrus.Println("Uploading...")
 	tempURL, err := d.TempUploadURL(service)
@@ -130,21 +129,17 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	for key, value := range options {
 		importParams[key] = value
 	}
-	importParams["filename"] = tempURL.URL
-	importParams["encryptionKey"] = string(d.Crypto.Base64Encode(d.Crypto.Hex(key, crypto.KeySize*2), base64.StdEncoding.EncodedLen(crypto.KeySize*2)))
-	ivs := []string{}
-	for _, i := range iv {
-		ivs = append(ivs, string(d.Crypto.Base64Encode(d.Crypto.Hex(i, crypto.IVSize*2), base64.StdEncoding.EncodedLen(crypto.IVSize*2))))
-	}
-	//importParams["encryptionIV"] = string(d.Crypto.Base64Encode(d.Crypto.Hex(iv, crypto.IVSize*2), base64.StdEncoding.EncodedLen(crypto.IVSize*2)))
-	importParams["encryptionIV"] = ivs
+	u, _ = url.Parse(tempURL.URL)
+	importParams["filename"] = strings.TrimLeft(u.Path, "/")
+	importParams["encryptionKey"] = string(d.Crypto.Hex(key, crypto.KeySize*2))
+	importParams["encryptionIV"] = string(d.Crypto.Hex(iv, crypto.IVSize*2))
 	importParams["dropDatabase"] = false
 
 	b, err := json.Marshal(importParams)
 	if err != nil {
 		return nil, err
 	}
-	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
+	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
 	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/import", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
 	if err != nil {
 		return nil, err
@@ -158,7 +153,7 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 }
 
 func (d *SDb) TempUploadURL(service *models.Service) (*models.TempURL, error) {
-	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
+	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/restore-url", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
 	if err != nil {
 		return nil, err

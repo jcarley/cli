@@ -28,7 +28,7 @@ func (w *SWorker) Start(target string) error {
 	if err != nil {
 		return err
 	}
-	headers := httpclient.GetHeaders(w.Settings.SessionToken, w.Settings.Version, w.Settings.Pod)
+	headers := httpclient.GetHeaders(w.Settings.SessionToken, w.Settings.Version, w.Settings.Pod, w.Settings.UsersID)
 	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/worker", w.Settings.PaasHost, w.Settings.PaasHostVersion, w.Settings.EnvironmentID, w.Settings.ServiceID), headers)
 	if err != nil {
 		return err

@@ -3,7 +3,6 @@ package catalyze
 import (
 	"fmt"
 	"os"
-	"runtime"
 
 	"github.com/catalyzeio/cli/commands/associate"
 	"github.com/catalyzeio/cli/commands/associated"
@@ -127,16 +126,7 @@ func Run() {
 
 	InitCLI(app, settings)
 
-	archString := "other"
-	switch runtime.GOARCH {
-	case "386":
-		archString = "32-bit"
-	case "amd64":
-		archString = "64-bit"
-	case "arm":
-		archString = "arm"
-	}
-	versionString := fmt.Sprintf("version %s %s", config.VERSION, archString)
+	versionString := fmt.Sprintf("version %s %s", config.VERSION, config.ArchString())
 	logrus.Debugln(versionString)
 	app.Version("v version", versionString)
 	app.Command("version", "Output the version and quit", func(cmd *cli.Cmd) {

@@ -60,7 +60,7 @@ func fileModeToRWXString(perms uint64) string {
 }
 
 func (f *SFiles) List(svcID string) (*[]models.ServiceFile, error) {
-	headers := httpclient.GetHeaders(f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod)
+	headers := httpclient.GetHeaders(f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod, f.Settings.UsersID)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/files", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return nil, err

@@ -66,8 +66,9 @@ type User struct {
 
 // EncryptionStore holds the values for encryption on backup/import jobs
 type EncryptionStore struct {
-	Key string `json:"key"`
-	IV  string `json:"iv"`
+	Key     string `json:"key"`
+	KeyLogs string `json:"keyLogs"`
+	IV      string `json:"iv"`
 }
 
 // TempURL holds a URL for uploading or downloading files from a temporary URL
@@ -124,14 +125,15 @@ type Service struct {
 	EnvVars map[string]string `json:"environmentVariables,omitempty"`
 	Source  string            `json:"source,omitempty"`
 	LBIP    string            `json:"load_balancer_ip,omitempty"`
+	Scale   int               `json:"scale,omitempty"`
 }
 
 // ServiceSize holds size information for a service
 type ServiceSize struct {
 	RAM      int    `json:"ram"`
 	Storage  int    `json:"storage"`
-	Behavior string `json:"behavior"`
-	Type     string `json:"type"`
+	Behavior string `json:"behavior,omitempty"`
+	Type     string `json:"type,omitempty"`
 	CPU      int    `json:"cpu"`
 }
 

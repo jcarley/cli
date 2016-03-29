@@ -10,9 +10,11 @@ const (
 	KeySize = 32
 	// IVSize is the size of the IV in bytes
 	IVSize = 12
-	// ChunkSize is the size of encrypted chunks for a file in bytes. This is not
-	// BlockSize but a further partition above that.
-	ChunkSize = 1024 * 1024 * 2 // 2 MB
+	// LegacyIVSize is the size of the IV in bytes for the legacy encryption scheme
+	LegacyIVSize = 16
+	// AADSize is the size in bytes of the Additional Authenticated Data for the
+	// GCM encryption
+	AADSize = 16
 )
 
 // Hex encode bytes

@@ -17,9 +17,6 @@ func CmdRedeploy(svcName string, ir IRedeploy, is services.IServices) error {
 	if service == nil {
 		return fmt.Errorf("Could not find a service with the name \"%s\"", svcName)
 	}
-	if service.Name != "code" && service.Name != "service_proxy" {
-		return fmt.Errorf("You cannot redeploy a %s service", service.Name)
-	}
 	logrus.Printf("Redeploying %s (ID = %s)", svcName, service.ID)
 	err = ir.Redeploy(service)
 	if err != nil {
@@ -33,7 +30,7 @@ func CmdRedeploy(svcName string, ir IRedeploy, is services.IServices) error {
 // first. The same version of the currently running service is deployed with
 // no changes.
 func (r *SRedeploy) Redeploy(service *models.Service) error {
-	headers := httpclient.GetHeaders(r.Settings.SessionToken, r.Settings.Version, r.Settings.Pod)
+	headers := httpclient.GetHeaders(r.Settings.SessionToken, r.Settings.Version, r.Settings.Pod, r.Settings.UsersID)
 	resp, statusCode, err := httpclient.Post(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/deploy?redeploy=true", r.Settings.PaasHost, r.Settings.PaasHostVersion, r.Settings.EnvironmentID, service.ID), headers)
 	if err != nil {
 		return err

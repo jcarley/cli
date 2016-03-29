@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -54,7 +55,7 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 		return err
 	}
 	if job.Type != "backup" || (job.Status != "finished" && job.Status != "disappeared") {
-		return fmt.Errorf("Only 'finished' 'backup' jobs may be downloaded %+v", job)
+		return errors.New("Only 'finished' 'backup' jobs may be downloaded")
 	}
 	logrus.Printf("Downloading backup %s", backupID)
 	tempURL, err := d.TempDownloadURL(backupID, service)
@@ -87,7 +88,7 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 	tmpFile.Close()
 
 	logrus.Println("Decrypting...")
-	err = d.Crypto.DecryptFile(tmpFile.Name(), job.Backup.Key, []string{job.Backup.IV}, filePath)
+	err = d.Crypto.DecryptFile(tmpFile.Name(), job.Backup.Key, job.Backup.IV, filePath)
 	if err != nil {
 		return err
 	}
@@ -96,7 +97,7 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 }
 
 func (d *SDb) TempDownloadURL(jobID string, service *models.Service) (*models.TempURL, error) {
-	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod)
+	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
 	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/backup-url/%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID, jobID), headers)
 	if err != nil {
 		return nil, err

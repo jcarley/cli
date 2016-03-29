@@ -2,8 +2,8 @@ package crypto
 
 // ICrypto
 type ICrypto interface {
-	DecryptFile(encryptedFilePath, key string, iv []string, outputFilePath string) error
-	EncryptFile(plainFilePath string, key []byte) (string, [][]byte, error)
+	DecryptFile(encryptedFilePath, key, iv, outputFilePath string) error
+	EncryptFile(plainFilePath string, key, iv []byte) (string, error)
 	Hex(src []byte, maxLen int) []byte
 	Unhex(src []byte, maxLen int) []byte
 	Base64Encode(src []byte, maxLen int) []byte

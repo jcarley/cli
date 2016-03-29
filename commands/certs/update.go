@@ -10,11 +10,15 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/commands/ssl"
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
 
 func CmdUpdate(hostname, pubKeyPath, privKeyPath string, selfSigned, resolve bool, ic ICerts, is services.IServices, issl ssl.ISSL) error {
+	if strings.ContainsAny(hostname, config.InvalidChars) {
+		return fmt.Errorf("Invalid cert hostname. Hostnames must not contain the following characters: %s", config.InvalidChars)
+	}
 	if _, err := os.Stat(pubKeyPath); os.IsNotExist(err) {
 		return fmt.Errorf("A cert does not exist at path '%s'", pubKeyPath)
 	}
@@ -50,7 +54,6 @@ func CmdUpdate(hostname, pubKeyPath, privKeyPath string, selfSigned, resolve boo
 			return err
 		}
 	}
-	hostname = strings.Replace(hostname, "*", "star", -1)
 	err = ic.Update(hostname, string(pubKeyBytes), string(privKeyBytes), service.ID)
 	if err != nil {
 		return err
@@ -69,7 +72,7 @@ func (c *SCerts) Update(hostname, pubKey, privKey, svcID string) error {
 	if err != nil {
 		return err
 	}
-	headers := httpclient.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod)
+	headers := httpclient.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod, c.Settings.UsersID)
 	resp, statusCode, err := httpclient.Put(b, fmt.Sprintf("%s%s/environments/%s/services/%s/certs/%s", c.Settings.PaasHost, c.Settings.PaasHostVersion, c.Settings.EnvironmentID, svcID, hostname), headers)
 	if err != nil {
 		return err
