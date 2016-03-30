@@ -37,10 +37,10 @@ func CmdAdd(name, keyPath, svcName string, id IDeployKeys, is services.IServices
 		return err
 	}
 	k, err := id.ParsePublicKey(key)
-	key = ssh.MarshalAuthorizedKey(k)
 	if err != nil {
 		return err
 	}
+	key = ssh.MarshalAuthorizedKey(k)
 	return id.Add(name, "ssh", string(key), service.ID)
 }
 
