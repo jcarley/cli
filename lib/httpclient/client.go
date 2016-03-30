@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"runtime"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -67,7 +68,7 @@ func GetHeaders(sessionToken, version, pod, userID string) map[string][]string {
 		"X-Pod-ID":            {pod},
 		"X-Request-Nonce":     {nonce},
 		"X-Request-Timestamp": {fmt.Sprintf("%d", timestamp)},
-		"User-Agent":          {fmt.Sprintf("catalyze-cli-%s %s %s", version, config.ArchString(), userID)},
+		"User-Agent":          {fmt.Sprintf("catalyze-cli-%s %s %s %s", version, runtime.GOOS, config.ArchString(), userID)},
 	}
 }
 
