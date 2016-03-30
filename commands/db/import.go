@@ -129,7 +129,6 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	for key, value := range options {
 		importParams[key] = value
 	}
-	u, _ = url.Parse(tempURL.URL)
 	importParams["filename"] = strings.TrimLeft(u.Path, "/")
 	importParams["encryptionKey"] = string(d.Crypto.Hex(key, crypto.KeySize*2))
 	importParams["encryptionIV"] = string(d.Crypto.Hex(iv, crypto.IVSize*2))

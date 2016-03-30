@@ -63,7 +63,7 @@ func (c *SCrypto) decryptLegacy(encryptedFilePath, key, iv, outputFilePath strin
 			break
 		}
 		plainChunk := make([]byte, read)
-		decrypter.CryptBlocks(plainChunk, chunk)
+		decrypter.CryptBlocks(plainChunk, chunk[:read])
 		if previousBlock != nil {
 			file.Write(previousBlock)
 		}
@@ -90,7 +90,6 @@ func isLegacy(encryptedFilePath string) bool {
 	if err != nil {
 		return false
 	}
-	logrus.Debugf("%d vs %d", stat.Size(), origSize)
 	if origSize+8+(aes.BlockSize-origSize%aes.BlockSize) == stat.Size() {
 		return true
 	}
