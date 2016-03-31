@@ -6,6 +6,7 @@ import (
 	"crypto/cipher"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/Sirupsen/logrus"
@@ -16,7 +17,10 @@ import (
 // output path based on the Key and IV. The Key and IV should be the hex and
 // base64 encoded version
 func (c *SCrypto) DecryptFile(encryptedFilePath, key, iv, outputFilePath string) error {
-	legacy := isLegacy(encryptedFilePath)
+	legacy, err := isLegacy(encryptedFilePath)
+	if err != nil {
+		return err
+	}
 	logrus.Debugf("Legacy encryption scheme detected? %t", legacy)
 	if legacy {
 		return c.decryptLegacy(encryptedFilePath, key, iv, outputFilePath)
@@ -55,7 +59,10 @@ func (c *SCrypto) decryptLegacy(encryptedFilePath, key, iv, outputFilePath strin
 	var previousBlock []byte
 	for {
 		chunk := make([]byte, chunkSize)
-		read, _ := encryptedFile.Read(chunk)
+		read, errRead := encryptedFile.Read(chunk)
+		if errRead != nil && errRead != io.EOF {
+			return errRead
+		}
 		if read%chunkSize != 0 {
 			return fmt.Errorf("Logs unavailable for this job")
 		}
@@ -69,29 +76,32 @@ func (c *SCrypto) decryptLegacy(encryptedFilePath, key, iv, outputFilePath strin
 		}
 		previousBlock = plainChunk
 	}
-	file.Write(previousBlock[:origSize%aes.BlockSize])
-	return nil
+	_, err = file.Write(previousBlock[:origSize%aes.BlockSize])
+	return err
 }
 
-func isLegacy(encryptedFilePath string) bool {
+func isLegacy(encryptedFilePath string) (bool, error) {
 	stat, err := os.Stat(encryptedFilePath)
 	if err != nil {
-		return false
+		return false, nil
 	}
 	encryptedFile, err := os.Open(encryptedFilePath)
-	defer encryptedFile.Close()
 	if err != nil {
-		return false
+		return false, err
 	}
+	defer encryptedFile.Close()
 	sizeBytes := make([]byte, 8)
-	binary.Read(encryptedFile, binary.LittleEndian, sizeBytes)
+	err = binary.Read(encryptedFile, binary.LittleEndian, sizeBytes)
+	if err != nil {
+		return false, err
+	}
 	var origSize int64
 	err = binary.Read(bytes.NewBuffer(sizeBytes), binary.LittleEndian, &origSize)
 	if err != nil {
-		return false
+		return false, err
 	}
 	if origSize+8+(aes.BlockSize-origSize%aes.BlockSize) == stat.Size() {
-		return true
+		return true, nil
 	}
-	return false
+	return false, nil
 }
