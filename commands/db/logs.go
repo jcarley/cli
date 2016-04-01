@@ -62,12 +62,20 @@ func (d *SDb) DumpLogs(taskType string, job *models.Job, service *models.Service
 	plainFile.Close()
 
 	if taskType == "backup" {
-		err := d.Crypto.DecryptFile(encrFile.Name(), job.Backup.Key, job.Backup.IV, plainFile.Name())
+		logsKey := job.Backup.KeyLogs
+		if logsKey == "" {
+			logsKey = job.Backup.Key
+		}
+		err := d.Crypto.DecryptFile(encrFile.Name(), logsKey, job.Backup.IV, plainFile.Name())
 		if err != nil {
 			return err
 		}
 	} else if taskType == "restore" {
-		err := d.Crypto.DecryptFile(encrFile.Name(), job.Restore.Key, job.Restore.IV, plainFile.Name())
+		logsKey := job.Restore.KeyLogs
+		if logsKey == "" {
+			logsKey = job.Restore.Key
+		}
+		err := d.Crypto.DecryptFile(encrFile.Name(), logsKey, job.Restore.IV, plainFile.Name())
 		if err != nil {
 			return err
 		}

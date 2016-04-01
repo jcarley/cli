@@ -9,7 +9,12 @@ const (
 	// KeySize is the size of the encryption key in bytes
 	KeySize = 32
 	// IVSize is the size of the IV in bytes
-	IVSize = 16
+	IVSize = 12
+	// LegacyIVSize is the size of the IV in bytes for the legacy encryption scheme
+	LegacyIVSize = 16
+	// AADSize is the size in bytes of the Additional Authenticated Data for the
+	// GCM encryption
+	AADSize = 16
 )
 
 // Hex encode bytes
