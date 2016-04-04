@@ -38,6 +38,9 @@ func CmdUpdate(iu IUpdate) error {
 		groupId := strconv.FormatUint(uint64(stat.Gid), 10)
 		// permissions are the 9 least significant bits
 		mode := stat.Mode & uint32((1<<9)-1)
+		// Ex: 7   7   7
+		//    111 111 111
+		//         ^   ^
 		groupWriteAble := uint32(1 << 4)
 		globalWriteAble := uint32(1 << 1)
 		// if user doesn't own the directory, and the directory isn't globally writeable,
