@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/gcm/gcm"
 )
 
@@ -24,7 +23,6 @@ func (c *SCrypto) EncryptFile(plainFilePath string, key, iv []byte) (string, err
 		return "", err
 	}
 	outputFile.Close()
-	logrus.Debugf("temp file %s", outputFile.Name())
 
 	err = gcm.EncryptFile(plainFilePath, outputFile.Name(), key, iv, c.Unhex([]byte(gcm.AAD), AADSize))
 	if err != nil {
