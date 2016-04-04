@@ -22,8 +22,7 @@ func CmdUpdate(iu IUpdate) error {
 	if needsUpdate && (runtime.GOOS == "linux" || runtime.GOOS == "darwin") {
 		exe, err := osext.Executable()
 		if err != nil {
-			exeGenericError()
-			return err
+			return exeGenericError()
 		}
 		exeDir := filepath.Dir(exe)
 		stat := syscall.Stat_t{}
@@ -47,8 +46,8 @@ func CmdUpdate(iu IUpdate) error {
 		if ownerId != usr.Uid &&
 			(mode&globalWriteAble) != globalWriteAble &&
 			!((mode&groupWriteAble) == groupWriteAble && groupId == usr.Gid) {
-			err := fmt.Errorf("Your CLI cannot update, because your user cannot directly write to the directory it is in, \"%s\". Run the update command as the owner of the directory, or do the update manually.", exeDir)
-			return err
+			return fmt.Errorf("Your CLI cannot update, because your user cannot directly write to the directory it is in, \"%s\". Run the update command as the owner of the directory, or do the update manually.", exeDir)
+
 		}
 	}
 	logrus.Println("Checking for available updates...")
