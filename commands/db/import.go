@@ -109,10 +109,16 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	if err != nil {
 		return nil, err
 	}
-	encrFile, _ := os.Open(encrFilePath)
+	encrFile, err := os.Open(encrFilePath)
+	if err != nil {
+		return nil, err
+	}
 	defer encrFile.Close()
 
-	u, _ := url.Parse(tempURL.URL)
+	u, err := url.Parse(tempURL.URL)
+	if err != nil {
+		return nil, err
+	}
 	svc := s3.New(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.AnonymousCredentials}))
 	req, _ := svc.PutObjectRequest(&s3.PutObjectInput{
 		Bucket: aws.String(strings.Split(u.Host, ".")[0]),
