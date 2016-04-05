@@ -10,8 +10,8 @@
 		"rmbin"
 	],
 	"BuildConstraints": "linux windows darwin",
-	"ResourcesExclude": "README*",
-	"PackageVersion": "3.1.4",
+	"ResourcesExclude": "README*,LICENSE*",
+	"PackageVersion": "3.1.5",
 	"TaskSettings": {
 		"publish-github": {
 			"body": "Catalyze CLI",
