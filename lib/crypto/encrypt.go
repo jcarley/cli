@@ -2,6 +2,7 @@ package crypto
 
 import (
 	"fmt"
+	"io/ioutil"
 
 	"github.com/catalyzeio/gcm/gcm"
 )
@@ -17,10 +18,15 @@ func (c *SCrypto) EncryptFile(plainFilePath string, key, iv []byte) (string, err
 	if len(iv) != IVSize {
 		return "", fmt.Errorf("Invalid IV length. IVs must be %d bytes", IVSize)
 	}
-	outputFilePath := fmt.Sprintf("%s.encr", plainFilePath)
-	err := gcm.EncryptFile(plainFilePath, outputFilePath, key, iv, c.Unhex([]byte(gcm.AAD), AADSize))
+	outputFile, err := ioutil.TempFile("", "encr")
 	if err != nil {
 		return "", err
 	}
-	return outputFilePath, nil
+	outputFile.Close()
+
+	err = gcm.EncryptFile(plainFilePath, outputFile.Name(), key, iv, c.Unhex([]byte(gcm.AAD), AADSize))
+	if err != nil {
+		return "", err
+	}
+	return outputFile.Name(), nil
 }

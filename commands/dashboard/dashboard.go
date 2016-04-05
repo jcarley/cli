@@ -1,6 +1,9 @@
 package dashboard
 
-import "github.com/skratchdot/open-golang/open"
+import (
+	"github.com/catalyzeio/cli/config"
+	"github.com/skratchdot/open-golang/open"
+)
 
 func CmdDashboard(id IDashboard) error {
 	return id.Open()
@@ -8,5 +11,5 @@ func CmdDashboard(id IDashboard) error {
 
 // Open opens up the Catalyze Dashboard in the default browser
 func (d *SDashboard) Open() error {
-	return open.Run("https://dashboard.catalyze.io")
+	return open.Run(config.AccountsHost)
 }

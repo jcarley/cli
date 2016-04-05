@@ -66,9 +66,10 @@ type User struct {
 
 // EncryptionStore holds the values for encryption on backup/import jobs
 type EncryptionStore struct {
-	Key     string `json:"key"`
-	KeyLogs string `json:"keyLogs"`
-	IV      string `json:"iv"`
+	Key             string `json:"key"`
+	KeyLogs         string `json:"keyLogs"`
+	KeyInternalLogs string `json:"keyInternalLogs"`
+	IV              string `json:"iv"`
 }
 
 // TempURL holds a URL for uploading or downloading files from a temporary URL
