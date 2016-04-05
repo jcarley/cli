@@ -13,7 +13,7 @@ const (
 	// Beta determines whether or not this is a beta build of the CLI
 	Beta = false
 	// AccountsHost is the production accounts URL
-	AccountsHost = "https://stratum.catalyze.io"
+	AccountsHost = "https://product.catalyze.io/stratum"
 	// AuthHost is the production auth URL
 	AuthHost = "https://auth.catalyze.io"
 	// AuthHostVersion is the version path for the auth host
