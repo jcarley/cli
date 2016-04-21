@@ -2,6 +2,7 @@ package update
 
 import (
 	"fmt"
+	"os"
 	"os/user"
 	"path/filepath"
 	"runtime"
@@ -25,8 +26,11 @@ func CmdUpdate(iu IUpdate) error {
 			return exeGenericError()
 		}
 		exeDir := filepath.Dir(exe)
-		stat := syscall.Stat_t{}
-		err = syscall.Stat(exeDir, &stat)
+		f, err := os.Open(exeDir)
+		if err != nil {
+			return exeGenericError()
+		}
+		info, err := f.Stat()
 		if err != nil {
 			return exeGenericError()
 		}
@@ -34,10 +38,10 @@ func CmdUpdate(iu IUpdate) error {
 		if err != nil {
 			return exeGenericError()
 		}
-		ownerId := strconv.FormatUint(uint64(stat.Uid), 10)
-		groupId := strconv.FormatUint(uint64(stat.Gid), 10)
+		ownerId := strconv.FormatUint(uint64(info.Sys().(*syscall.Stat_t).Uid), 10)
+		groupId := strconv.FormatUint(uint64(info.Sys().(*syscall.Stat_t).Gid), 10)
 		// permissions are the 9 least significant bits
-		mode := stat.Mode & uint32((1<<9)-1)
+		mode := uint32(info.Mode()) & uint32((1<<9)-1)
 		// Ex: 7   7   7
 		//    111 111 111
 		//         ^   ^
