@@ -12,7 +12,9 @@ func CmdUnset(key string, iv IVars) error {
 	if err != nil {
 		return err
 	}
-	logrus.Println("Unset.")
+	// TODO add in the service label in the redeploy example once we take in the service label in
+	// this command
+	logrus.Println("Unset. For these environment variable changes to take effect, you will need to redeploy your service with \"catalyze redeploy\"")
 	return nil
 }
 

@@ -37,7 +37,7 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 		}
 	}
 	if e == nil {
-		return fmt.Errorf("No environment with label \"%s\" found", envLabel)
+		return fmt.Errorf("No environment with name \"%s\" found", envLabel)
 	}
 	if svcs == nil {
 		return fmt.Errorf("No services found for environment with name \"%s\"", envLabel)
@@ -55,7 +55,7 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 		}
 	}
 	if chosenService == nil {
-		return fmt.Errorf("No code service found with name '%s'. Code services found: %s", svcLabel, strings.Join(availableCodeServices, ", "))
+		return fmt.Errorf("No code service found with label '%s'. Code services found: %s", svcLabel, strings.Join(availableCodeServices, ", "))
 	}
 	remotes, err := ig.List()
 	if err != nil {
@@ -82,6 +82,7 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 		return err
 	}
 	logrus.Printf("Your git repository \"%s\" has been associated with code service \"%s\" and environment \"%s\"", remote, svcLabel, name)
+	logrus.Println("After associating to an environment, you need to add a cert with the \"catalyze certs create\" command if you have not done so already")
 	return nil
 }
 

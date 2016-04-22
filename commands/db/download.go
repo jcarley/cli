@@ -37,13 +37,14 @@ func CmdDownload(databaseName, backupID, filePath string, force bool, id IDb, ip
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\"", databaseName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", databaseName)
 	}
 	err = id.Download(backupID, filePath, service)
 	if err != nil {
 		return err
 	}
 	logrus.Printf("%s backup downloaded successfully to %s", databaseName, filePath)
+	logrus.Printf("You can also view logs for this backup with the \"catalyze db logs %s %s\" command", databaseName, backupID)
 	return nil
 }
 

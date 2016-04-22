@@ -10,7 +10,7 @@ func CmdDisassociate(alias string, id IDisassociate) error {
 	if err != nil {
 		return err
 	}
-	logrus.Printf("WARNING: Your existing git remote *has not* been removed.\n")
+	logrus.Println("WARNING: Your existing git remote *has not* been removed.")
 	logrus.Println("Association cleared.")
 	return nil
 }

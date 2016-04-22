@@ -59,6 +59,7 @@ func CmdUpdate(hostname, pubKeyPath, privKeyPath string, selfSigned, resolve boo
 		return err
 	}
 	logrus.Printf("Updated '%s'", hostname)
+	logrus.Println("To make your updated cert go live, you must redeploy your service proxy with the \"catalyze redeploy service_proxy\" command")
 	return nil
 }
 

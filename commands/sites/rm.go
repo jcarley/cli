@@ -25,13 +25,14 @@ func CmdRm(name string, is ISites, iservices services.IServices) error {
 		}
 	}
 	if site == nil {
-		return fmt.Errorf("Could not find a site with the name \"%s\"", name)
+		return fmt.Errorf("Could not find a site with the label \"%s\". You can list sites with the \"catalyze sites list\" command.", name)
 	}
 	err = is.Rm(site.ID, serviceProxy.ID)
 	if err != nil {
 		return err
 	}
 	logrus.Println("Site removed")
+	logrus.Println("To make your changes go live, you must redeploy your service proxy with the \"catalyze redeploy service_proxy\" command")
 	return nil
 }
 

@@ -13,7 +13,7 @@ func CmdList(envName string, ii IInvites) error {
 	if err != nil {
 		return err
 	}
-	if len(*invts) == 0 {
+	if invts == nil || len(*invts) == 0 {
 		logrus.Printf("There are no pending invites for %s", envName)
 		return nil
 	}

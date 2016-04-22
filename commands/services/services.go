@@ -15,6 +15,10 @@ func CmdServices(is IServices) error {
 	if err != nil {
 		return err
 	}
+	if svcs == nil || len(*svcs) == 0 {
+		logrus.Println("No services found")
+		return nil
+	}
 	data := [][]string{{"NAME", "RAM (GB)", "CPU", "STORAGE (GB)"}}
 	for _, s := range *svcs {
 		data = append(data, []string{s.Label, fmt.Sprintf("%d", s.Size.RAM), fmt.Sprintf("%d", s.Size.CPU), fmt.Sprintf("%d", s.Size.Storage)})

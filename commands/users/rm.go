@@ -27,7 +27,7 @@ func CmdRm(email string, iu IUsers) error {
 	if err != nil {
 		return err
 	}
-	logrus.Println("Removed.")
+	logrus.Printf("Removed %s from your environment's organization.", email)
 	return nil
 }
 

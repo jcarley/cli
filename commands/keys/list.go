@@ -19,6 +19,11 @@ func CmdList(ik IKeys, id deploykeys.IDeployKeys) error {
 		return err
 	}
 
+	if keys == nil || len(*keys) == 0 {
+		logrus.Println("No keys found")
+		return nil
+	}
+
 	invalidKeys := map[string]string{}
 
 	data := [][]string{{"NAME", "FINGERPRINT"}}

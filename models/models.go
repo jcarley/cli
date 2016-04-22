@@ -29,7 +29,7 @@ type Error struct {
 
 // ReportedError is the standard error model sent back from the API
 type ReportedError struct {
-	Code    int    `json:"code"`
+	Code    int    `json:"id"`
 	Message string `json:"message"`
 }
 
@@ -87,10 +87,10 @@ type OrgUser struct {
 
 // Environment environment
 type Environment struct {
-	ID        string `json:"id"`
+	ID        string `json:"id,omitempty"`
 	Name      string `json:"name"`
-	Pod       string `json:"pod"`
-	Namespace string `json:"namespace"`
+	Pod       string `json:"pod,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
 	OrgID     string `json:"organizationId"`
 }
 
@@ -118,15 +118,16 @@ type Payload struct {
 
 // Service service
 type Service struct {
-	ID      string            `json:"id,omitempty"`
-	Type    string            `json:"type,omitempty"`
-	Label   string            `json:"label"`
-	Size    ServiceSize       `json:"size"`
-	Name    string            `json:"name"`
-	EnvVars map[string]string `json:"environmentVariables,omitempty"`
-	Source  string            `json:"source,omitempty"`
-	LBIP    string            `json:"load_balancer_ip,omitempty"`
-	Scale   int               `json:"scale,omitempty"`
+	ID          string            `json:"id,omitempty"`
+	Type        string            `json:"type,omitempty"`
+	Label       string            `json:"label"`
+	Size        ServiceSize       `json:"size"`
+	Name        string            `json:"name"`
+	EnvVars     map[string]string `json:"environmentVariables,omitempty"`
+	Source      string            `json:"source,omitempty"`
+	LBIP        string            `json:"load_balancer_ip,omitempty"`
+	Scale       int               `json:"scale,omitempty"`
+	WorkerScale int               `json:"worker_scale,omitempty"`
 }
 
 // ServiceSize holds size information for a service
@@ -279,6 +280,7 @@ type Site struct {
 	Cert            string `json:"cert"`
 	SiteFileID      int    `json:"siteFileId,omitempty"`
 	UpstreamService string `json:"upstreamService"`
+	Restricted      bool   `json:"restricted,omitempty"`
 }
 
 type Cert struct {
@@ -286,9 +288,10 @@ type Cert struct {
 	PubKey  string `json:"sslCertFile"`
 	PrivKey string `json:"sslPKFile"`
 
-	Service   string `json:"service,omitempty"`
-	PubKeyID  int    `json:"sslCertFileId,omitempty"`
-	PrivKeyID int    `json:"sslPKFileId,omitempty"`
+	Service    string `json:"service,omitempty"`
+	PubKeyID   int    `json:"sslCertFileId,omitempty"`
+	PrivKeyID  int    `json:"sslPKFileId,omitempty"`
+	Restricted bool   `json:"restricted,omitempty"`
 }
 
 // UserKey is a public key belonging to a user

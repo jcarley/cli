@@ -19,13 +19,13 @@ func CmdList(svcName string, ifiles IFiles, is services.IServices) error {
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the name \"%s\"", svcName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
 	}
 	files, err := ifiles.List(service.ID)
 	if err != nil {
 		return err
 	}
-	if len(*files) == 0 {
+	if files == nil || len(*files) == 0 {
 		logrus.Println("No service files found")
 		return nil
 	}
@@ -33,6 +33,7 @@ func CmdList(svcName string, ifiles IFiles, is services.IServices) error {
 	for _, sf := range *files {
 		logrus.Println(sf.Name)
 	}
+	logrus.Printf("\nTo view the contents of a service file, use the \"catalyze files download %s FILE_NAME\" command", svcName)
 	return nil
 }
 
