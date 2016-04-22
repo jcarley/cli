@@ -14,7 +14,7 @@ func CmdRake(taskName string, ir IRake) error {
 	if err != nil {
 		return err
 	}
-	logrus.Println("Rake task output viewable in your logging server")
+	logrus.Println("Rake task output viewable in your logging dashboard")
 	return nil
 }
 

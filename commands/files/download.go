@@ -20,7 +20,7 @@ import (
 func CmdDownload(svcName, fileName, output string, force bool, ifiles IFiles, is services.IServices) error {
 	if output != "" && !force {
 		if _, err := os.Stat(output); err == nil {
-			return fmt.Errorf("File already exists at path '%s'. Specify `--force` to overwrite", output)
+			return fmt.Errorf("File already exists at path '%s'. Specify '--force' to overwrite", output)
 		}
 	}
 	service, err := is.RetrieveByLabel(svcName)
@@ -28,14 +28,14 @@ func CmdDownload(svcName, fileName, output string, force bool, ifiles IFiles, is
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the name \"%s\"", svcName)
+		return fmt.Errorf("Could not find a service with the name \"%s\". You can list services with the \"catalyze services\" command.", svcName)
 	}
 	file, err := ifiles.Retrieve(fileName, service.ID)
 	if err != nil {
 		return err
 	}
 	if file == nil {
-		return fmt.Errorf("File with name %s does not exist. Try listing files again by running \"catalyze files list\"", fileName)
+		return fmt.Errorf("File with name %s does not exist. Try listing files again by running \"catalyze files list %s\"", fileName, svcName)
 	}
 	return ifiles.Save(output, force, file)
 }

@@ -58,7 +58,7 @@ func CmdLogs(queryString string, follow bool, hours, minutes, seconds int, envID
 		}
 	}
 	if domain == "" {
-		return errors.New("Could not determine the fully qualified domain name of your environment")
+		return errors.New("Could not determine the fully qualified domain name of your environment. Please contact Catalyze Support at support@catalyze.io with this error message to resolve this issue.")
 	}
 	from := 0
 	offset := time.Duration(hours)*time.Hour + time.Duration(minutes)*time.Minute + time.Duration(seconds)*time.Second

@@ -16,7 +16,7 @@ func CmdBackup(databaseName string, skipPoll bool, id IDb, is services.IServices
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\"", databaseName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", databaseName)
 	}
 	job, err := id.Backup(service)
 	if err != nil {
@@ -40,6 +40,7 @@ func CmdBackup(databaseName string, skipPoll bool, id IDb, is services.IServices
 			return fmt.Errorf("Job finished with invalid status %s", job.Status)
 		}
 	}
+	logrus.Printf("You can download your backup with the \"catalyze db download %s %s ./output_file_path\" command", databaseName, job.ID)
 	return nil
 }
 

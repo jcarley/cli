@@ -1,9 +1,13 @@
 package logout
 
-import "github.com/catalyzeio/cli/lib/auth"
+import (
+	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/lib/auth"
+)
 
 func CmdLogout(il ILogout, ia auth.IAuth) error {
 	ia.Signout()
+	logrus.Println("You have been logged out")
 	return il.Clear()
 }
 

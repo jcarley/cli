@@ -15,14 +15,14 @@ func CmdRedeploy(svcName string, ir IRedeploy, is services.IServices) error {
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the name \"%s\"", svcName)
+		return fmt.Errorf("Could not find a service with the name \"%s\". You can list services with the \"catalyze services\" command.", svcName)
 	}
 	logrus.Printf("Redeploying %s (ID = %s)", svcName, service.ID)
 	err = ir.Redeploy(service)
 	if err != nil {
 		return err
 	}
-	logrus.Println("Redeploy successful! Check the status and logs for updates")
+	logrus.Println("Redeploy successful! Check the status with \"catalyze status\" and your logging dashboard for updates")
 	return nil
 }
 

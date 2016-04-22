@@ -12,7 +12,7 @@ func CmdUnset(key string, iv IVars) error {
 	if err != nil {
 		return err
 	}
-	logrus.Println("Unset.")
+	logrus.Println("Unset. For these environment variable changes to take effect, you will need to redeploy your service with \"catalyze redeploy\"")
 	return nil
 }
 

@@ -14,11 +14,12 @@ func CmdEnvironments(environments IEnvironments) error {
 	if err != nil {
 		return err
 	}
+	if envs == nil || len(*envs) == 0 {
+		logrus.Println("no environments found")
+		return nil
+	}
 	for _, env := range *envs {
 		logrus.Printf("%s: %s", env.Name, env.ID)
-	}
-	if len(*envs) == 0 {
-		logrus.Println("no environments found")
 	}
 	return nil
 }

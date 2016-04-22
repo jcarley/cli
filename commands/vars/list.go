@@ -13,6 +13,10 @@ func CmdList(iv IVars) error {
 	if err != nil {
 		return err
 	}
+	if len(envVars) == 0 {
+		logrus.Println("No environment variables found")
+		return nil
+	}
 	var keys []string
 	for k := range envVars {
 		keys = append(keys, k)

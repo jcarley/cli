@@ -16,7 +16,7 @@ func CmdList(databaseName string, page, pageSize int, id IDb, is services.IServi
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\"", databaseName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", databaseName)
 	}
 	jobs, err := id.List(page, pageSize, service)
 	if err != nil {
@@ -31,6 +31,8 @@ func CmdList(databaseName string, page, pageSize int, id IDb, is services.IServi
 	}
 	if len(*jobs) == 0 && page == 1 {
 		logrus.Println("No backups created yet for this service.")
+	} else if len(*jobs) == 0 {
+		logrus.Println("No backups found with the given parameters.")
 	}
 	return nil
 }

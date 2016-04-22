@@ -16,6 +16,10 @@ func CmdList(myUsersID string, iu IUsers, ii invites.IInvites) error {
 	if err != nil {
 		return err
 	}
+	if orgUsers == nil || len(*orgUsers) == 0 {
+		logrus.Println("No users found")
+		return nil
+	}
 	roles, err := ii.ListRoles()
 	if err != nil {
 		return err

@@ -59,6 +59,7 @@ func CmdCreate(hostname, pubKeyPath, privKeyPath string, selfSigned, resolve boo
 		return err
 	}
 	logrus.Printf("Created '%s'", hostname)
+	logrus.Println("To make use of your cert, you need to add a site with the \"catalyze sites create\" command")
 	return nil
 }
 

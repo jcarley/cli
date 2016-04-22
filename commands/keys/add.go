@@ -41,6 +41,7 @@ func CmdAdd(name, path string, ik IKeys, id deploykeys.IDeployKeys) error {
 		return err
 	}
 	logrus.Printf("Key '%s' added to your account.", name)
+	logrus.Println("If you use an ssh-agent, make sure you add this key to your ssh-agent in order to push code")
 	return nil
 }
 

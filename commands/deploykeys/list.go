@@ -19,15 +19,19 @@ func CmdList(svcName string, id IDeployKeys, is services.IServices) error {
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\"", svcName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
 	}
 	if service.Type != "code" {
-		return fmt.Errorf("You can only list deploy keys to code services, not %s services", service.Type)
+		return fmt.Errorf("You can only list deploy keys for code services, not %s services", service.Type)
 	}
 
 	keys, err := id.List(service.ID)
 	if err != nil {
 		return err
+	}
+	if keys == nil || len(*keys) == 0 {
+		logrus.Println("No deploy-keys found")
+		return nil
 	}
 
 	invalidKeys := map[string]string{}

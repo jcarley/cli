@@ -16,7 +16,7 @@ func CmdCreate(name, serviceName, hostname string, is ISites, iservices services
 		return err
 	}
 	if upstreamService == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\"", serviceName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", serviceName)
 	}
 
 	serviceProxy, err := iservices.RetrieveByLabel("service_proxy")
@@ -29,6 +29,7 @@ func CmdCreate(name, serviceName, hostname string, is ISites, iservices services
 		return err
 	}
 	logrus.Printf("Created '%s'", site.Name)
+	logrus.Println("To make your site go live, you must redeploy your service proxy with the \"catalyze redeploy service_proxy\" command")
 	return nil
 }
 

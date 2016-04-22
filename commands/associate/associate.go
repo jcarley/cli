@@ -82,6 +82,7 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 		return err
 	}
 	logrus.Printf("Your git repository \"%s\" has been associated with code service \"%s\" and environment \"%s\"", remote, svcLabel, name)
+	logrus.Println("After associating to an environment, you need to add a cert with the \"catalyze certs create\" command if you have not done so already")
 	return nil
 }
 
