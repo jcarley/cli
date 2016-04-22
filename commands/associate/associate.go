@@ -37,7 +37,7 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 		}
 	}
 	if e == nil {
-		return fmt.Errorf("No environment with label \"%s\" found", envLabel)
+		return fmt.Errorf("No environment with name \"%s\" found", envLabel)
 	}
 	if svcs == nil {
 		return fmt.Errorf("No services found for environment with name \"%s\"", envLabel)
@@ -55,7 +55,7 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 		}
 	}
 	if chosenService == nil {
-		return fmt.Errorf("No code service found with name '%s'. Code services found: %s", svcLabel, strings.Join(availableCodeServices, ", "))
+		return fmt.Errorf("No code service found with label '%s'. Code services found: %s", svcLabel, strings.Join(availableCodeServices, ", "))
 	}
 	remotes, err := ig.List()
 	if err != nil {

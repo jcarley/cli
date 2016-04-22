@@ -28,7 +28,7 @@ func CmdDownload(svcName, fileName, output string, force bool, ifiles IFiles, is
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the name \"%s\". You can list services with the \"catalyze services\" command.", svcName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
 	}
 	file, err := ifiles.Retrieve(fileName, service.ID)
 	if err != nil {
