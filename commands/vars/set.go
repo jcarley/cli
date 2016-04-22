@@ -29,6 +29,8 @@ func CmdSet(variables []string, iv IVars) error {
 	if err != nil {
 		return err
 	}
+	// TODO add in the service label in the redeploy example once we take in the service label in
+	// this command
 	logrus.Println("Set. For these environment variables to take effect, you will need to redeploy your service with \"catalyze redeploy\"")
 	return nil
 }
