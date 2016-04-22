@@ -23,7 +23,9 @@ import (
 
 const defaultRedirectLimit = 10
 
-func getClient() *http.Client {
+var client *http.Client
+
+func init() {
 	var tr = &http.Transport{
 		TLSClientConfig: &tls.Config{
 			MinVersion:         tls.VersionTLS12,
@@ -31,10 +33,14 @@ func getClient() *http.Client {
 		},
 	}
 
-	return &http.Client{
+	client = &http.Client{
 		Transport:     tr,
 		CheckRedirect: redirectPolicyFunc,
 	}
+}
+
+func getClient() *http.Client {
+	return client
 }
 
 func redirectPolicyFunc(req *http.Request, via []*http.Request) error {
@@ -96,13 +102,19 @@ func IsError(statusCode int) bool {
 // ConvertError attempts to convert a response into a usable error object.
 func ConvertError(b []byte, statusCode int) error {
 	msg := fmt.Sprintf("(%d)", statusCode)
-	if b != nil || len(b) > 0 {
+	if b != nil && len(b) > 0 {
 		var errs models.Error
-		err := json.Unmarshal(b, &errs)
-		if err == nil && errs.Title != "" && errs.Description != "" {
+		unmarshalErr := json.Unmarshal(b, &errs)
+		if unmarshalErr == nil && errs.Title != "" && errs.Description != "" {
 			msg = fmt.Sprintf("(%d) %s: %s", errs.Code, errs.Title, errs.Description)
 		} else {
-			msg = fmt.Sprintf("(%d) %s", statusCode, string(b))
+			var reportedErr models.ReportedError
+			unmarshalErr = json.Unmarshal(b, &reportedErr)
+			if unmarshalErr == nil && reportedErr.Message != "" {
+				msg = fmt.Sprintf("(%d) %s", reportedErr.Code, reportedErr.Message)
+			} else {
+				msg = fmt.Sprintf("(%d) %s", statusCode, string(b))
+			}
 		}
 	}
 	return errors.New(msg)

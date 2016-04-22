@@ -29,7 +29,7 @@ type Error struct {
 
 // ReportedError is the standard error model sent back from the API
 type ReportedError struct {
-	Code    int    `json:"code"`
+	Code    int    `json:"id"`
 	Message string `json:"message"`
 }
 
