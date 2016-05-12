@@ -36,6 +36,21 @@ func CmdConsole(svcName, command string, ic IConsole, is services.IServices) err
 // is needed - instead, the appropriate command for the database type is run.
 // For example, for a postgres database, psql is run.
 func (c *SConsole) Open(command string, service *models.Service) error {
+	stdin, stdout, _ := term.StdStreams()
+	fdIn, isTermIn := term.GetFdInfo(stdin)
+	if !isTermIn {
+		return errors.New("StdIn is not a terminal")
+	}
+	stdInSize, err := term.GetWinsize(fdIn)
+	if err != nil {
+		return err
+	}
+	if stdInSize.Width != 80 {
+		logrus.Warnln("Your terminal width is not 80 characters. Please resize your terminal to be exactly 80 characters wide to avoid line wrapping issues.")
+	} else {
+		logrus.Warnln("Keep your terminal width at 80 characters. Resizing your terminal will introduce line wrapping issues.")
+	}
+
 	logrus.Printf("Opening console to %s (%s)", service.Name, service.ID)
 	job, err := c.Request(command, service)
 	if err != nil {
@@ -82,11 +97,6 @@ func (c *SConsole) Open(command string, service *models.Service) error {
 	defer ws.Close()
 	logrus.Println("Connection opened")
 
-	stdin, stdout, _ := term.StdStreams()
-	fdIn, isTermIn := term.GetFdInfo(stdin)
-	if !isTermIn {
-		return errors.New("StdIn is not a terminal")
-	}
 	oldState, err := term.SetRawTerminal(fdIn)
 	if err != nil {
 		return err
