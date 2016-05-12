@@ -3,6 +3,7 @@ package catalyze
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/catalyzeio/cli/commands/associate"
 	"github.com/catalyzeio/cli/commands/associated"
@@ -47,10 +48,24 @@ type simpleLogger struct{}
 
 func (s *simpleLogger) Format(entry *logrus.Entry) ([]byte, error) {
 	levelString := fmt.Sprintf("[%s] ", entry.Level)
+	levelPrefix := ""
+	levelSuffix := ""
 	if entry.Level == logrus.InfoLevel {
 		levelString = ""
 	}
-	l := fmt.Sprintf("%s%s\n", levelString, entry.Message)
+	if runtime.GOOS != "windows" {
+		if entry.Level == logrus.WarnLevel {
+			// [33m = yellow
+			levelPrefix = "\033[33m\033[1m"
+			levelSuffix = "\033[0m"
+		} else if entry.Level == logrus.PanicLevel || entry.Level == logrus.FatalLevel || entry.Level == logrus.ErrorLevel {
+			// [31m = red
+			levelPrefix = "\033[31m\033[1m"
+			levelSuffix = "\033[0m"
+		}
+	}
+
+	l := fmt.Sprintf("%s%s%s%s\n", levelPrefix, levelString, levelSuffix, entry.Message)
 	return []byte(l), nil
 }
 
