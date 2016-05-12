@@ -119,6 +119,7 @@ type Payload struct {
 // Service service
 type Service struct {
 	ID          string            `json:"id,omitempty"`
+	Identifier  string            `json:"identifier,omitempty"`
 	Type        string            `json:"type,omitempty"`
 	Label       string            `json:"label"`
 	Size        ServiceSize       `json:"size"`
