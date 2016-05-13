@@ -30,6 +30,8 @@ var ListSubCmd = models.Command{
 	LongHelp:  "List all environment variables",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
+			json := subCmd.BoolOpt("json", false, "Output environment variables in JSON format")
+			yaml := subCmd.BoolOpt("yaml", false, "Output environment variables in YAML format")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -37,11 +39,20 @@ var ListSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdList(New(settings))
+				var formatter Formatter
+				if *json {
+					formatter = &JSONFormatter{}
+				} else if *yaml {
+					formatter = &YAMLFormatter{}
+				} else {
+					formatter = &PlainFormatter{}
+				}
+				err := CmdList(formatter, New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
+			subCmd.Spec = "[--json | --yaml]"
 		}
 	},
 }
