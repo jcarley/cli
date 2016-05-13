@@ -20,6 +20,5 @@ func CmdDisassociate(alias string, id IDisassociate) error {
 func (d *SDisassociate) Disassociate(alias string) error {
 	// DeleteBreadcrumb removes the environment from the settings.Environments
 	// array for you
-	config.DeleteBreadcrumb(alias, d.Settings)
-	return nil
+	return config.DeleteBreadcrumb(alias, d.Settings)
 }

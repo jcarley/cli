@@ -8,6 +8,7 @@ import (
 	"github.com/catalyzeio/cli/commands/associate"
 	"github.com/catalyzeio/cli/commands/associated"
 	"github.com/catalyzeio/cli/commands/certs"
+	"github.com/catalyzeio/cli/commands/clear"
 	"github.com/catalyzeio/cli/commands/console"
 	"github.com/catalyzeio/cli/commands/dashboard"
 	"github.com/catalyzeio/cli/commands/db"
@@ -165,6 +166,7 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.Command(associate.Cmd.Name, associate.Cmd.ShortHelp, associate.Cmd.CmdFunc(settings))
 	app.Command(associated.Cmd.Name, associated.Cmd.ShortHelp, associated.Cmd.CmdFunc(settings))
 	app.Command(certs.Cmd.Name, certs.Cmd.ShortHelp, certs.Cmd.CmdFunc(settings))
+	app.Command(clear.Cmd.Name, clear.Cmd.ShortHelp, clear.Cmd.CmdFunc(settings))
 	app.Command(console.Cmd.Name, console.Cmd.ShortHelp, console.Cmd.CmdFunc(settings))
 	app.Command(dashboard.Cmd.Name, dashboard.Cmd.ShortHelp, dashboard.Cmd.CmdFunc(settings))
 	app.Command(db.Cmd.Name, db.Cmd.ShortHelp, db.Cmd.CmdFunc(settings))
