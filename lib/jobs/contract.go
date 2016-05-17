@@ -6,8 +6,8 @@ import "github.com/catalyzeio/cli/models"
 type IJobs interface {
 	Delete(jobID, svcID string) error
 	Retrieve(jobID, svcID string, includeSpec bool) (*models.Job, error)
-	RetrieveByStatus(status string) (*[]models.Job, error)
-	RetrieveByType(jobType string, page, pageSize int) (*[]models.Job, error)
+	RetrieveByStatus(svcID, status string) (*[]models.Job, error)
+	RetrieveByType(svcID, jobType string, page, pageSize int) (*[]models.Job, error)
 	PollForStatus(statuses []string, jobID, svcID string) (string, error)
 	PollTillFinished(jobID, svcID string) (string, error)
 	List(svcID string, page, pageSize int) (*[]models.Job, error)

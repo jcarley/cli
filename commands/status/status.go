@@ -36,8 +36,8 @@ func (s *SStatus) Status(env *models.Environment, services *[]models.Service) er
 
 	for _, service := range *services {
 		if service.Type != "utility" && service.Type != "" {
-			s.Settings.ServiceID = service.ID
-			jobs, err := s.Jobs.RetrieveByStatus("running")
+			//s.Settings.ServiceID = service.ID
+			jobs, err := s.Jobs.RetrieveByStatus(service.ID, "running")
 			if err != nil {
 				return err
 			}
@@ -64,7 +64,7 @@ func (s *SStatus) Status(env *models.Environment, services *[]models.Service) er
 				fmt.Fprintln(w, displayType+"\t"+job.Status+"\t"+t.Local().Format(time.Stamp))
 			}
 			if service.Type == "code" {
-				latestBuildJobs, err := s.Jobs.RetrieveByType("build", 1, 1)
+				latestBuildJobs, err := s.Jobs.RetrieveByType(service.ID, "build", 1, 1)
 				if err != nil {
 					return err
 				}
