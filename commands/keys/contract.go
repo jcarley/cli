@@ -75,7 +75,7 @@ var RemoveSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdRemove(*name, New(settings))
+				err := CmdRemove(*name, settings.PrivateKeyPath, New(settings), deploykeys.New(settings))
 				if err != nil {
 					logrus.Fatal(err)
 				}
