@@ -1,6 +1,7 @@
 package vars
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 
@@ -8,15 +9,47 @@ import (
 	"github.com/catalyzeio/cli/lib/httpclient"
 )
 
-func CmdList(iv IVars) error {
-	envVars, err := iv.List()
+type Formatter interface {
+	Output(envVars map[string]string) error
+}
+
+type JSONFormatter struct{}
+
+type EnvVar struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+func (j *JSONFormatter) Output(envVars map[string]string) error {
+	jsonVars := []EnvVar{}
+	for k, v := range envVars {
+		jsonVars = append(jsonVars, EnvVar{k, v})
+	}
+	b, err := json.MarshalIndent(jsonVars, "", "    ")
 	if err != nil {
 		return err
 	}
-	if len(envVars) == 0 {
-		logrus.Println("No environment variables found")
-		return nil
+	logrus.Println(b)
+	return nil
+}
+
+type YAMLFormatter struct{}
+
+func (y *YAMLFormatter) Output(envVars map[string]string) error {
+	var keys []string
+	for k := range envVars {
+		keys = append(keys, k)
 	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		logrus.Printf("%s: %s", key, envVars[key])
+	}
+	return nil
+}
+
+type PlainFormatter struct{}
+
+func (p *PlainFormatter) Output(envVars map[string]string) error {
 	var keys []string
 	for k := range envVars {
 		keys = append(keys, k)
@@ -26,6 +59,18 @@ func CmdList(iv IVars) error {
 		logrus.Printf("%s=%s", key, envVars[key])
 	}
 	return nil
+}
+
+func CmdList(formatter Formatter, iv IVars) error {
+	envVars, err := iv.List()
+	if err != nil {
+		return err
+	}
+	if len(envVars) == 0 {
+		logrus.Println("No environment variables found")
+		return nil
+	}
+	return formatter.Output(envVars)
 }
 
 // List lists all environment variables.
