@@ -115,7 +115,7 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authH
 	logrus.Debugf("Org ID: %s", settings.OrgID)
 
 	if len(settings.Environments) > 0 && (settings.Pod == "" || settings.OrgID == "") {
-		logrus.Println("Your Stratum CLI is incorrectly configured. Please logout and then reassociate to all of your environments by running 'catalyze logout' and 'catalyze associate ENV_NAME SVC_NAME'")
+		logrus.Warnln("Your Stratum CLI is incorrectly configured. Please logout and then reassociate to all of your environments by running 'catalyze logout' and 'catalyze associate ENV_NAME SVC_NAME'")
 	}
 
 	settings.Version = VERSION
@@ -151,8 +151,12 @@ func DropBreadcrumb(envName string, settings *models.Settings) {
 }
 
 // DeleteBreadcrumb removes the config file at LocalSettingsPath
-func DeleteBreadcrumb(alias string, settings *models.Settings) {
-	env := settings.Environments[alias]
+func DeleteBreadcrumb(alias string, settings *models.Settings) error {
+	env, ok := settings.Environments[alias]
+	if !ok {
+		return fmt.Errorf("An environment named \"%s\" has not been associated. Run \"catalyze associated\" to see current associations.", alias)
+	}
+	fmt.Printf("%+v\n", env)
 	dir := env.Directory
 	dir = filepath.Join(dir, ".git", LocalSettingsFile)
 	defer os.Remove(dir)
@@ -163,6 +167,7 @@ func DeleteBreadcrumb(alias string, settings *models.Settings) {
 	}
 	os.Remove(dir)
 	SaveSettings(settings)
+	return nil
 }
 
 // setGivenEnv takes the given env name and finds it in the env list
