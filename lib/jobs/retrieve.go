@@ -37,7 +37,7 @@ func (j *SJobs) RetrieveByStatus(svcID, status string) (*[]models.Job, error) {
 
 func (j *SJobs) RetrieveByType(svcID, jobType string, page, pageSize int) (*[]models.Job, error) {
 	headers := httpclient.GetHeaders(j.Settings.SessionToken, j.Settings.Version, j.Settings.Pod, j.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs?type=%s&pageNumber=%d&pageSize=%d", j.Settings.PaasHost, j.Settings.PaasHostVersion, j.Settings.EnvironmentID, j.Settings.ServiceID, jobType, page, pageSize), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs?type=%s&pageNumber=%d&pageSize=%d", j.Settings.PaasHost, j.Settings.PaasHostVersion, j.Settings.EnvironmentID, svcID, jobType, page, pageSize), headers)
 	if err != nil {
 		return nil, err
 	}

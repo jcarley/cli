@@ -36,7 +36,6 @@ func (s *SStatus) Status(env *models.Environment, services *[]models.Service) er
 
 	for _, service := range *services {
 		if service.Type != "utility" && service.Type != "" {
-			//s.Settings.ServiceID = service.ID
 			jobs, err := s.Jobs.RetrieveByStatus(service.ID, "running")
 			if err != nil {
 				return err
