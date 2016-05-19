@@ -7,6 +7,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/lib/httpclient"
+	"gopkg.in/yaml.v2"
 )
 
 type Formatter interface {
@@ -29,21 +30,18 @@ func (j *JSONFormatter) Output(envVars map[string]string) error {
 	if err != nil {
 		return err
 	}
-	logrus.Println(b)
+	logrus.Println(string(b))
 	return nil
 }
 
 type YAMLFormatter struct{}
 
 func (y *YAMLFormatter) Output(envVars map[string]string) error {
-	var keys []string
-	for k := range envVars {
-		keys = append(keys, k)
+	b, err := yaml.Marshal(envVars)
+	if err != nil {
+		return err
 	}
-	sort.Strings(keys)
-	for _, key := range keys {
-		logrus.Printf("%s: %s", key, envVars[key])
-	}
+	logrus.Println(string(b))
 	return nil
 }
 
