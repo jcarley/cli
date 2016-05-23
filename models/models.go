@@ -307,3 +307,9 @@ type DeployKey struct {
 	Key  string `json:"value"`
 	Type string `json:"type"`
 }
+
+type Release struct {
+	ID        string `json:"id,omitempty"`
+	CreatedAt string `json:"created_at,omitempty"`
+	Notes     string `json:"notes,omitempty"`
+}
