@@ -3,14 +3,22 @@ package releases
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
+	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
 
 func CmdUpdate(svcName, releaseName, notes, newReleaseName string, ir IReleases, is services.IServices) error {
+	if strings.ContainsAny(releaseName, config.InvalidChars) {
+		return fmt.Errorf("Invalid existing release name. Names must not contain the following characters: %s", config.InvalidChars)
+	}
+	if strings.ContainsAny(newReleaseName, config.InvalidChars) {
+		return fmt.Errorf("Invalid updated release name. Names must not contain the following characters: %s", config.InvalidChars)
+	}
 	service, err := is.RetrieveByLabel(svcName)
 	if err != nil {
 		return err
@@ -28,7 +36,7 @@ func CmdUpdate(svcName, releaseName, notes, newReleaseName string, ir IReleases,
 
 func (r *SReleases) Update(releaseName, svcID, notes, newReleaseName string) error {
 	rls := models.Release{
-		ID:    newReleaseName,
+		Name:  newReleaseName,
 		Notes: notes,
 	}
 	b, err := json.Marshal(rls)

@@ -6,7 +6,6 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
-	"github.com/catalyzeio/cli/models"
 )
 
 func CmdRedeploy(svcName string, ir IRedeploy, is services.IServices) error {
@@ -18,7 +17,7 @@ func CmdRedeploy(svcName string, ir IRedeploy, is services.IServices) error {
 		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
 	}
 	logrus.Printf("Redeploying %s (ID = %s)", svcName, service.ID)
-	err = ir.Redeploy(service)
+	err = ir.Redeploy("", service.ID)
 	if err != nil {
 		return err
 	}
@@ -29,9 +28,13 @@ func CmdRedeploy(svcName string, ir IRedeploy, is services.IServices) error {
 // Redeploy offers a way of deploying a service without having to do a git push
 // first. The same version of the currently running service is deployed with
 // no changes.
-func (r *SRedeploy) Redeploy(service *models.Service) error {
+func (r *SRedeploy) Redeploy(releaseName, svcID string) error {
+	var releaseParam = ""
+	if releaseName != "" {
+		releaseParam = fmt.Sprintf("&release=%s", releaseName)
+	}
 	headers := httpclient.GetHeaders(r.Settings.SessionToken, r.Settings.Version, r.Settings.Pod, r.Settings.UsersID)
-	resp, statusCode, err := httpclient.Post(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/deploy?redeploy=true", r.Settings.PaasHost, r.Settings.PaasHostVersion, r.Settings.EnvironmentID, service.ID), headers)
+	resp, statusCode, err := httpclient.Post(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/deploy?redeploy=true%s", r.Settings.PaasHost, r.Settings.PaasHostVersion, r.Settings.EnvironmentID, svcID, releaseParam), headers)
 	if err != nil {
 		return err
 	}

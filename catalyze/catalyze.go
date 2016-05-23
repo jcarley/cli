@@ -25,6 +25,7 @@ import (
 	"github.com/catalyzeio/cli/commands/rake"
 	"github.com/catalyzeio/cli/commands/redeploy"
 	"github.com/catalyzeio/cli/commands/releases"
+	"github.com/catalyzeio/cli/commands/rollback"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/commands/sites"
 	"github.com/catalyzeio/cli/commands/ssl"
@@ -184,6 +185,7 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.Command(rake.Cmd.Name, rake.Cmd.ShortHelp, rake.Cmd.CmdFunc(settings))
 	app.Command(redeploy.Cmd.Name, redeploy.Cmd.ShortHelp, redeploy.Cmd.CmdFunc(settings))
 	app.Command(releases.Cmd.Name, releases.Cmd.ShortHelp, releases.Cmd.CmdFunc(settings))
+	app.Command(rollback.Cmd.Name, rollback.Cmd.ShortHelp, rollback.Cmd.CmdFunc(settings))
 	app.Command(services.Cmd.Name, services.Cmd.ShortHelp, services.Cmd.CmdFunc(settings))
 	app.Command(sites.Cmd.Name, sites.Cmd.ShortHelp, sites.Cmd.CmdFunc(settings))
 	app.Command(ssl.Cmd.Name, ssl.Cmd.ShortHelp, ssl.Cmd.CmdFunc(settings))

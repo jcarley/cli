@@ -31,7 +31,7 @@ func CmdList(svcName string, ir IReleases, is services.IServices) error {
 
 	data := [][]string{{"Release Name", "Created At", "Notes"}}
 	for _, r := range *rls {
-		data = append(data, []string{r.ID, r.CreatedAt, r.Notes})
+		data = append(data, []string{r.Name, r.CreatedAt, r.Notes})
 	}
 
 	table := tablewriter.NewWriter(logrus.StandardLogger().Out)
@@ -52,6 +52,20 @@ func (r *SReleases) List(svcID string) (*[]models.Release, error) {
 		return nil, err
 	}
 	var rls []models.Release
+	err = httpclient.ConvertResp(resp, statusCode, &rls)
+	if err != nil {
+		return nil, err
+	}
+	return &rls, nil
+}
+
+func (r *SReleases) Retrieve(releaseName, svcID string) (*models.Release, error) {
+	headers := httpclient.GetHeaders(r.Settings.SessionToken, r.Settings.Version, r.Settings.Pod, r.Settings.UsersID)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/releases/%s", r.Settings.PaasHost, r.Settings.PaasHostVersion, r.Settings.EnvironmentID, svcID, releaseName), headers)
+	if err != nil {
+		return nil, err
+	}
+	var rls models.Release
 	err = httpclient.ConvertResp(resp, statusCode, &rls)
 	if err != nil {
 		return nil, err

@@ -100,6 +100,7 @@ var UpdateSubCmd = models.Command{
 
 type IReleases interface {
 	List(svcID string) (*[]models.Release, error)
+	Retrieve(releaseName, svcID string) (*models.Release, error)
 	Rm(releaseName, svcID string) error
 	Update(releaseName, svcID, notes, newReleaseName string) error
 }
