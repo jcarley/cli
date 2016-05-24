@@ -23,6 +23,7 @@ func CmdShow(name string, is ISites, iservices services.IServices) error {
 	for _, s := range *sites {
 		if s.Name == name {
 			site = &s
+			break
 		}
 	}
 	if site == nil {
