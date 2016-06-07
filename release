@@ -55,7 +55,6 @@ rm -rf public/*
 aws s3 sync s3://${BUCKET}/catalyze public/
 
 echo 'Copying version '${VERSION}' binaries'
-rm -rf public/${VERSION} # only for testing
 mkdir public/${VERSION}
 mv builds/${VERSION}/binaries/* public/${VERSION}
 mv -f builds/${VERSION}/*.json public/
