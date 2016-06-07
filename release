@@ -55,11 +55,19 @@ rm -rf public/*
 aws s3 sync s3://${BUCKET}/catalyze public/
 
 echo 'Copying version '${VERSION}' binaries'
-mv builds/${VERSION}/binaries public/${VERSION}
-mv builds/${VERSION}/*.json public/
+mkdir public/${VERSION}
+mv builds/${VERSION}/binaries/* public/${VERSION}
+mv -f builds/${VERSION}/*.json public/
 
-echo 'Publishing to S3'
-aws s3 sync public/ s3://${BUCKET}/catalyze --delete
+if [ "x${TEST}" == "xfalse" ]; then
+  echo 'Publishing to S3'
+  aws s3 sync public/ s3://${BUCKET}/catalyze --delete --exclude "*.DS_Store"
 
-echo 'Releasing to Github'
-goxc
+  echo 'Releasing to Github'
+  goxc
+else
+  echo 'Test mode enabled, skipping S3 upload and Github release'
+  ls -al
+  ls -al public
+  ls -al public/${VERSION}
+fi
