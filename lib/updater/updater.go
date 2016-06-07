@@ -9,6 +9,9 @@ package updater
 // Changes 9/11/15:
 //     changed all usages of time to use validTime (this tells the program how long to wait before updating)
 //     added a ForcedUpgrade method to rewrite the valid cktime and do a BackgroundRun
+// Changes 6/6/16:
+//     removed all partial binary checking to cut down on release build time
+//     now every update is a full replacement
 
 // Update protocol:
 //
@@ -45,7 +48,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -58,7 +60,6 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/bugsnag/osext"
 	"github.com/catalyzeio/cli/config"
-	"github.com/kr/binarydist"
 )
 
 const (
@@ -68,7 +69,7 @@ const (
 
 const validTime = 1 * 24 * time.Hour
 
-// CLI auto updater
+// AutoUpdater to perform full replacements on the CLI binary
 var AutoUpdater = &Updater{
 	CurrentVersion: config.VERSION,
 	APIURL:         "https://s3.amazonaws.com/cli-autoupdates/",
@@ -78,7 +79,7 @@ var AutoUpdater = &Updater{
 	CmdName:        "catalyze",
 }
 
-// mismatch hash error
+// ErrHashMismatch represents a mismatch in the expected hash and the calculated hash
 var ErrHashMismatch = errors.New("new file hash mismatch after patch")
 var up = update.New()
 
@@ -123,15 +124,8 @@ func (u *Updater) BackgroundRun() error {
 	os.MkdirAll(u.getExecRelativeDir(u.Dir), 0755)
 	if u.wantUpdate() {
 		if err := up.CanUpdate(); err != nil {
-			// fail
 			return err
 		}
-		//self, err := osext.Executable()
-		//if err != nil {
-		// fail update, couldn't figure out path to self
-		//return
-		//}
-		// TODO(bgentry): logger isn't on Windows. Replace w/ proper error reports.
 		if err := u.update(); err != nil {
 			return err
 		}
@@ -153,7 +147,6 @@ func (u *Updater) wantUpdate() bool {
 	if u.CurrentVersion == "dev" || readTime(path).After(time.Now()) {
 		return false
 	}
-	//wait := 24*time.Hour + randDuration(24*time.Hour)
 	return writeTime(path, time.Now().Add(validTime))
 }
 
@@ -175,29 +168,16 @@ func (u *Updater) update() error {
 	if u.Info.Version == u.CurrentVersion {
 		return nil
 	}
-	bin, err := u.fetchAndVerifyPatch(old)
+
+	bin, err := u.fetchAndVerifyFullBin()
 	if err != nil {
 		if err == ErrHashMismatch {
-			logrus.Println("update: hash mismatch from patched binary - attempting full replacement...")
+			logrus.Warnln("update: hash mismatch from full binary")
 		} else {
-			if u.DiffURL != "" {
-				//log.Println("update: error patching binary,", err)
-				// dont print this because a full binary replacement will be attempted.
-				// if that fails, it will print out an error
-				// if it succeeds, nothing needs to be printed
-			}
+			logrus.Warnln("update: error fetching full binary,", err)
 		}
-
-		bin, err = u.fetchAndVerifyFullBin()
-		if err != nil {
-			if err == ErrHashMismatch {
-				logrus.Println("update: hash mismatch from full binary")
-			} else {
-				logrus.Println("update: error fetching full binary,", err)
-			}
-			log.Println("update: please upgrade your CLI manually")
-			return err
-		}
+		logrus.Warnln("update: please update your CLI manually by downloading the latest version for your OS here https://github.com/catalyzeio/cli/releases")
+		return err
 	}
 
 	// close the old binary before installing because on windows
@@ -211,7 +191,7 @@ func (u *Updater) update() error {
 	if err != nil {
 		return err
 	}
-	logrus.Println("update: your CLI has been successfully upgraded!")
+	logrus.Println("update: your CLI has been successfully updated!")
 	return nil
 }
 
@@ -230,28 +210,6 @@ func (u *Updater) FetchInfo() error {
 		return errors.New("bad cmd hash in info")
 	}
 	return nil
-}
-
-func (u *Updater) fetchAndVerifyPatch(old io.Reader) ([]byte, error) {
-	bin, err := u.fetchAndApplyPatch(old)
-	if err != nil {
-		return nil, err
-	}
-	if !verifySha(bin, u.Info.Sha256) {
-		return nil, ErrHashMismatch
-	}
-	return bin, nil
-}
-
-func (u *Updater) fetchAndApplyPatch(old io.Reader) ([]byte, error) {
-	r, err := fetch(u.DiffURL + u.CmdName + "/" + u.CurrentVersion + "/" + u.Info.Version + "/" + plat)
-	if err != nil {
-		return nil, err
-	}
-	defer r.Close()
-	var buf bytes.Buffer
-	err = binarydist.Patch(old, &buf, r)
-	return buf.Bytes(), err
 }
 
 func (u *Updater) fetchAndVerifyFullBin() ([]byte, error) {
@@ -284,18 +242,13 @@ func (u *Updater) fetchBin() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// returns a random duration in [0,n).
-// func randDuration(n time.Duration) time.Duration {
-// 	return time.Duration(rand.Int63n(int64(n)))
-// }
-
 func fetch(url string) (io.ReadCloser, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("bad http status from %s: %v", url, resp.Status)
+		return nil, fmt.Errorf("bad http status from %s: %d", url, resp.StatusCode)
 	}
 	return resp.Body, nil
 }
@@ -306,12 +259,10 @@ func readTime(path string) time.Time {
 		return time.Time{}
 	}
 	if err != nil {
-		//return time.Now().Add(1000 * time.Hour)
 		return time.Now().Add(validTime)
 	}
 	t, err := time.Parse(time.RFC3339, strings.TrimSpace(string(p)))
 	if err != nil {
-		//return time.Now().Add(1000 * time.Hour)
 		return time.Now().Add(validTime)
 	}
 	return t

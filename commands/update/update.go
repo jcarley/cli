@@ -10,6 +10,7 @@ import (
 )
 
 func CmdUpdate(iu IUpdate) error {
+	logrus.Println("Checking for available updates...")
 	needsUpdate, err := iu.Check()
 	if err != nil {
 		return err
@@ -21,11 +22,11 @@ func CmdUpdate(iu IUpdate) error {
 			return err
 		}
 	}
-	logrus.Println("Checking for available updates...")
 	if !needsUpdate {
 		logrus.Println("You are already running the latest version of the Catalyze CLI")
 		return nil
 	}
+	logrus.Printf("Version %s is available. Updating your CLI...", updater.AutoUpdater.Info.Version)
 	err = iu.Update()
 	if err != nil {
 		return err
