@@ -1,27 +1,19 @@
 #!/bin/bash -e
-go get ./...
-go install github.com/catalyzeio/catalyze
 
 if [ "x${VERSION}" == "x" ]; then
-  echo 'You must specify the VERSION environment variable. This is the version you are upgrading to.'
+  echo 'You must specify the VERSION environment variable. This is the version you are releasing.'
   exit 1
 fi
-
-if [ "x${OLD_VERSION}" == "x" ]; then
-  echo 'You must specify the OLD_VERSION environment variable. This is the version you are upgrading from.'
-  exit 1
-fi
-
 if [ "x${AWS_ACCESS_KEY_ID}" == "x" ]; then
-  echo 'Missing required AWS_ACCESS_KEY_ID environment variable'
+  echo 'Missing required AWS_ACCESS_KEY_ID environment variable.'
   exit 1
 fi
 if [ "x${AWS_SECRET_ACCESS_KEY}" == "x" ]; then
-  echo 'Missing required AWS_SECRET_ACCESS_KEY environment variable'
+  echo 'Missing required AWS_SECRET_ACCESS_KEY environment variable.'
   exit 1
 fi
 if [ "x${BUCKET}" == "x" ]; then
-  echo 'Missing required BUCKET environment variable'
+  echo 'Missing required BUCKET environment variable.'
   exit 1
 fi
 
@@ -31,9 +23,11 @@ if ! grep -q 'VERSION = "'${VERSION}'"' config/constants.go ; then
 fi
 
 if ! grep -q '"PackageVersion": "'${VERSION}'",' .goxc.json ; then
-  echo 'Incorrect version found in .goxc.json, setting to '${VERSION}''
+  echo 'Incorrect version found in .goxc.json, automatically setting to '${VERSION}''
   goxc -wc -pv=${VERSION}
 fi
+
+rm -rf builds/
 
 echo 'Building version '${VERSION}' binaries'
 goxc validate compile
@@ -44,8 +38,13 @@ cd builds/${VERSION}
 
 for d in * ; do
   if [ "$d" != "binaries" ]; then
+    echo '{
+    "Version": "'${VERSION}'",
+    "Sha256": "'$(openssl dgst -sha256 -binary $d/catalyze* | openssl base64)'"
+}' > $d.json
     mv $d/catalyze* binaries/$d
     rm -rf $d
+    gzip binaries/$d
   fi
 done
 
@@ -55,11 +54,20 @@ echo 'Syncing S3 data to the public/ directory'
 rm -rf public/*
 aws s3 sync s3://${BUCKET}/catalyze public/
 
-echo 'Building binary diffs'
-go-selfupdate builds/${VERSION}/binaries/ ${VERSION}
+echo 'Copying version '${VERSION}' binaries'
+mkdir public/${VERSION}
+mv builds/${VERSION}/binaries/* public/${VERSION}
+mv -f builds/${VERSION}/*.json public/
 
-echo 'Publishing to S3'
-aws s3 sync public/ s3://${BUCKET}/catalyze --delete
+if [ "x${TEST}" == "xfalse" ]; then
+  echo 'Publishing to S3'
+  aws s3 sync public/ s3://${BUCKET}/catalyze --delete --exclude "*.DS_Store"
 
-echo 'Releasing to Github'
-goxc
+  echo 'Releasing to Github'
+  goxc
+else
+  echo 'Test mode enabled, skipping S3 upload and Github release'
+  ls -al
+  ls -al public
+  ls -al public/${VERSION}
+fi
