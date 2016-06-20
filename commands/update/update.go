@@ -6,7 +6,9 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
+	"github.com/catalyzeio/cli/lib/pods"
 	"github.com/catalyzeio/cli/lib/updater"
+	"github.com/catalyzeio/cli/models"
 )
 
 func CmdUpdate(iu IUpdate) error {
@@ -51,4 +53,17 @@ func (u *SUpdate) Check() (bool, error) {
 func (u *SUpdate) Update() error {
 	updater.AutoUpdater.ForcedUpgrade()
 	return nil
+}
+
+func updatePods(settings *models.Settings) {
+	p := pods.New(settings)
+	pods, err := p.List()
+	if err == nil {
+		logrus.Printf("Updating active pods")
+		settings.Pods = pods
+		logrus.Debugf("%+v", settings.Pods)
+	} else {
+		settings.Pods = &[]models.Pod{}
+		logrus.Debugf("Error listing pods: %s", err.Error())
+	}
 }
