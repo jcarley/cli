@@ -2,11 +2,9 @@ package logs
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -27,18 +25,7 @@ const size = 50
 // log statement into a separate block that spans multiple lines so it's
 // not very cohesive. This is intended to be similar to the `heroku logs`
 // command.
-func CmdLogs(queryString string, follow bool, hours, minutes, seconds int, envID string, il ILogs, ip prompts.IPrompts, ie environments.IEnvironments, is services.IServices, isites sites.ISites) error {
-	username := os.Getenv(config.CatalyzeUsernameEnvVar)
-	password := os.Getenv(config.CatalyzePasswordEnvVar)
-	if username == "" || password == "" {
-		logrus.Println("Your dashboard credentials are required to fetch logs")
-		u, p, err := ip.UsernamePassword()
-		if err != nil {
-			return err
-		}
-		username = u
-		password = p
-	}
+func CmdLogs(queryString string, follow bool, hours, minutes, seconds int, envID string, settings *models.Settings, il ILogs, ip prompts.IPrompts, ie environments.IEnvironments, is services.IServices, isites sites.ISites) error {
 	env, err := ie.Retrieve(envID)
 	if err != nil {
 		return err
@@ -63,17 +50,17 @@ func CmdLogs(queryString string, follow bool, hours, minutes, seconds int, envID
 	from := 0
 	offset := time.Duration(hours)*time.Hour + time.Duration(minutes)*time.Minute + time.Duration(seconds)*time.Second
 	timestamp := time.Now().In(time.UTC).Add(-1 * offset)
-	from, timestamp, err = il.Output(queryString, username, password, domain, follow, hours, minutes, seconds, from, timestamp, time.Now(), env)
+	from, timestamp, err = il.Output(queryString, settings.SessionToken, domain, follow, hours, minutes, seconds, from, timestamp, time.Now(), env)
 	if err != nil {
 		return err
 	}
 	if follow {
-		return il.Stream(queryString, username, password, domain, follow, hours, minutes, seconds, from, timestamp, env)
+		return il.Stream(queryString, settings.SessionToken, domain, follow, hours, minutes, seconds, from, timestamp, env)
 	}
 	return nil
 }
 
-func (l *SLogs) Output(queryString, username, password, domain string, follow bool, hours, minutes, seconds, from int, startTimestamp, endTimestamp time.Time, env *models.Environment) (int, time.Time, error) {
+func (l *SLogs) Output(queryString, sessionToken, domain string, follow bool, hours, minutes, seconds, from int, startTimestamp, endTimestamp time.Time, env *models.Environment) (int, time.Time, error) {
 	appLogsIdentifier := "source"
 	appLogsValue := "app"
 	if strings.HasPrefix(domain, "pod01") || strings.HasPrefix(domain, "csb01") {
@@ -83,8 +70,7 @@ func (l *SLogs) Output(queryString, username, password, domain string, follow bo
 
 	urlString := fmt.Sprintf("https://%s/__es", domain)
 
-	basicAuth := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
-	headers := map[string][]string{"Authorization": {"Basic " + basicAuth}}
+	headers := map[string][]string{"Cookie": {"sessionToken=" + sessionToken}}
 
 	logrus.Println("        @timestamp       -        message")
 	for {
@@ -118,9 +104,9 @@ func (l *SLogs) Output(queryString, username, password, domain string, follow bo
 	return from, startTimestamp, nil
 }
 
-func (l *SLogs) Stream(queryString, username, password, domain string, follow bool, hours, minutes, seconds, from int, timestamp time.Time, env *models.Environment) error {
+func (l *SLogs) Stream(queryString, sessionToken, domain string, follow bool, hours, minutes, seconds, from int, timestamp time.Time, env *models.Environment) error {
 	for {
-		f, t, err := l.Output(queryString, username, password, domain, follow, hours, minutes, seconds, from, timestamp, time.Now(), env)
+		f, t, err := l.Output(queryString, sessionToken, domain, follow, hours, minutes, seconds, from, timestamp, time.Now(), env)
 		if err != nil {
 			return err
 		}
