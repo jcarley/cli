@@ -2,6 +2,8 @@ package releases
 
 import (
 	"fmt"
+	"sort"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
@@ -9,6 +11,21 @@ import (
 	"github.com/catalyzeio/cli/models"
 	"github.com/olekukonko/tablewriter"
 )
+
+// SortedReleases is a wrapper for Release array in order to sort them by CreatedAt
+type SortedReleases []models.Release
+
+func (rls SortedReleases) Len() int {
+	return len(rls)
+}
+
+func (rls SortedReleases) Swap(i, j int) {
+	rls[i], rls[j] = rls[j], rls[i]
+}
+
+func (rls SortedReleases) Less(i, j int) bool {
+	return rls[i].CreatedAt > rls[j].CreatedAt
+}
 
 func CmdList(svcName string, ir IReleases, is services.IServices) error {
 	service, err := is.RetrieveByLabel(svcName)
@@ -29,13 +46,16 @@ func CmdList(svcName string, ir IReleases, is services.IServices) error {
 		return nil
 	}
 
+	sort.Sort(SortedReleases(*rls))
+	const dateForm = "2006-01-02T15:04:05"
 	data := [][]string{{"Release Name", "Created At", "Notes"}}
 	for _, r := range *rls {
 		name := r.Name
 		if r.Name == service.ReleaseVersion {
 			name = fmt.Sprintf("*%s", r.Name)
 		}
-		data = append(data, []string{name, r.CreatedAt, r.Notes})
+		t, _ := time.Parse(dateForm, r.CreatedAt)
+		data = append(data, []string{name, t.Local().Format(time.Stamp), r.Notes})
 	}
 
 	table := tablewriter.NewWriter(logrus.StandardLogger().Out)
