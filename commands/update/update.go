@@ -56,12 +56,11 @@ func (u *SUpdate) Update() error {
 }
 
 func updatePods(settings *models.Settings) {
+	logrus.Debugf("Updating cached pods...")
 	p := pods.New(settings)
 	pods, err := p.List()
 	if err == nil {
-		logrus.Printf("Updating active pods")
 		settings.Pods = pods
-		logrus.Debugf("%+v", settings.Pods)
 	} else {
 		settings.Pods = &[]models.Pod{}
 		logrus.Debugf("Error listing pods: %s", err.Error())
