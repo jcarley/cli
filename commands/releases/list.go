@@ -31,7 +31,11 @@ func CmdList(svcName string, ir IReleases, is services.IServices) error {
 
 	data := [][]string{{"Release Name", "Created At", "Notes"}}
 	for _, r := range *rls {
-		data = append(data, []string{r.Name, r.CreatedAt, r.Notes})
+		name := r.Name
+		if r.Name == service.ReleaseVersion {
+			name = fmt.Sprintf("*%s", r.Name)
+		}
+		data = append(data, []string{name, r.CreatedAt, r.Notes})
 	}
 
 	table := tablewriter.NewWriter(logrus.StandardLogger().Out)
@@ -42,6 +46,8 @@ func CmdList(svcName string, ir IReleases, is services.IServices) error {
 	table.SetRowSeparator("")
 	table.AppendBulk(data)
 	table.Render()
+
+	logrus.Println("\n* denotes the current release")
 	return nil
 }
 
