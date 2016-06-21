@@ -26,7 +26,7 @@ func CmdStatus(envID string, is IStatus, ie environments.IEnvironments, iservice
 
 // Status prints out all of the non-utility services and their running jobs
 func (s *SStatus) Status(env *models.Environment, services *[]models.Service) error {
-	w := new(tabwriter.Writer)
+	w := &tabwriter.Writer{}
 	w.Init(os.Stdout, 0, 8, 4, '\t', 0)
 
 	fmt.Fprintln(w, env.Name+" (environment ID = "+env.ID+"):")
@@ -56,6 +56,8 @@ func (s *SStatus) Status(env *models.Environment, services *[]models.Service) er
 							}
 						}
 					}
+				} else {
+					displayType = fmt.Sprintf("%s (%s)", service.Label, service.ReleaseVersion)
 				}
 
 				const dateForm = "2006-01-02T15:04:05"

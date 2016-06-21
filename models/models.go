@@ -118,17 +118,18 @@ type Payload struct {
 
 // Service service
 type Service struct {
-	ID          string            `json:"id,omitempty"`
-	Identifier  string            `json:"identifier,omitempty"`
-	Type        string            `json:"type,omitempty"`
-	Label       string            `json:"label"`
-	Size        ServiceSize       `json:"size"`
-	Name        string            `json:"name"`
-	EnvVars     map[string]string `json:"environmentVariables,omitempty"`
-	Source      string            `json:"source,omitempty"`
-	LBIP        string            `json:"load_balancer_ip,omitempty"`
-	Scale       int               `json:"scale,omitempty"`
-	WorkerScale int               `json:"worker_scale,omitempty"`
+	ID             string            `json:"id,omitempty"`
+	Identifier     string            `json:"identifier,omitempty"`
+	Type           string            `json:"type,omitempty"`
+	Label          string            `json:"label"`
+	Size           ServiceSize       `json:"size"`
+	Name           string            `json:"name"`
+	EnvVars        map[string]string `json:"environmentVariables,omitempty"`
+	Source         string            `json:"source,omitempty"`
+	LBIP           string            `json:"load_balancer_ip,omitempty"`
+	Scale          int               `json:"scale,omitempty"`
+	WorkerScale    int               `json:"worker_scale,omitempty"`
+	ReleaseVersion string            `json:"release_version,omitempty"`
 }
 
 // ServiceSize holds size information for a service
@@ -306,4 +307,10 @@ type DeployKey struct {
 	Name string `json:"name"`
 	Key  string `json:"value"`
 	Type string `json:"type"`
+}
+
+type Release struct {
+	Name      string `json:"release,omitempty"`
+	CreatedAt string `json:"created_at,omitempty"`
+	Notes     string `json:"metadata,omitempty"`
 }
