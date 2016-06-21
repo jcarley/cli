@@ -92,9 +92,6 @@ var SetSubCmd = models.Command{
 		return func(cmd *cli.Cmd) {
 			path := cmd.StringArg("PRIVATE_KEY_PATH", "", "Relative path to the private key file")
 			cmd.Action = func() {
-				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
-					logrus.Fatal(err.Error())
-				}
 				err := CmdSet(*path, settings)
 				if err != nil {
 					logrus.Fatal(err)

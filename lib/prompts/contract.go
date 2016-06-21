@@ -19,6 +19,7 @@ type IPrompts interface {
 	Password(msg string) string
 	PHI() error
 	YesNo(msg string) error
+	OTP(string) string
 }
 
 // SPrompts is a concrete implementation of IPrompts
@@ -116,4 +117,19 @@ func (p *SPrompts) Password(msg string) string {
 	bytes, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
 	fmt.Println("")
 	return string(bytes)
+}
+
+// OTP prompts for a one-time password and returns the value.
+func (p *SPrompts) OTP(preferredMode string) string {
+	fmt.Println("This account has two-factor authentication enabled.")
+	prompt := "Your one-time password: "
+	if preferredMode == "authenticator" {
+		prompt = "Your authenticator one-time password: "
+	} else if preferredMode == "email" {
+		prompt = "One-time password (sent to your email): "
+	}
+	fmt.Print(prompt)
+	var token string
+	fmt.Scanln(&token)
+	return strings.TrimSpace(token)
 }
