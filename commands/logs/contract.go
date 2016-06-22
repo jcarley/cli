@@ -35,7 +35,7 @@ var Cmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdLogs(*query, *follow || *tail, *hours, *mins, *secs, settings.EnvironmentID, New(settings), prompts.New(), environments.New(settings), services.New(settings), sites.New(settings))
+				err := CmdLogs(*query, *follow || *tail, *hours, *mins, *secs, settings.EnvironmentID, settings, New(settings), prompts.New(), environments.New(settings), services.New(settings), sites.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -45,10 +45,10 @@ var Cmd = models.Command{
 	},
 }
 
-// ILogs
+// ILogs ...
 type ILogs interface {
-	Output(queryString, username, password, domain string, follow bool, hours, minutes, seconds, from int, startTimestamp time.Time, endTimestamp time.Time, env *models.Environment) (int, time.Time, error)
-	Stream(queryString, username, password, domain string, follow bool, hours, minutes, seconds, from int, timestamp time.Time, env *models.Environment) error
+	Output(queryString, sessionToken, domain string, follow bool, hours, minutes, seconds, from int, startTimestamp time.Time, endTimestamp time.Time, env *models.Environment) (int, time.Time, error)
+	Stream(queryString, sessionToken, domain string, follow bool, hours, minutes, seconds, from int, timestamp time.Time, env *models.Environment) error
 }
 
 // SLogs is a concrete implementation of ILogs
