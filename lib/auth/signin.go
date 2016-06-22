@@ -23,13 +23,51 @@ func (a *SAuth) Signin() (*models.User, error) {
 	if user, err := a.Verify(); err == nil {
 		return user, nil
 	}
+	f := a.signInWithKey
 	if a.Settings.PrivateKeyPath == "" {
-		return a.signInWithCredentials()
+		f = a.signInWithCredentials
 	}
-	return a.signInWithKey()
+	signinResp, err := f()
+	if err != nil {
+		return nil, err
+	}
+
+	var user *models.User
+
+	if signinResp.MFAID != "" {
+		user, err = a.mfaSignin(signinResp.MFAID, signinResp.MFAPreferredMode)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		user = signinResp.toUser()
+	}
+
+	a.Settings.UsersID = user.UsersID
+	a.Settings.Username = user.Username
+	a.Settings.SessionToken = user.SessionToken
+	return user, nil
 }
 
-func (a *SAuth) signInWithCredentials() (*models.User, error) {
+type signinResponse struct {
+	ID               string `json:"id"`
+	Name             string `json:"name"`
+	Email            string `json:"email"`
+	SessionToken     string `json:"sessionToken"`
+	MFAID            string `json:"mfaID"`
+	MFAPreferredMode string `json:"mfaPreferredType"`
+}
+
+func (sr *signinResponse) toUser() *models.User {
+	return &models.User{
+		UsersID:      sr.ID,
+		Username:     sr.Name,
+		Email:        sr.Email,
+		SessionToken: sr.SessionToken,
+	}
+}
+
+func (a *SAuth) signInWithCredentials() (*signinResponse, error) {
 	login := models.Login{
 		Identifier: a.Settings.Username,
 		Password:   a.Settings.Password,
@@ -54,18 +92,11 @@ func (a *SAuth) signInWithCredentials() (*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	var user models.User
-	err = httpclient.ConvertResp(resp, statusCode, &user)
-	if err != nil {
-		return nil, err
-	}
-	a.Settings.SessionToken = user.SessionToken
-	a.Settings.UsersID = user.UsersID
-	a.Settings.Username = user.Username
-	return &user, nil
+	signinResp := &signinResponse{}
+	return signinResp, httpclient.ConvertResp(resp, statusCode, signinResp)
 }
 
-func (a *SAuth) signInWithKey() (*models.User, error) {
+func (a *SAuth) signInWithKey() (*signinResponse, error) {
 	body := struct {
 		PublicKey string `json:"publicKey"`
 		Signature string `json:"signature"`
@@ -114,15 +145,26 @@ func (a *SAuth) signInWithKey() (*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	var user models.User
-	err = httpclient.ConvertResp(resp, statusCode, &user)
+	signinResp := &signinResponse{}
+	return signinResp, httpclient.ConvertResp(resp, statusCode, signinResp)
+}
+
+func (a *SAuth) mfaSignin(mfaID string, preferredMode string) (*models.User, error) {
+	token := a.Prompts.OTP(preferredMode)
+	headers := httpclient.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod, a.Settings.UsersID)
+	b, err := json.Marshal(struct {
+		OTP string `json:"otp"`
+	}{OTP: token})
 	if err != nil {
 		return nil, err
 	}
-	a.Settings.SessionToken = user.SessionToken
-	a.Settings.UsersID = user.UsersID
-	a.Settings.Username = user.Username
-	return &user, nil
+	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/auth/signin/mfa/%s", a.Settings.AuthHost, a.Settings.AuthHostVersion, mfaID), headers)
+	user := &models.User{}
+	err = httpclient.ConvertResp(resp, statusCode, user)
+	if err != nil {
+		return nil, err
+	}
+	return user, err
 }
 
 // Signout signs out a user by their session token.
