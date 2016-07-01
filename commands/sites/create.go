@@ -10,7 +10,7 @@ import (
 	"github.com/catalyzeio/cli/models"
 )
 
-func CmdCreate(name, serviceName, hostname string, is ISites, iservices services.IServices) error {
+func CmdCreate(name, serviceName, hostname string, clientMaxBodySize, proxyConnectTimeout, proxyReadTimeout, proxySendTimeout, proxyUpstreamTimeout int, enableCORS, enableWebSockets bool, is ISites, iservices services.IServices) error {
 	upstreamService, err := iservices.RetrieveByLabel(serviceName)
 	if err != nil {
 		return err
@@ -24,7 +24,7 @@ func CmdCreate(name, serviceName, hostname string, is ISites, iservices services
 		return err
 	}
 
-	site, err := is.Create(name, hostname, upstreamService.ID, serviceProxy.ID)
+	site, err := is.Create(name, hostname, upstreamService.ID, serviceProxy.ID, generateSiteValues(clientMaxBodySize, proxyConnectTimeout, proxyReadTimeout, proxySendTimeout, proxyUpstreamTimeout, enableCORS, enableWebSockets))
 	if err != nil {
 		return err
 	}
@@ -33,11 +33,12 @@ func CmdCreate(name, serviceName, hostname string, is ISites, iservices services
 	return nil
 }
 
-func (s *SSites) Create(name, cert, upstreamServiceID, svcID string) (*models.Site, error) {
+func (s *SSites) Create(name, cert, upstreamServiceID, svcID string, siteValues map[string]interface{}) (*models.Site, error) {
 	site := models.Site{
 		Name:            name,
 		Cert:            cert,
 		UpstreamService: upstreamServiceID,
+		SiteValues:      siteValues,
 	}
 	b, err := json.Marshal(site)
 	if err != nil {
@@ -54,4 +55,30 @@ func (s *SSites) Create(name, cert, upstreamServiceID, svcID string) (*models.Si
 		return nil, err
 	}
 	return &createdSite, nil
+}
+
+func generateSiteValues(clientMaxBodySize, proxyConnectTimeout, proxyReadTimeout, proxySendTimeout, proxyUpstreamTimeout int, enableCORS, enableWebSockets bool) map[string]interface{} {
+	siteValues := map[string]interface{}{}
+	if clientMaxBodySize >= 0 {
+		siteValues["clientMaxBodySize"] = fmt.Sprintf("%dm", clientMaxBodySize)
+	}
+	if proxyConnectTimeout >= 0 {
+		siteValues["proxyConnectTimeout"] = fmt.Sprintf("%ds", proxyConnectTimeout)
+	}
+	if proxyReadTimeout >= 0 {
+		siteValues["proxyReadTimeout"] = fmt.Sprintf("%ds", proxyReadTimeout)
+	}
+	if proxySendTimeout >= 0 {
+		siteValues["proxySendTimeout"] = fmt.Sprintf("%ds", proxySendTimeout)
+	}
+	if proxyUpstreamTimeout >= 0 {
+		siteValues["proxyUpstreamTimeout"] = fmt.Sprintf("%ds", proxyUpstreamTimeout)
+	}
+	if enableCORS {
+		siteValues["enableCORS"] = true
+	}
+	if enableWebSockets {
+		siteValues["enableWebSockets"] = true
+	}
+	return siteValues
 }

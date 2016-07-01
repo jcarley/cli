@@ -277,12 +277,13 @@ type ServiceFile struct {
 }
 
 type Site struct {
-	ID              int    `json:"id,omitempty"`
-	Name            string `json:"name"`
-	Cert            string `json:"cert"`
-	SiteFileID      int    `json:"siteFileId,omitempty"`
-	UpstreamService string `json:"upstreamService"`
-	Restricted      bool   `json:"restricted,omitempty"`
+	ID              int                    `json:"id,omitempty"`
+	Name            string                 `json:"name"`
+	Cert            string                 `json:"cert"`
+	SiteFileID      int                    `json:"siteFileId,omitempty"`
+	UpstreamService string                 `json:"upstreamService"`
+	Restricted      bool                   `json:"restricted,omitempty"`
+	SiteValues      map[string]interface{} `json:"site_values"`
 }
 
 type Cert struct {
