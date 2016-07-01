@@ -32,16 +32,16 @@ var CreateSubCmd = models.Command{
 	LongHelp:  "Create a new site linking it to an existing cert instance",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
-			name := subCmd.StringArg("NAME", "", "The name of the site to be created. This will be used in this site's nginx configuration file")
+			name := subCmd.StringArg("SITE_NAME", "", "The name of the site to be created. This will be used in this site's nginx configuration file (i.e. \".example.com\")")
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to add this site configuration to (i.e. 'app01')")
-			hostname := subCmd.StringArg("HOSTNAME", "", "The hostname used in the creation of a certs instance with the 'certs' command")
+			hostname := subCmd.StringArg("HOSTNAME", "", "The hostname used in the creation of a certs instance with the 'certs' command (i.e. \"star_example_com\")")
 			clientMaxBodySize := subCmd.IntOpt("client-max-body-size", -1, "The 'client_max_body_size' nginx config specified in megabytes")
 			proxyConnectTimeout := subCmd.IntOpt("proxy-connect-timeout", -1, "The 'proxy_connect_timeout' nginx config specified in seconds")
 			proxyReadTimeout := subCmd.IntOpt("proxy-read-timeout", -1, "The 'proxy_read_timeout' nginx config specified in seconds")
 			proxySendTimeout := subCmd.IntOpt("proxy-send-timeout", -1, "The 'proxy_send_timeout' nginx config specified in seconds")
 			proxyUpstreamTimeout := subCmd.IntOpt("proxy-upstream-timeout", -1, "The 'proxy_next_upstream_timeout' nginx config specified in seconds")
-			enableCORS := subCmd.BoolOpt("enable-cors", false, "Add everything necessary for full CORS support")
-			enableWebSockets := subCmd.BoolOpt("enable-web-sockets", false, "Add everything necessary for enabling websocket connections")
+			enableCORS := subCmd.BoolOpt("enable-cors", false, "Enable or disable all features related to full CORS support")
+			enableWebSockets := subCmd.BoolOpt("enable-websockets", false, "Enable or disable all features related to full websockets support")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
