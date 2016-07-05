@@ -54,7 +54,7 @@ var CreateSubCmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "NAME SERVICE_NAME HOSTNAME [--client-max-body-size] [--proxy-connect-timeout] [--proxy-read-timeout] [--proxy-send-timeout] [--proxy-upstream-timeout] [--enable-cors] [--enable-web-sockets]"
+			subCmd.Spec = "SITE_NAME SERVICE_NAME HOSTNAME [--client-max-body-size] [--proxy-connect-timeout] [--proxy-read-timeout] [--proxy-send-timeout] [--proxy-upstream-timeout] [--enable-cors] [--enable-websockets]"
 		}
 	},
 }

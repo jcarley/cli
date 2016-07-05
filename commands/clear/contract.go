@@ -10,22 +10,30 @@ import (
 // name, arguments, and required/optional arguments and flags for the command.
 var Cmd = models.Command{
 	Name:      "clear",
-	ShortHelp: "Clear out information in the global settings file to fix a misconfigured CLI. All information will be cleared unless otherwise specified",
-	LongHelp:  "Clear out information in the global settings file to fix a misconfigured CLI. All information will be cleared unless otherwise specified",
+	ShortHelp: "Clear out information in the global settings file to fix a misconfigured CLI.",
+	LongHelp:  "Clear out information in the global settings file to fix a misconfigured CLI.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			privateKey := cmd.BoolOpt("private-key", true, "Clear out the saved private key information")
-			session := cmd.BoolOpt("session", true, "Clear out all session information")
-			envs := cmd.BoolOpt("environments", true, "Clear out all associated environments")
-			defaultEnv := cmd.BoolOpt("default", true, "Clear out the saved default environment")
-			pods := cmd.BoolOpt("pods", true, "Clear out all saved pods")
+			privateKey := cmd.BoolOpt("private-key", false, "Clear out the saved private key information")
+			session := cmd.BoolOpt("session", false, "Clear out all session information")
+			envs := cmd.BoolOpt("environments", false, "Clear out all associated environments")
+			defaultEnv := cmd.BoolOpt("default", false, "Clear out the saved default environment")
+			pods := cmd.BoolOpt("pods", false, "Clear out all saved pods")
+			all := cmd.BoolOpt("all", false, "Clear out all settings")
 			cmd.Action = func() {
+				if *all {
+					*privateKey = true
+					*session = true
+					*envs = true
+					*defaultEnv = true
+					*pods = true
+				}
 				err := CmdClear(*privateKey, *session, *envs, *defaultEnv, *pods, settings)
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			cmd.Spec = "[--private-key] [--session] [--environments] [--default] [--pods]"
+			cmd.Spec = "[--private-key] [--session] [--environments] [--default] [--pods] [--all]"
 		}
 	},
 }

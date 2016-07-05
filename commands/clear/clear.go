@@ -24,6 +24,10 @@ func CmdClear(privateKey, session, environments, defaultEnv, pods bool, settings
 		settings.Pods = &[]models.Pod{}
 	}
 	config.SaveSettings(settings)
-	logrus.Println("All specified settings have been cleared")
+	if !privateKey && !session && !environments && !defaultEnv && !pods {
+		logrus.Println("No settings were specified. To see available options, run \"catalyze clear --help\"")
+	} else {
+		logrus.Println("All specified settings have been cleared")
+	}
 	return nil
 }
