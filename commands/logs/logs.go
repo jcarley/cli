@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
@@ -70,7 +71,7 @@ func (l *SLogs) Output(queryString, sessionToken, domain string, follow bool, ho
 
 	urlString := fmt.Sprintf("https://%s/__es", domain)
 
-	headers := map[string][]string{"Cookie": {"sessionToken=" + sessionToken}}
+	headers := map[string][]string{"Cookie": {"sessionToken=" + url.QueryEscape(sessionToken)}}
 
 	logrus.Println("        @timestamp       -        message")
 	for {
