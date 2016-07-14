@@ -16,15 +16,10 @@ type Formatter interface {
 
 type JSONFormatter struct{}
 
-type EnvVar struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
-}
-
 func (j *JSONFormatter) Output(envVars map[string]string) error {
-	jsonVars := []EnvVar{}
+	jsonVars := map[string]string{}
 	for k, v := range envVars {
-		jsonVars = append(jsonVars, EnvVar{k, v})
+		jsonVars[k] = v
 	}
 	b, err := json.MarshalIndent(jsonVars, "", "    ")
 	if err != nil {
