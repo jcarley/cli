@@ -181,6 +181,7 @@ func setGivenEnv(envName string, settings *models.Settings) {
 			settings.Pod = e.Pod
 			settings.EnvironmentName = envName
 			settings.OrgID = e.OrgID
+			break
 		}
 	}
 }

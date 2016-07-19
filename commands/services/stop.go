@@ -22,6 +22,9 @@ func CmdStop(svcName string, is IServices, ij jobs.IJobs, ip prompts.IPrompts) e
 	if service == nil {
 		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services list\" command.", svcName)
 	}
+	if !service.Redeployable {
+		return fmt.Errorf("This service cannot be stopped. Please contact Catalyze Support at support@catalyze.io if you need the \"%s\" service stopped.", svcName)
+	}
 
 	page := 0
 	pageSize := 100

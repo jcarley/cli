@@ -130,6 +130,7 @@ type Service struct {
 	Scale          int               `json:"scale,omitempty"`
 	WorkerScale    int               `json:"worker_scale,omitempty"`
 	ReleaseVersion string            `json:"release_version,omitempty"`
+	Redeployable   bool              `json:"redeployable,omitempty"`
 }
 
 // ServiceSize holds size information for a service

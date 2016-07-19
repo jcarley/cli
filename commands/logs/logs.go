@@ -43,6 +43,7 @@ func CmdLogs(queryString string, follow bool, hours, minutes, seconds int, envID
 	for _, site := range *sites {
 		if strings.HasPrefix(site.Name, env.Namespace) {
 			domain = site.Name
+			break
 		}
 	}
 	if domain == "" {
