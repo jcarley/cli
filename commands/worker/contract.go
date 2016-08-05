@@ -2,6 +2,7 @@ package worker
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
@@ -17,6 +18,7 @@ var Cmd = models.Command{
 	LongHelp:  "Start a background worker",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
+			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to use to start a worker. Defaults to the associated service.")
 			target := cmd.StringArg("TARGET", "", "The name of the Procfile target to invoke as a worker")
 			cmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
@@ -25,7 +27,7 @@ var Cmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdWorker(*target, settings.ServiceID, New(settings))
+				err := CmdWorker(*serviceName, settings.ServiceID, *target, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -37,7 +39,7 @@ var Cmd = models.Command{
 
 // IWorker
 type IWorker interface {
-	Start(target string) error
+	Start(svcID, target string) error
 }
 
 // SWorker is a concrete implementation of IWorker

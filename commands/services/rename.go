@@ -8,10 +8,17 @@ import (
 	"github.com/catalyzeio/cli/lib/httpclient"
 )
 
-func CmdRename(svcID, label string, is IServices) error {
+func CmdRename(svcName, label string, is IServices) error {
+	service, err := is.RetrieveByLabel(svcName)
+	if err != nil {
+		return err
+	}
+	if service == nil {
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
+	}
 	data := map[string]string{}
 	data["label"] = label
-	err := is.Update(svcID, data)
+	err = is.Update(service.ID, data)
 	if err != nil {
 		return err
 	}

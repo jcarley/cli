@@ -10,7 +10,6 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/environments"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/git"
 	"github.com/catalyzeio/cli/models"
 )
@@ -105,7 +104,6 @@ func (s *SAssociate) Associate(name, remote string, defaultEnv bool, env *models
 	if defaultEnv {
 		s.Settings.Default = name
 	}
-	config.DropBreadcrumb(name, s.Settings)
 	if len(s.Settings.Environments) > 1 && s.Settings.Default == "" {
 		logrus.Printf("You now have %d environments associated. Consider running \"catalyze default ENV_NAME\" to set a default", len(s.Settings.Environments))
 	}

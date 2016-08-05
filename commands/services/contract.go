@@ -67,7 +67,8 @@ var RenameSubCmd = models.Command{
 	LongHelp:  "Rename a service",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
-			label := subCmd.StringArg("LABEL", "", "The new label for the service")
+			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The service to rename")
+			label := subCmd.StringArg("NEW_NAME", "", "The new name for the service")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -75,12 +76,12 @@ var RenameSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdRename(settings.ServiceID, *label, New(settings))
+				err := CmdRename(*serviceName, *label, New(settings))
 				if err != nil {
 					logrus.Fatalln(err.Error())
 				}
 			}
-			subCmd.Spec = "LABEL"
+			subCmd.Spec = "SERVICE_NAME NEW_NAME"
 		}
 	},
 }

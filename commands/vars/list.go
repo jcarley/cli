@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"gopkg.in/yaml.v2"
 )
@@ -54,8 +55,18 @@ func (p *PlainFormatter) Output(envVars map[string]string) error {
 	return nil
 }
 
-func CmdList(formatter Formatter, iv IVars) error {
-	envVars, err := iv.List()
+func CmdList(svcName, defaultSvcID string, formatter Formatter, iv IVars, is services.IServices) error {
+	if svcName != "" {
+		service, err := is.RetrieveByLabel(svcName)
+		if err != nil {
+			return err
+		}
+		if service == nil {
+			return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
+		}
+		defaultSvcID = service.ID
+	}
+	envVars, err := iv.List(defaultSvcID)
 	if err != nil {
 		return err
 	}
@@ -67,9 +78,9 @@ func CmdList(formatter Formatter, iv IVars) error {
 }
 
 // List lists all environment variables.
-func (v *SVars) List() (map[string]string, error) {
+func (v *SVars) List(svcID string) (map[string]string, error) {
 	headers := httpclient.GetHeaders(v.Settings.SessionToken, v.Settings.Version, v.Settings.Pod, v.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/env", v.Settings.PaasHost, v.Settings.PaasHostVersion, v.Settings.EnvironmentID, v.Settings.ServiceID), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/env", v.Settings.PaasHost, v.Settings.PaasHostVersion, v.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return nil, err
 	}

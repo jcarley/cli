@@ -2,6 +2,7 @@ package vars
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
@@ -30,6 +31,7 @@ var ListSubCmd = models.Command{
 	LongHelp:  "List all environment variables",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
+			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service containing the environment variables. Defaults to the associated service.")
 			json := subCmd.BoolOpt("json", false, "Output environment variables in JSON format")
 			yaml := subCmd.BoolOpt("yaml", false, "Output environment variables in YAML format")
 			subCmd.Action = func() {
@@ -47,12 +49,12 @@ var ListSubCmd = models.Command{
 				} else {
 					formatter = &PlainFormatter{}
 				}
-				err := CmdList(formatter, New(settings))
+				err := CmdList(*serviceName, settings.ServiceID, formatter, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "[--json | --yaml]"
+			subCmd.Spec = "[SERVICE_NAME] [--json | --yaml]"
 		}
 	},
 }
@@ -63,6 +65,7 @@ var SetSubCmd = models.Command{
 	LongHelp:  "Set one or more new environment variables or update the values of existing ones",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
+			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service on which the environment variables will be set. Defaults to the associated service.")
 			variables := subCmd.Strings(cli.StringsOpt{
 				Name:      "v variable",
 				Value:     []string{},
@@ -76,12 +79,12 @@ var SetSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdSet(*variables, New(settings))
+				err := CmdSet(*serviceName, settings.ServiceID, *variables, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "-v..."
+			subCmd.Spec = "[SERVICE_NAME] -v..."
 		}
 	},
 }
@@ -92,6 +95,7 @@ var UnsetSubCmd = models.Command{
 	LongHelp:  "Unset (delete) an existing environment variable",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
+			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service on which the environment variables will be unset. Defaults to the associated service.")
 			variable := subCmd.StringArg("VARIABLE", "", "The name of the environment variable to unset")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
@@ -100,21 +104,21 @@ var UnsetSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdUnset(*variable, New(settings))
+				err := CmdUnset(*serviceName, settings.ServiceID, *variable, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "VARIABLE"
+			subCmd.Spec = "[SERVICE_NAME] VARIABLE"
 		}
 	},
 }
 
 // IVars
 type IVars interface {
-	List() (map[string]string, error)
-	Set(envVarsMap map[string]string) error
-	Unset(key string) error
+	List(svcID string) (map[string]string, error)
+	Set(svcID string, envVarsMap map[string]string) error
+	Unset(svcID, key string) error
 }
 
 // SVars is a concrete implementation of IVars
