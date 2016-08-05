@@ -8,8 +8,8 @@ import (
 	"github.com/catalyzeio/cli/models"
 )
 
-// CmdEnvironments lists all environments which the user has access to
-func CmdEnvironments(environments IEnvironments) error {
+// CmdList lists all environments which the user has access to
+func CmdList(environments IEnvironments) error {
 	envs, err := environments.List()
 	if err != nil {
 		return err
