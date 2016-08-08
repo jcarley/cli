@@ -18,6 +18,7 @@ import (
 	"github.com/catalyzeio/cli/commands/domain"
 	"github.com/catalyzeio/cli/commands/environments"
 	"github.com/catalyzeio/cli/commands/files"
+	"github.com/catalyzeio/cli/commands/git"
 	"github.com/catalyzeio/cli/commands/invites"
 	"github.com/catalyzeio/cli/commands/keys"
 	"github.com/catalyzeio/cli/commands/logout"
@@ -180,6 +181,7 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.Command(domain.Cmd.Name, domain.Cmd.ShortHelp, domain.Cmd.CmdFunc(settings))
 	app.Command(environments.Cmd.Name, environments.Cmd.ShortHelp, environments.Cmd.CmdFunc(settings))
 	app.Command(files.Cmd.Name, files.Cmd.ShortHelp, files.Cmd.CmdFunc(settings))
+	app.Command(git.Cmd.Name, git.Cmd.ShortHelp, git.Cmd.CmdFunc(settings))
 	app.Command(invites.Cmd.Name, invites.Cmd.ShortHelp, invites.Cmd.CmdFunc(settings))
 	app.Command(keys.Cmd.Name, keys.Cmd.ShortHelp, keys.Cmd.CmdFunc(settings))
 	app.Command(logout.Cmd.Name, logout.Cmd.ShortHelp, logout.Cmd.CmdFunc(settings))

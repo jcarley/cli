@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
@@ -18,6 +19,7 @@ import (
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
+	"github.com/tj/go-spin"
 )
 
 func CmdDownload(databaseName, backupID, filePath string, force bool, id IDb, ip prompts.IPrompts, is services.IServices) error {
@@ -58,18 +60,33 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 	if job.Type != "backup" || (job.Status != "finished" && job.Status != "disappeared") {
 		return errors.New("Only 'finished' 'backup' jobs may be downloaded")
 	}
-	logrus.Printf("Downloading backup %s", backupID)
+	spinner := spin.New()
+	ticker := time.Tick(100 * time.Millisecond)
+	done := make(chan struct{}, 1)
+	go func() {
+		for {
+			select {
+			case <-ticker:
+				fmt.Printf("\r\033[mDownloading backup %s. This may take awhile %s\033[m ", backupID, spinner.Next())
+			case <-done:
+				return
+			}
+		}
+	}()
 	tempURL, err := d.TempDownloadURL(backupID, service)
 	if err != nil {
+		done <- struct{}{}
 		return err
 	}
 	dir, err := ioutil.TempDir("", "")
 	if err != nil {
+		done <- struct{}{}
 		return err
 	}
 	defer os.Remove(dir)
 	tmpFile, err := ioutil.TempFile(dir, "")
 	if err != nil {
+		done <- struct{}{}
 		return err
 	}
 
@@ -82,13 +99,19 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 	req.HTTPRequest.URL.RawQuery = u.RawQuery
 	err = req.Send()
 	if err != nil {
+		done <- struct{}{}
 		return err
 	}
 	defer resp.Body.Close()
-	io.Copy(tmpFile, resp.Body)
+	_, err = io.Copy(tmpFile, resp.Body)
+	if err != nil {
+		done <- struct{}{}
+		return err
+	}
 	tmpFile.Close()
+	done <- struct{}{}
 
-	logrus.Println("Decrypting...")
+	logrus.Println("\nDecrypting...")
 	err = d.Crypto.DecryptFile(tmpFile.Name(), job.Backup.Key, job.Backup.IV, filePath)
 	if err != nil {
 		return err
