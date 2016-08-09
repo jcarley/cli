@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/crypto"
 	"github.com/catalyzeio/cli/lib/httpclient"
@@ -119,14 +119,12 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	if err != nil {
 		return nil, err
 	}
-	svc := s3.New(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.AnonymousCredentials}))
-	req, _ := svc.PutObjectRequest(&s3.PutObjectInput{
+	uploader := s3manager.NewUploader(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.AnonymousCredentials}))
+	_, err = uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(strings.Split(u.Host, ".")[0]),
 		Key:    aws.String(strings.TrimLeft(u.Path, "/")),
 		Body:   encrFile,
 	})
-	req.HTTPRequest.URL.RawQuery = u.RawQuery
-	err = req.Send()
 	if err != nil {
 		return nil, err
 	}
