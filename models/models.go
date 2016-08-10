@@ -77,6 +77,15 @@ type TempURL struct {
 	URL string `json:"url"`
 }
 
+// TempAuth holds credentials for temporary authorization to modify a specific path in s3
+type TempAuth struct {
+	SecretAccessKey string `json:"secret_key"`
+	URL             string `json:"url"`
+	SessionToken    string `json:"session_token"`
+	AccessKeyID     string `json:"access_key"`
+	Expiration      string `json:"expiration"`
+}
+
 // OrgUser users who have access to an org
 type OrgUser struct {
 	ID     string `json:"id"`

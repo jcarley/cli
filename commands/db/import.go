@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
@@ -18,6 +19,7 @@ import (
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/models"
+	"github.com/catalyzeio/gcm/gcm"
 )
 
 func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id IDb, is services.IServices, ij jobs.IJobs) error {
@@ -92,11 +94,10 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	rand.Read(key)
 	rand.Read(iv)
 	logrus.Println("Encrypting...")
-	encrFilePath, err := d.Crypto.EncryptFile(filePath, key, iv)
+	encryptFileReader, err := d.Crypto.NewEncryptFileReader(filePath, key, iv)
 	if err != nil {
 		return nil, err
 	}
-	defer os.Remove(encrFilePath)
 	options := map[string]string{}
 	if mongoCollection != "" {
 		options["databaseCollection"] = mongoCollection
@@ -105,25 +106,21 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 		options["database"] = mongoDatabase
 	}
 	logrus.Println("Uploading...")
-	tempURL, err := d.TempUploadURL(service)
+	tmpAuth, err := d.TempAccessAuth(service)
 	if err != nil {
 		return nil, err
 	}
-	encrFile, err := os.Open(encrFilePath)
+	u, err := url.Parse(tmpAuth.URL)
 	if err != nil {
 		return nil, err
 	}
-	defer encrFile.Close()
-
-	u, err := url.Parse(tempURL.URL)
-	if err != nil {
-		return nil, err
-	}
-	uploader := s3manager.NewUploader(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.AnonymousCredentials}))
+	fileName := strings.TrimLeft(u.Path, "/") + "_restore"
+	uploader := s3manager.NewUploader(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.NewStaticCredentials(tmpAuth.AccessKeyID, tmpAuth.SecretAccessKey, tmpAuth.SessionToken)}))
 	_, err = uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(strings.Split(u.Host, ".")[0]),
-		Key:    aws.String(strings.TrimLeft(u.Path, "/")),
-		Body:   encrFile,
+		Bucket:               aws.String(strings.Split(u.Host, ".")[0]),
+		Key:                  aws.String(fileName),
+		Body:                 encryptFileReader,
+		ServerSideEncryption: aws.String("AES256"),
 	})
 	if err != nil {
 		return nil, err
@@ -133,7 +130,7 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	for key, value := range options {
 		importParams[key] = value
 	}
-	importParams["filename"] = strings.TrimLeft(u.Path, "/")
+	importParams["filename"] = fileName
 	importParams["encryptionKey"] = string(d.Crypto.Hex(key, crypto.KeySize*2))
 	importParams["encryptionIV"] = string(d.Crypto.Hex(iv, crypto.IVSize*2))
 	importParams["dropDatabase"] = false
@@ -167,4 +164,18 @@ func (d *SDb) TempUploadURL(service *models.Service) (*models.TempURL, error) {
 		return nil, err
 	}
 	return &tempURL, nil
+}
+
+func (d *SDb) TempAccessAuth(service *models.Service) (*models.TempAuth, error) {
+	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/temp-auth", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
+	if err != nil {
+		return nil, err
+	}
+	var tempAuth models.TempAuth
+	err = httpclient.ConvertResp(resp, statusCode, &tempAuth)
+	if err != nil {
+		return nil, err
+	}
+	return &tempAuth, nil
 }

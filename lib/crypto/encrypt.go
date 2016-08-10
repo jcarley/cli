@@ -30,3 +30,13 @@ func (c *SCrypto) EncryptFile(plainFilePath string, key, iv []byte) (string, err
 	}
 	return outputFile.Name(), nil
 }
+
+func (c *SCrypto) NewEncryptFileReader(plainFilePath string, key, iv []byte) (*gcm.EncryptFileReader, error) {
+	if len(key) != KeySize {
+		return nil, fmt.Errorf("Invalid key length. Keys must be %d bytes", KeySize)
+	}
+	if len(iv) != IVSize {
+		return nil, fmt.Errorf("Invalid IV length. IVs must be %d bytes", IVSize)
+	}
+	return gcm.NewEncryptFileReader(plainFilePath, key, iv, c.Unhex([]byte(gcm.AAD), AADSize))
+}
