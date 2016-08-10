@@ -20,6 +20,7 @@ var Cmd = models.Command{
 		return func(cmd *cli.Cmd) {
 			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
 			cmd.Command(StopSubCmd.Name, StopSubCmd.ShortHelp, StopSubCmd.CmdFunc(settings))
+			cmd.Command(RenameSubCmd.Name, RenameSubCmd.ShortHelp, RenameSubCmd.CmdFunc(settings))
 			cmd.Action = func() {
 				logrus.Warnln("This command has been moved! Please use \"catalyze services list\" instead. This alias will be removed in the next CLI update.")
 				logrus.Warnln("You can list all available services subcommands by running \"catalyze services --help\".")
@@ -60,6 +61,31 @@ var ListSubCmd = models.Command{
 	},
 }
 
+var RenameSubCmd = models.Command{
+	Name:      "rename",
+	ShortHelp: "Rename a service",
+	LongHelp:  "Rename a service",
+	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
+		return func(subCmd *cli.Cmd) {
+			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The service to rename")
+			label := subCmd.StringArg("NEW_NAME", "", "The new name for the service")
+			subCmd.Action = func() {
+				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
+					logrus.Fatal(err.Error())
+				}
+				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+					logrus.Fatal(err.Error())
+				}
+				err := CmdRename(*serviceName, *label, New(settings))
+				if err != nil {
+					logrus.Fatalln(err.Error())
+				}
+			}
+			subCmd.Spec = "SERVICE_NAME NEW_NAME"
+		}
+	},
+}
+
 var StopSubCmd = models.Command{
 	Name:      "stop",
 	ShortHelp: "Stop all instances of a given service (including all workers, rake tasks, and open consoles)",
@@ -90,6 +116,7 @@ type IServices interface {
 	ListByEnvID(envID, podID string) (*[]models.Service, error)
 	Retrieve(svcID string) (*models.Service, error)
 	RetrieveByLabel(label string) (*models.Service, error)
+	Update(svcID string, updates map[string]string) error
 }
 
 // SServices is a concrete implementation of IServices

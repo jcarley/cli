@@ -2,6 +2,7 @@ package rake
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
@@ -17,6 +18,7 @@ var Cmd = models.Command{
 	LongHelp:  "Execute a rake task",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
+			serviceName := cmd.StringArg("SERVICE_NAME", "", "The service that will run the rake task. Defaults to the associated service.")
 			taskName := cmd.StringArg("TASK_NAME", "", "The name of the rake task to run")
 			cmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
@@ -25,19 +27,19 @@ var Cmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdRake(*taskName, New(settings))
+				err := CmdRake(*serviceName, *taskName, settings.ServiceID, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			cmd.Spec = "TASK_NAME"
+			cmd.Spec = "[SERVICE_NAME] TASK_NAME"
 		}
 	},
 }
 
 // IRake
 type IRake interface {
-	Run(taskName string) error
+	Run(taskName, svcID string) error
 }
 
 // SRake is a concrete implementation of IRake

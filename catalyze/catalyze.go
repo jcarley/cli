@@ -15,8 +15,10 @@ import (
 	"github.com/catalyzeio/cli/commands/default"
 	"github.com/catalyzeio/cli/commands/deploykeys"
 	"github.com/catalyzeio/cli/commands/disassociate"
+	"github.com/catalyzeio/cli/commands/domain"
 	"github.com/catalyzeio/cli/commands/environments"
 	"github.com/catalyzeio/cli/commands/files"
+	"github.com/catalyzeio/cli/commands/git"
 	"github.com/catalyzeio/cli/commands/invites"
 	"github.com/catalyzeio/cli/commands/keys"
 	"github.com/catalyzeio/cli/commands/logout"
@@ -31,6 +33,7 @@ import (
 	"github.com/catalyzeio/cli/commands/ssl"
 	"github.com/catalyzeio/cli/commands/status"
 	"github.com/catalyzeio/cli/commands/supportids"
+	"github.com/catalyzeio/cli/commands/token"
 	"github.com/catalyzeio/cli/commands/update"
 	"github.com/catalyzeio/cli/commands/users"
 	"github.com/catalyzeio/cli/commands/vars"
@@ -175,8 +178,10 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.Command(defaultcmd.Cmd.Name, defaultcmd.Cmd.ShortHelp, defaultcmd.Cmd.CmdFunc(settings))
 	app.Command(deploykeys.Cmd.Name, deploykeys.Cmd.ShortHelp, deploykeys.Cmd.CmdFunc(settings))
 	app.Command(disassociate.Cmd.Name, disassociate.Cmd.ShortHelp, disassociate.Cmd.CmdFunc(settings))
+	app.Command(domain.Cmd.Name, domain.Cmd.ShortHelp, domain.Cmd.CmdFunc(settings))
 	app.Command(environments.Cmd.Name, environments.Cmd.ShortHelp, environments.Cmd.CmdFunc(settings))
 	app.Command(files.Cmd.Name, files.Cmd.ShortHelp, files.Cmd.CmdFunc(settings))
+	app.Command(git.Cmd.Name, git.Cmd.ShortHelp, git.Cmd.CmdFunc(settings))
 	app.Command(invites.Cmd.Name, invites.Cmd.ShortHelp, invites.Cmd.CmdFunc(settings))
 	app.Command(keys.Cmd.Name, keys.Cmd.ShortHelp, keys.Cmd.CmdFunc(settings))
 	app.Command(logout.Cmd.Name, logout.Cmd.ShortHelp, logout.Cmd.CmdFunc(settings))
@@ -191,6 +196,7 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.Command(ssl.Cmd.Name, ssl.Cmd.ShortHelp, ssl.Cmd.CmdFunc(settings))
 	app.Command(status.Cmd.Name, status.Cmd.ShortHelp, status.Cmd.CmdFunc(settings))
 	app.Command(supportids.Cmd.Name, supportids.Cmd.ShortHelp, supportids.Cmd.CmdFunc(settings))
+	app.Command(token.Cmd.Name, token.Cmd.ShortHelp, token.Cmd.CmdFunc(settings))
 	if !config.Beta {
 		app.Command(update.Cmd.Name, update.Cmd.ShortHelp, update.Cmd.CmdFunc(settings))
 	}

@@ -6,12 +6,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
+	"github.com/tj/go-spin"
 )
 
 func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPrompts, is services.IServices, ij jobs.IJobs) error {
@@ -68,27 +70,48 @@ func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPr
 // backup. Once finished, the CLI asks where the file can be downloaded from.
 // The file is downloaded, decrypted, and saved locally.
 func (d *SDb) Export(filePath string, job *models.Job, service *models.Service) error {
-	logrus.Printf("Downloading export %s", job.ID)
+	spinner := spin.New()
+	ticker := time.Tick(100 * time.Millisecond)
+	done := make(chan struct{}, 1)
+	go func() {
+		for {
+			select {
+			case <-ticker:
+				fmt.Printf("\r\033[mDownloading export %s. This may take awhile %s\033[m ", job.ID, spinner.Next())
+			case <-done:
+				return
+			}
+		}
+	}()
 	tempURL, err := d.TempDownloadURL(job.ID, service)
 	if err != nil {
+		done <- struct{}{}
 		return err
 	}
 	dir, err := ioutil.TempDir("", "")
 	if err != nil {
+		done <- struct{}{}
 		return err
 	}
 	defer os.Remove(dir)
 	tmpFile, err := ioutil.TempFile(dir, "")
 	if err != nil {
+		done <- struct{}{}
 		return err
 	}
 	resp, err := http.Get(tempURL.URL)
 	if err != nil {
+		done <- struct{}{}
 		return err
 	}
 	defer resp.Body.Close()
-	io.Copy(tmpFile, resp.Body)
-	logrus.Println("Decrypting...")
+	_, err = io.Copy(tmpFile, resp.Body)
+	if err != nil {
+		done <- struct{}{}
+		return err
+	}
+	done <- struct{}{}
+	logrus.Println("\nDecrypting...")
 	tmpFile.Close()
 	err = d.Crypto.DecryptFile(tmpFile.Name(), job.Backup.Key, job.Backup.IV, filePath)
 	if err != nil {
