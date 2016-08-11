@@ -31,6 +31,9 @@ func (c *SCrypto) EncryptFile(plainFilePath string, key, iv []byte) (string, err
 	return outputFile.Name(), nil
 }
 
+// EncryptFileReader takes in an open plaintext file and wraps it in a
+// io.Reader interface that will encrypt the file as its read.
+// The passed in key and iv should *NOT* be base64 encoded or hex encoded.
 func (c *SCrypto) NewEncryptFileReader(plainFilePath string, key, iv []byte) (*gcm.EncryptFileReader, error) {
 	if len(key) != KeySize {
 		return nil, fmt.Errorf("Invalid key length. Keys must be %d bytes", KeySize)

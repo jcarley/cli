@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
@@ -19,7 +18,6 @@ import (
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/models"
-	"github.com/catalyzeio/gcm/gcm"
 )
 
 func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id IDb, is services.IServices, ij jobs.IJobs) error {
@@ -106,7 +104,7 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 		options["database"] = mongoDatabase
 	}
 	logrus.Println("Uploading...")
-	tmpAuth, err := d.TempAccessAuth(service)
+	tmpAuth, err := d.TempUploadAuth(service)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +112,7 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	if err != nil {
 		return nil, err
 	}
-	fileName := strings.TrimLeft(u.Path, "/") + "_restore"
+	fileName := strings.TrimLeft(u.Path, "/")
 	uploader := s3manager.NewUploader(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.NewStaticCredentials(tmpAuth.AccessKeyID, tmpAuth.SecretAccessKey, tmpAuth.SessionToken)}))
 	_, err = uploader.Upload(&s3manager.UploadInput{
 		Bucket:               aws.String(strings.Split(u.Host, ".")[0]),
@@ -152,23 +150,9 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	return &job, nil
 }
 
-func (d *SDb) TempUploadURL(service *models.Service) (*models.TempURL, error) {
+func (d *SDb) TempUploadAuth(service *models.Service) (*models.TempAuth, error) {
 	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/restore-url", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
-	if err != nil {
-		return nil, err
-	}
-	var tempURL models.TempURL
-	err = httpclient.ConvertResp(resp, statusCode, &tempURL)
-	if err != nil {
-		return nil, err
-	}
-	return &tempURL, nil
-}
-
-func (d *SDb) TempAccessAuth(service *models.Service) (*models.TempAuth, error) {
-	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/temp-auth", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/temp-restore-auth", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
 	if err != nil {
 		return nil, err
 	}

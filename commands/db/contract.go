@@ -193,8 +193,8 @@ type IDb interface {
 	Export(filePath string, job *models.Job, service *models.Service) error
 	Import(filePath, mongoCollection, mongoDatabase string, service *models.Service) (*models.Job, error)
 	List(page, pageSize int, service *models.Service) (*[]models.Job, error)
-	TempUploadURL(service *models.Service) (*models.TempURL, error)
-	TempDownloadURL(jobID string, service *models.Service) (*models.TempURL, error)
+	TempUploadAuth(service *models.Service) (*models.TempAuth, error)
+	TempDownloadAuth(jobId string, service *models.Service) (*models.TempAuth, error)
 	TempLogsURL(jobID string, serviceID string) (*models.TempURL, error)
 	DumpLogs(taskType string, job *models.Job, service *models.Service) error
 }

@@ -7,6 +7,7 @@ type ICrypto interface {
 	DecryptFile(encryptedFilePath, key, iv, outputFilePath string) error
 	EncryptFile(plainFilePath string, key, iv []byte) (string, error)
 	NewEncryptFileReader(plainFilePath string, key, iv []byte) (*gcm.EncryptFileReader, error)
+	NewDecryptFileWriterAt(plainFilePath, key, iv string) (*gcm.DecryptFileWriterAt, error)
 	Hex(src []byte, maxLen int) []byte
 	Unhex(src []byte, maxLen int) []byte
 	Base64Encode(src []byte, maxLen int) []byte

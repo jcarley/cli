@@ -2,12 +2,16 @@ package db
 
 import (
 	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
+	"net/url"
 	"os"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/lib/prompts"
@@ -69,28 +73,23 @@ func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPr
 // The file is downloaded, decrypted, and saved locally.
 func (d *SDb) Export(filePath string, job *models.Job, service *models.Service) error {
 	logrus.Printf("Downloading export %s", job.ID)
-	tempURL, err := d.TempDownloadURL(job.ID, service)
+	tmpAuth, err := d.TempDownloadAuth(job.ID, service)
 	if err != nil {
 		return err
 	}
-	dir, err := ioutil.TempDir("", "")
+	u, err := url.Parse(tmpAuth.URL)
 	if err != nil {
 		return err
 	}
-	defer os.Remove(dir)
-	tmpFile, err := ioutil.TempFile(dir, "")
+	downloader := s3manager.NewDownloader(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.NewStaticCredentials(tmpAuth.AccessKeyID, tmpAuth.SecretAccessKey, tmpAuth.SessionToken)}))
+	decryptWriter, err := d.Crypto.NewDecryptFileWriterAt(filePath, job.Backup.Key, job.Backup.IV)
 	if err != nil {
 		return err
 	}
-	resp, err := http.Get(tempURL.URL)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	io.Copy(tmpFile, resp.Body)
-	logrus.Println("Decrypting...")
-	tmpFile.Close()
-	err = d.Crypto.DecryptFile(tmpFile.Name(), job.Backup.Key, job.Backup.IV, filePath)
+	_, err = downloader.Download(decryptWriter, &s3.GetObjectInput{
+		Bucket: aws.String(strings.Split(u.Host, ".")[0]),
+		Key:    aws.String(strings.TrimLeft(u.Path, "/")),
+	})
 	if err != nil {
 		return err
 	}

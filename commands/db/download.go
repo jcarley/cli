@@ -3,8 +3,6 @@ package db
 import (
 	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"strings"
@@ -14,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/prompts"
@@ -59,54 +58,39 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 		return errors.New("Only 'finished' 'backup' jobs may be downloaded")
 	}
 	logrus.Printf("Downloading backup %s", backupID)
-	tempURL, err := d.TempDownloadURL(backupID, service)
+	tmpAuth, err := d.TempDownloadAuth(backupID, service)
 	if err != nil {
 		return err
 	}
-	dir, err := ioutil.TempDir("", "")
+	u, err := url.Parse(tmpAuth.URL)
 	if err != nil {
 		return err
 	}
-	defer os.Remove(dir)
-	tmpFile, err := ioutil.TempFile(dir, "")
+	downloader := s3manager.NewDownloader(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.NewStaticCredentials(tmpAuth.AccessKeyID, tmpAuth.SecretAccessKey, tmpAuth.SessionToken)}))
+	decryptWriter, err := d.Crypto.NewDecryptFileWriterAt(filePath, job.Backup.Key, job.Backup.IV)
 	if err != nil {
 		return err
 	}
-
-	u, _ := url.Parse(tempURL.URL)
-	svc := s3.New(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.AnonymousCredentials}))
-	req, resp := svc.GetObjectRequest(&s3.GetObjectInput{
+	_, err = downloader.Download(decryptWriter, &s3.GetObjectInput{
 		Bucket: aws.String(strings.Split(u.Host, ".")[0]),
 		Key:    aws.String(strings.TrimLeft(u.Path, "/")),
 	})
-	req.HTTPRequest.URL.RawQuery = u.RawQuery
-	err = req.Send()
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
-	io.Copy(tmpFile, resp.Body)
-	tmpFile.Close()
-
-	logrus.Println("Decrypting...")
-	err = d.Crypto.DecryptFile(tmpFile.Name(), job.Backup.Key, job.Backup.IV, filePath)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
-func (d *SDb) TempDownloadURL(jobID string, service *models.Service) (*models.TempURL, error) {
+func (d *SDb) TempDownloadAuth(jobID string, service *models.Service) (*models.TempAuth, error) {
 	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/backup-url/%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID, jobID), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/temp-backup-auth/%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID, jobID), headers)
 	if err != nil {
 		return nil, err
 	}
-	var tempURL models.TempURL
-	err = httpclient.ConvertResp(resp, statusCode, &tempURL)
+	var tempAuth models.TempAuth
+	err = httpclient.ConvertResp(resp, statusCode, &tempAuth)
 	if err != nil {
 		return nil, err
 	}
-	return &tempURL, nil
+	return &tempAuth, nil
 }
