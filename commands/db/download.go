@@ -78,6 +78,9 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 	if err != nil {
 		return err
 	}
+	if err := decryptWriter.Close(); err != nil {
+		return err
+	}
 	return nil
 }
 

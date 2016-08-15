@@ -91,8 +91,8 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	iv := make([]byte, crypto.IVSize)
 	rand.Read(key)
 	rand.Read(iv)
-	logrus.Println("Encrypting...")
 	encryptFileReader, err := d.Crypto.NewEncryptFileReader(filePath, key, iv)
+	defer encryptFileReader.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	if mongoDatabase != "" {
 		options["database"] = mongoDatabase
 	}
-	logrus.Println("Uploading...")
+	logrus.Println("Encrypting and Uploading...")
 	tmpAuth, err := d.TempUploadAuth(service)
 	if err != nil {
 		return nil, err
@@ -123,7 +123,6 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	if err != nil {
 		return nil, err
 	}
-
 	importParams := map[string]interface{}{}
 	for key, value := range options {
 		importParams[key] = value

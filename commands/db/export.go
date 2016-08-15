@@ -93,5 +93,8 @@ func (d *SDb) Export(filePath string, job *models.Job, service *models.Service) 
 	if err != nil {
 		return err
 	}
+	if err := decryptWriter.Close(); err != nil {
+		return err
+	}
 	return nil
 }
