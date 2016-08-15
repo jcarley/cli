@@ -22,7 +22,7 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 	envs, errs := ie.List()
 	if errs != nil && len(errs) > 0 {
 		for pod, err := range errs {
-			logrus.Errorf("Failed to list environments for pod \"%s\": %s", pod, err)
+			logrus.Debugf("Failed to list environments for pod \"%s\": %s", pod, err)
 		}
 	}
 	var e *models.Environment

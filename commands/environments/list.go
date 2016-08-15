@@ -1,7 +1,6 @@
 package environments
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
@@ -13,7 +12,7 @@ import (
 func CmdList(environments IEnvironments) error {
 	envs, errs := environments.List()
 	if envs == nil || len(*envs) == 0 {
-		logrus.Println("no environments found")
+		logrus.Println("No environments found. If this is incorrect, please contact support@catalyze.io.")
 	} else {
 		for _, env := range *envs {
 			logrus.Printf("%s: %s", env.Name, env.ID)
@@ -21,9 +20,8 @@ func CmdList(environments IEnvironments) error {
 	}
 	if errs != nil && len(errs) > 0 {
 		for pod, err := range errs {
-			defer logrus.Errorf("Failed to list environments for pod \"%s\": %s", pod, err)
+			logrus.Debugf("Failed to list environments for pod \"%s\": %s", pod, err)
 		}
-		return errors.New("Failures listing environments. Please try again or contact support@catalyze.io if this issue persists.")
 	}
 	return nil
 }
