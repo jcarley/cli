@@ -19,12 +19,15 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 		return errors.New("No git repo found in the current directory")
 	}
 	logrus.Printf("Existing git remotes named \"%s\" will be overwritten", remote)
-	envs, err := ie.List()
-	if err != nil {
-		return err
+	envs, errs := ie.List()
+	if errs != nil && len(errs) > 0 {
+		for pod, err := range errs {
+			logrus.Errorf("Failed to list environments for pod \"%s\": %s", pod, err)
+		}
 	}
 	var e *models.Environment
 	var svcs *[]models.Service
+	var err error
 	for _, env := range *envs {
 		if env.Name == envLabel {
 			e = &env
@@ -54,7 +57,7 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 		}
 	}
 	if chosenService == nil {
-		return fmt.Errorf("No code service found with label '%s'. Code services found: %s", svcLabel, strings.Join(availableCodeServices, ", "))
+		return fmt.Errorf("No code service found with label \"%s\". Code services found: %s", svcLabel, strings.Join(availableCodeServices, ", "))
 	}
 	remotes, err := ig.List()
 	if err != nil {

@@ -19,7 +19,6 @@ var Cmd = models.Command{
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
-				updatePods(settings)
 			}
 		}
 	},
@@ -29,6 +28,7 @@ var Cmd = models.Command{
 type IUpdate interface {
 	Check() (bool, error)
 	Update() error
+	UpdatePods()
 }
 
 // SUpdate is a concrete implementation of IUpdate

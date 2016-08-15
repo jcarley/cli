@@ -79,7 +79,7 @@ var RenameSubCmd = models.Command{
 
 // IEnvironments is an interface for interacting with environments
 type IEnvironments interface {
-	List() (*[]models.Environment, error)
+	List() (*[]models.Environment, map[string]error)
 	Retrieve(envID string) (*models.Environment, error)
 	Update(envID string, updates map[string]string) error
 }
