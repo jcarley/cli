@@ -34,7 +34,6 @@ import (
 	"github.com/catalyzeio/cli/commands/ssl"
 	"github.com/catalyzeio/cli/commands/status"
 	"github.com/catalyzeio/cli/commands/supportids"
-	"github.com/catalyzeio/cli/commands/token"
 	"github.com/catalyzeio/cli/commands/update"
 	"github.com/catalyzeio/cli/commands/users"
 	"github.com/catalyzeio/cli/commands/vars"
@@ -198,7 +197,6 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.Command(ssl.Cmd.Name, ssl.Cmd.ShortHelp, ssl.Cmd.CmdFunc(settings))
 	app.Command(status.Cmd.Name, status.Cmd.ShortHelp, status.Cmd.CmdFunc(settings))
 	app.Command(supportids.Cmd.Name, supportids.Cmd.ShortHelp, supportids.Cmd.CmdFunc(settings))
-	app.Command(token.Cmd.Name, token.Cmd.ShortHelp, token.Cmd.CmdFunc(settings))
 	if !config.Beta {
 		app.Command(update.Cmd.Name, update.Cmd.ShortHelp, update.Cmd.CmdFunc(settings))
 	}
