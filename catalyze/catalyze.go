@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"time"
 
 	"github.com/catalyzeio/cli/commands/associate"
 	"github.com/catalyzeio/cli/commands/associated"
@@ -129,7 +130,8 @@ func Run() {
 		*settings = *r.GetSettings(*givenEnvName, "", accountsHost, authHost, "", paasHost, "", *username, *password)
 		logrus.Debugf("%+v", settings)
 
-		if settings.Pods == nil || len(*settings.Pods) == 0 {
+		if settings.Pods == nil || len(*settings.Pods) == 0 || settings.PodCheck < time.Now().Unix() {
+			settings.PodCheck = time.Now().Unix() + 86400
 			p := pods.New(settings)
 			pods, err := p.List()
 			if err == nil {

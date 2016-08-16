@@ -27,6 +27,10 @@ const size = 50
 // not very cohesive. This is intended to be similar to the `heroku logs`
 // command.
 func CmdLogs(queryString string, follow bool, hours, minutes, seconds int, envID string, settings *models.Settings, il ILogs, ip prompts.IPrompts, ie environments.IEnvironments, is services.IServices, isites sites.ISites) error {
+	if follow && (hours > 0 || minutes > 0 || seconds > 0) {
+		logrus.Warnln("Specifying \"logs -f\" in combination with \"--hours\", \"--minutes\", or \"--seconds\" has been deprecated!")
+		logrus.Warnln("Please specify either \"-f\" or use \"--hours\", \"--minutes\", \"--seconds\" but not both. Support for \"-f\" and a specified time frame will be removed in a later version.")
+	}
 	env, err := ie.Retrieve(envID)
 	if err != nil {
 		return err
