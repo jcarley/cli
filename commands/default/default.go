@@ -7,6 +7,8 @@ import (
 )
 
 func CmdDefault(alias string, id IDefault) error {
+	logrus.Warnln("The \"default\" command has been deprecated! It will be removed in a future version.")
+	logrus.Warnln("Please specify \"-E\" on all commands instead of using the default.")
 	err := id.Set(alias)
 	if err != nil {
 		return err
