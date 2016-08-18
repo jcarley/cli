@@ -15,6 +15,8 @@ import (
 )
 
 func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia IAssociate, ig git.IGit, ie environments.IEnvironments, is services.IServices) error {
+	logrus.Warnln("The \"--default\" flag has been deprecated! It will be removed in a future version.")
+	logrus.Warnln("Please specify \"-E\" on all commands instead of using the default.")
 	if !ig.Exists() {
 		return errors.New("No git repo found in the current directory")
 	}
@@ -103,12 +105,6 @@ func (s *SAssociate) Associate(name, remote string, defaultEnv bool, env *models
 		Name:          env.Name,
 		Pod:           env.Pod,
 		OrgID:         env.OrgID,
-	}
-	if defaultEnv {
-		s.Settings.Default = name
-	}
-	if len(s.Settings.Environments) > 1 && s.Settings.Default == "" {
-		logrus.Printf("You now have %d environments associated. Consider running \"catalyze default ENV_NAME\" to set a default", len(s.Settings.Environments))
 	}
 
 	return nil

@@ -6,7 +6,7 @@ import (
 )
 
 func CmdAssociated(ia IAssociated) error {
-	envs, defaultEnv, err := ia.Associated()
+	envs, err := ia.Associated()
 	if err != nil {
 		return err
 	}
@@ -16,10 +16,9 @@ func CmdAssociated(ia IAssociated) error {
     Environment Name: %s
     Service ID:       %s
     Associated at:    %s
-    Default:          %t
     Pod:              %s
     Organization ID:  %s
-`, envAlias, env.EnvironmentID, env.Name, env.ServiceID, env.Directory, defaultEnv == envAlias, env.Pod, env.OrgID)
+`, envAlias, env.EnvironmentID, env.Name, env.ServiceID, env.Directory, env.Pod, env.OrgID)
 	}
 	if len(envs) == 0 {
 		logrus.Println("No environments have been associated")
@@ -28,6 +27,6 @@ func CmdAssociated(ia IAssociated) error {
 }
 
 // Associated lists all currently associated environments.
-func (a *SAssociated) Associated() (map[string]models.AssociatedEnv, string, error) {
-	return a.Settings.Environments, a.Settings.Default, nil
+func (a *SAssociated) Associated() (map[string]models.AssociatedEnv, error) {
+	return a.Settings.Environments, nil
 }

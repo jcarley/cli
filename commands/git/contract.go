@@ -31,7 +31,7 @@ var AddSubCmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to add a git remote for")
-			remote := subCmd.StringArg("REMOTE_NAME", "", "The name of the git remote to be added")
+			remote := subCmd.StringOpt("r remote", "catalyze", "The name of the git remote to be added")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -44,7 +44,7 @@ var AddSubCmd = models.Command{
 					logrus.Fatalln(err.Error())
 				}
 			}
-			subCmd.Spec = "SERVICE_NAME REMOTE_NAME"
+			subCmd.Spec = "SERVICE_NAME [-r]"
 		}
 	},
 }

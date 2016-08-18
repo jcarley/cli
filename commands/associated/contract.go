@@ -26,7 +26,7 @@ var Cmd = models.Command{
 
 // IAssociated
 type IAssociated interface {
-	Associated() (map[string]models.AssociatedEnv, string, error)
+	Associated() (map[string]models.AssociatedEnv, error)
 }
 
 // SAssociated is a concrete implementation of IAssociated

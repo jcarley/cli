@@ -60,11 +60,6 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authH
 		}
 	}
 
-	// if no environment was given, fetch the default
-	if settings.EnvironmentID == "" || settings.ServiceID == "" {
-		setDefaultEnv(&settings)
-	}
-
 	// if no default, fetch the first associated env and print warning
 	if settings.EnvironmentID == "" || settings.ServiceID == "" {
 		// warn and ask
@@ -94,7 +89,6 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authH
 	logrus.Debugf("Paas Host: %s", paasHost)
 	logrus.Debugf("Auth Host Version: %s", authHostVersion)
 	logrus.Debugf("Paas Host Version: %s", paasHostVersion)
-	logrus.Debugf("Default: %s", settings.Default)
 	logrus.Debugf("Environment ID: %s", settings.EnvironmentID)
 	logrus.Debugf("Environment Name: %s", settings.EnvironmentName)
 	logrus.Debugf("Pod: %s", settings.Pod)
@@ -131,9 +125,6 @@ func DeleteBreadcrumb(alias string, settings *models.Settings) error {
 	}
 
 	delete(settings.Environments, alias)
-	if settings.Default == alias {
-		settings.Default = ""
-	}
 	SaveSettings(settings)
 	return nil
 }
@@ -152,13 +143,6 @@ func setGivenEnv(envName string, settings *models.Settings) {
 			break
 		}
 	}
-}
-
-// setDefaultEnv takes the name of the default env (if it exists) and finds it
-// in the env list in the given settings object. It then populates the
-// EnvironmentID and ServiceID on the settings object with appropriate values.
-func setDefaultEnv(settings *models.Settings) {
-	setGivenEnv(settings.Default, settings)
 }
 
 // setFirstAssociatedEnv is the last line of defense. If no other environments

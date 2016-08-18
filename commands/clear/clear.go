@@ -7,6 +7,7 @@ import (
 )
 
 func CmdClear(privateKey, session, environments, defaultEnv, pods bool, settings *models.Settings) error {
+	logrus.Warnln("The \"--default\" flag has been deprecated! It will be removed in a future version.")
 	if privateKey {
 		settings.PrivateKeyPath = ""
 	}

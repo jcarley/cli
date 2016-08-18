@@ -32,7 +32,7 @@ var Cmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 			}
-			cmd.Spec = "TARGET"
+			cmd.Spec = "[SERVICE_NAME] TARGET"
 		}
 	},
 }
