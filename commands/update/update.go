@@ -43,7 +43,7 @@ func exeGenericError() error {
 
 func (u *SUpdate) Check() (bool, error) {
 	updater.AutoUpdater.FetchInfo()
-	if updater.AutoUpdater.CurrentVersion == updater.AutoUpdater.Info.Version {
+	if updater.AutoUpdater.CurrentVersion >= updater.AutoUpdater.Info.Version {
 		return false, nil
 	}
 	return true, nil
