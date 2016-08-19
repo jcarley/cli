@@ -165,9 +165,6 @@ func (u *Updater) update() error {
 	if err != nil {
 		return err
 	}
-	logrus.Println(u.Info.Version)
-	logrus.Println(u.CurrentVersion)
-	logrus.Println(u.Info.Version < u.CurrentVersion)
 	if u.Info.Version <= u.CurrentVersion {
 		return nil
 	}
