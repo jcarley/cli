@@ -3,20 +3,23 @@ package db
 import (
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
+	"github.com/tj/go-spin"
 )
 
 func CmdDownload(databaseName, backupID, filePath string, force bool, id IDb, ip prompts.IPrompts, is services.IServices) error {
@@ -57,43 +60,60 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 	if job.Type != "backup" || (job.Status != "finished" && job.Status != "disappeared") {
 		return errors.New("Only 'finished' 'backup' jobs may be downloaded")
 	}
-	logrus.Printf("Downloading backup %s", backupID)
-	tmpAuth, err := d.TempDownloadAuth(backupID, service)
+	spinner := spin.New()
+	done := make(chan struct{}, 1)
+	defer func() { done <- struct{}{} }()
+	go func() {
+		for {
+			select {
+			case <-time.After(100 * time.Millisecond):
+				fmt.Printf("\r\033[mDownloading backup %s. This may take awhile %s\033[m ", backupID, spinner.Next())
+			case <-done:
+				return
+			}
+		}
+	}()
+	tempURL, err := d.TempDownloadURL(backupID, service)
 	if err != nil {
 		return err
 	}
-	u, err := url.Parse(tmpAuth.URL)
-	if err != nil {
-		return err
-	}
-	downloader := s3manager.NewDownloader(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.NewStaticCredentials(tmpAuth.AccessKeyID, tmpAuth.SecretAccessKey, tmpAuth.SessionToken)}))
-	decryptWriter, err := d.Crypto.NewDecryptFileWriterAt(filePath, job.Backup.Key, job.Backup.IV)
-	if err != nil {
-		return err
-	}
-	_, err = downloader.Download(decryptWriter, &s3.GetObjectInput{
+	u, _ := url.Parse(tempURL.URL)
+	svc := s3.New(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.AnonymousCredentials}))
+	req, resp := svc.GetObjectRequest(&s3.GetObjectInput{
 		Bucket: aws.String(strings.Split(u.Host, ".")[0]),
 		Key:    aws.String(strings.TrimLeft(u.Path, "/")),
 	})
+	req.HTTPRequest.URL.RawQuery = u.RawQuery
+	err = req.Send()
 	if err != nil {
 		return err
 	}
-	if err := decryptWriter.Close(); err != nil {
+	defer resp.Body.Close()
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
+	if err != nil {
 		return err
 	}
-	return nil
+	dfw, err := NewDecryptWriteCloser(file, job.Backup.Key, job.Backup.IV, filePath)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(dfw, resp.Body)
+	if err != nil {
+		return err
+	}
+	return dfw.Close()
 }
 
-func (d *SDb) TempDownloadAuth(jobID string, service *models.Service) (*models.TempAuth, error) {
+func (d *SDb) TempDownloadURL(jobID string, service *models.Service) (*models.TempURL, error) {
 	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/temp-backup-auth/%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID, jobID), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/backup-url/%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID, jobID), headers)
 	if err != nil {
 		return nil, err
 	}
-	var tempAuth models.TempAuth
-	err = httpclient.ConvertResp(resp, statusCode, &tempAuth)
+	var tempURL models.TempURL
+	err = httpclient.ConvertResp(resp, statusCode, &tempURL)
 	if err != nil {
 		return nil, err
 	}
-	return &tempAuth, nil
+	return &tempURL, nil
 }

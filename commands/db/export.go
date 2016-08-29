@@ -2,20 +2,18 @@ package db
 
 import (
 	"fmt"
-	"net/url"
+	"io"
+	"io/ioutil"
+	"net/http"
 	"os"
-	"strings"
+	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
+	"github.com/tj/go-spin"
 )
 
 func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPrompts, is services.IServices, ij jobs.IJobs) error {
@@ -72,29 +70,39 @@ func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPr
 // backup. Once finished, the CLI asks where the file can be downloaded from.
 // The file is downloaded, decrypted, and saved locally.
 func (d *SDb) Export(filePath string, job *models.Job, service *models.Service) error {
-	logrus.Printf("Downloading export %s", job.ID)
-	tmpAuth, err := d.TempDownloadAuth(job.ID, service)
+	spinner := spin.New()
+	done := make(chan struct{}, 1)
+	defer func() { done <- struct{}{} }()
+	go func() {
+		for {
+			select {
+			case <-time.After(100 * time.Millisecond):
+				fmt.Printf("\r\033[mDownloading export %s. This may take awhile %s\033[m ", job.ID, spinner.Next())
+			case <-done:
+				return
+			}
+		}
+	}()
+	tempURL, err := d.TempDownloadURL(job.ID, service)
 	if err != nil {
 		return err
 	}
-	u, err := url.Parse(tmpAuth.URL)
+	resp, err := http.Get(tempURL.URL)
 	if err != nil {
 		return err
 	}
-	downloader := s3manager.NewDownloader(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.NewStaticCredentials(tmpAuth.AccessKeyID, tmpAuth.SecretAccessKey, tmpAuth.SessionToken)}))
-	decryptWriter, err := d.Crypto.NewDecryptFileWriterAt(filePath, job.Backup.Key, job.Backup.IV)
+	defer resp.Body.Close()
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
 	}
-	_, err = downloader.Download(decryptWriter, &s3.GetObjectInput{
-		Bucket: aws.String(strings.Split(u.Host, ".")[0]),
-		Key:    aws.String(strings.TrimLeft(u.Path, "/")),
-	})
+	dfw, err := NewDecryptWriteCloser(file, job.Backup.Key, job.Backup.IV, filePath)
 	if err != nil {
 		return err
 	}
-	if err := decryptWriter.Close(); err != nil {
+	_, err = io.Copy(dfw, resp.Body)
+	if err != nil {
 		return err
 	}
-	return nil
+	return dfw.Close()
 }
