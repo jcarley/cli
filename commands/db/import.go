@@ -91,8 +91,12 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	iv := make([]byte, crypto.IVSize)
 	rand.Read(key)
 	rand.Read(iv)
-	encryptFileReader, err := d.Crypto.NewEncryptFileReader(filePath, key, iv)
-	defer encryptFileReader.Close()
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	encryptFileReader, err := d.Crypto.NewEncryptReader(file, key, iv)
 	if err != nil {
 		return nil, err
 	}
