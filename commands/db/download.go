@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"strings"
@@ -93,7 +92,7 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 	if err != nil {
 		return err
 	}
-	dfw, err := NewDecryptWriteCloser(file, job.Backup.Key, job.Backup.IV, filePath)
+	dfw, err := d.Crypto.NewDecryptWriteCloser(file, job.Backup.Key, job.Backup.IV)
 	if err != nil {
 		return err
 	}

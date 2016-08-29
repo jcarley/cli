@@ -3,7 +3,6 @@ package db
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
@@ -96,7 +95,7 @@ func (d *SDb) Export(filePath string, job *models.Job, service *models.Service) 
 	if err != nil {
 		return err
 	}
-	dfw, err := NewDecryptWriteCloser(file, job.Backup.Key, job.Backup.IV, filePath)
+	dfw, err := d.Crypto.NewDecryptWriteCloser(file, job.Backup.Key, job.Backup.IV)
 	if err != nil {
 		return err
 	}
