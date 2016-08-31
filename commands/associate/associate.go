@@ -9,23 +9,27 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/environments"
+	"github.com/catalyzeio/cli/commands/git"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/git"
 	"github.com/catalyzeio/cli/models"
 )
 
 func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia IAssociate, ig git.IGit, ie environments.IEnvironments, is services.IServices) error {
+	logrus.Warnln("The \"--default\" flag has been deprecated! It will be removed in a future version.")
+	logrus.Warnln("Please specify \"-E\" on all commands instead of using the default.")
 	if !ig.Exists() {
 		return errors.New("No git repo found in the current directory")
 	}
 	logrus.Printf("Existing git remotes named \"%s\" will be overwritten", remote)
-	envs, err := ie.List()
-	if err != nil {
-		return err
+	envs, errs := ie.List()
+	if errs != nil && len(errs) > 0 {
+		for pod, err := range errs {
+			logrus.Debugf("Failed to list environments for pod \"%s\": %s", pod, err)
+		}
 	}
 	var e *models.Environment
 	var svcs *[]models.Service
+	var err error
 	for _, env := range *envs {
 		if env.Name == envLabel {
 			e = &env
@@ -55,7 +59,7 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 		}
 	}
 	if chosenService == nil {
-		return fmt.Errorf("No code service found with label '%s'. Code services found: %s", svcLabel, strings.Join(availableCodeServices, ", "))
+		return fmt.Errorf("No code service found with label \"%s\". Code services found: %s", svcLabel, strings.Join(availableCodeServices, ", "))
 	}
 	remotes, err := ig.List()
 	if err != nil {
@@ -101,13 +105,6 @@ func (s *SAssociate) Associate(name, remote string, defaultEnv bool, env *models
 		Name:          env.Name,
 		Pod:           env.Pod,
 		OrgID:         env.OrgID,
-	}
-	if defaultEnv {
-		s.Settings.Default = name
-	}
-	config.DropBreadcrumb(name, s.Settings)
-	if len(s.Settings.Environments) > 1 && s.Settings.Default == "" {
-		logrus.Printf("You now have %d environments associated. Consider running \"catalyze default ENV_NAME\" to set a default", len(s.Settings.Environments))
 	}
 
 	return nil

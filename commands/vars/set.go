@@ -7,10 +7,21 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 )
 
-func CmdSet(variables []string, iv IVars) error {
+func CmdSet(svcName, defaultSvcID string, variables []string, iv IVars, is services.IServices) error {
+	if svcName != "" {
+		service, err := is.RetrieveByLabel(svcName)
+		if err != nil {
+			return err
+		}
+		if service == nil {
+			return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
+		}
+		defaultSvcID = service.ID
+	}
 	envVarsMap := make(map[string]string, len(variables))
 	r := regexp.MustCompile("^[a-zA-Z_]+[a-zA-Z0-9_]*$")
 	for _, envVar := range variables {
@@ -25,7 +36,7 @@ func CmdSet(variables []string, iv IVars) error {
 		envVarsMap[name] = value
 	}
 
-	err := iv.Set(envVarsMap)
+	err := iv.Set(defaultSvcID, envVarsMap)
 	if err != nil {
 		return err
 	}
@@ -39,13 +50,13 @@ func CmdSet(variables []string, iv IVars) error {
 // environment variables. Any changes to environment variables will not take
 // effect until the service is redeployed by pushing new code or via
 // `catalyze redeploy`.
-func (v *SVars) Set(envVarsMap map[string]string) error {
+func (v *SVars) Set(svcID string, envVarsMap map[string]string) error {
 	b, err := json.Marshal(envVarsMap)
 	if err != nil {
 		return err
 	}
 	headers := httpclient.GetHeaders(v.Settings.SessionToken, v.Settings.Version, v.Settings.Pod, v.Settings.UsersID)
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/env", v.Settings.PaasHost, v.Settings.PaasHostVersion, v.Settings.EnvironmentID, v.Settings.ServiceID), headers)
+	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/env", v.Settings.PaasHost, v.Settings.PaasHostVersion, v.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return err
 	}

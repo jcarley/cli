@@ -5,12 +5,23 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/httpclient"
 )
 
-func CmdWorker(target, svcID string, iw IWorker) error {
-	logrus.Printf("Initiating a background worker for Service: %s (procfile target = \"%s\")", svcID, target)
-	err := iw.Start(target)
+func CmdWorker(svcName, defaultSvcID, target string, iw IWorker, is services.IServices) error {
+	if svcName != "" {
+		service, err := is.RetrieveByLabel(svcName)
+		if err != nil {
+			return err
+		}
+		if service == nil {
+			return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
+		}
+		defaultSvcID = service.ID
+	}
+	logrus.Printf("Initiating a background worker for Service: %s (procfile target = \"%s\")", defaultSvcID, target)
+	err := iw.Start(defaultSvcID, target)
 	if err != nil {
 		return err
 	}
@@ -20,7 +31,7 @@ func CmdWorker(target, svcID string, iw IWorker) error {
 
 // Start starts a Procfile target as a worker. Worker containers are intended
 // to be short-lived, one-off tasks.
-func (w *SWorker) Start(target string) error {
+func (w *SWorker) Start(svcID, target string) error {
 	worker := map[string]string{
 		"target": target,
 	}
@@ -29,7 +40,7 @@ func (w *SWorker) Start(target string) error {
 		return err
 	}
 	headers := httpclient.GetHeaders(w.Settings.SessionToken, w.Settings.Version, w.Settings.Pod, w.Settings.UsersID)
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/worker", w.Settings.PaasHost, w.Settings.PaasHostVersion, w.Settings.EnvironmentID, w.Settings.ServiceID), headers)
+	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/worker", w.Settings.PaasHost, w.Settings.PaasHostVersion, w.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return err
 	}

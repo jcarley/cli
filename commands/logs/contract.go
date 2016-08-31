@@ -26,7 +26,7 @@ var Cmd = models.Command{
 			follow := cmd.BoolOpt("f follow", false, "Tail/follow the logs (Equivalent to -t)")
 			tail := cmd.BoolOpt("t tail", false, "Tail/follow the logs (Equivalent to -f)")
 			hours := cmd.IntOpt("hours", 0, "The number of hours before now (in combination with minutes and seconds) to retrieve logs")
-			mins := cmd.IntOpt("minutes", 1, "The number of minutes before now (in combination with hours and seconds) to retrieve logs")
+			mins := cmd.IntOpt("minutes", 0, "The number of minutes before now (in combination with hours and seconds) to retrieve logs")
 			secs := cmd.IntOpt("seconds", 0, "The number of seconds before now (in combination with hours and minutes) to retrieve logs")
 			cmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {

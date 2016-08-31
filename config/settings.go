@@ -16,9 +16,6 @@ import (
 // SettingsPath is the location of the catalyze config file.
 const SettingsFile = ".catalyze"
 
-// LocalSettingsPath stores a breadcrumb in a local git repo with an env name
-const LocalSettingsFile = "catalyze-config.json"
-
 // SettingsRetriever defines an interface for a class responsible for generating
 // a settings object used for most commands in the CLI. Some examples might be
 // for retrieving settings based on the settings file or generating a settings
@@ -63,27 +60,12 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authH
 		}
 	}
 
-	// if no env name was given, try and fetch the local env
-	if settings.EnvironmentID == "" || settings.ServiceID == "" {
-		setLocalEnv(&settings)
-	}
-
-	// if its not there, fetch the default
-	if settings.EnvironmentID == "" || settings.ServiceID == "" {
-		setDefaultEnv(&settings)
-	}
-
 	// if no default, fetch the first associated env and print warning
 	if settings.EnvironmentID == "" || settings.ServiceID == "" {
 		// warn and ask
 		setFirstAssociatedEnv(&settings)
 	}
 
-	/*// if no env found, warn and quit
-	if required && (settings.EnvironmentID == "" || settings.ServiceID == "") {
-		fmt.Println("No Catalyze environment has been associated. Run \"catalyze associate\" from a local git repo first")
-		os.Exit(1)
-	}*/
 	settings.AccountsHost = accountsHost
 	settings.AuthHost = authHost
 	settings.PaasHost = paasHost
@@ -107,7 +89,6 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authH
 	logrus.Debugf("Paas Host: %s", paasHost)
 	logrus.Debugf("Auth Host Version: %s", authHostVersion)
 	logrus.Debugf("Paas Host Version: %s", paasHostVersion)
-	logrus.Debugf("Default: %s", settings.Default)
 	logrus.Debugf("Environment ID: %s", settings.EnvironmentID)
 	logrus.Debugf("Environment Name: %s", settings.EnvironmentName)
 	logrus.Debugf("Pod: %s", settings.Pod)
@@ -137,35 +118,13 @@ func SaveSettings(settings *models.Settings) {
 	}
 }
 
-// DropBreadcrumb drops a config file in a local git repo with the name of an
-// environment and adds it to the list of global associated environments.
-func DropBreadcrumb(envName string, settings *models.Settings) {
-	b, _ := json.Marshal(&models.Breadcrumb{
-		EnvName: envName,
-	})
-	err := ioutil.WriteFile(filepath.Join(".git", LocalSettingsFile), b, 0644)
-	if err != nil {
-		logrus.Println(err.Error())
-		os.Exit(1)
-	}
-}
-
-// DeleteBreadcrumb removes the config file at LocalSettingsPath
+// DeleteBreadcrumb removes the environment in the  global list
 func DeleteBreadcrumb(alias string, settings *models.Settings) error {
-	env, ok := settings.Environments[alias]
-	if !ok {
+	if _, ok := settings.Environments[alias]; !ok {
 		return fmt.Errorf("An environment named \"%s\" has not been associated. Run \"catalyze associated\" to see current associations.", alias)
 	}
-	fmt.Printf("%+v\n", env)
-	dir := env.Directory
-	dir = filepath.Join(dir, ".git", LocalSettingsFile)
-	defer os.Remove(dir)
 
 	delete(settings.Environments, alias)
-	if settings.Default == alias {
-		settings.Default = ""
-	}
-	os.Remove(dir)
 	SaveSettings(settings)
 	return nil
 }
@@ -186,33 +145,6 @@ func setGivenEnv(envName string, settings *models.Settings) {
 	}
 }
 
-// setLocalEnv searches .git/catalyze-config.json for an associated env and
-// searches for it in the given settings object. It then populates the
-// EnvironmentID and ServiceID on the settings object with appropriate values.
-func setLocalEnv(settings *models.Settings) {
-	file, err := os.Open(filepath.Join(".git", LocalSettingsFile))
-	defer file.Close()
-	if err == nil {
-		var breadcrumb models.Breadcrumb
-		json.NewDecoder(file).Decode(&breadcrumb)
-		/*if breadcrumb.EnvironmentID != "" { //}&& required {
-			// we found an old config file, try and translate it
-			//convertSettings(&breadcrumb, settings)
-			// or punt
-			fmt.Println("Please reassociate your environment and then run this command again")
-			os.Exit(1)
-		}*/
-		setGivenEnv(breadcrumb.EnvName, settings)
-	}
-}
-
-// setDefaultEnv takes the name of the default env (if it exists) and finds it
-// in the env list in the given settings object. It then populates the
-// EnvironmentID and ServiceID on the settings object with appropriate values.
-func setDefaultEnv(settings *models.Settings) {
-	setGivenEnv(settings.Default, settings)
-}
-
 // setFirstAssociatedEnv is the last line of defense. If no other environments
 // were found locally or from the default flag, then the first one in the list
 // of environments in the given settings object is used to populate
@@ -224,9 +156,6 @@ func setFirstAssociatedEnv(settings *models.Settings) {
 		settings.Pod = e.Pod
 		settings.EnvironmentName = e.Name
 		settings.OrgID = e.OrgID
-		/*if promptForEnv {
-			defaultEnvPrompt(envName)
-		}*/
 		break
 	}
 }

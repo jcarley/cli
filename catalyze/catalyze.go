@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"time"
 
 	"github.com/catalyzeio/cli/commands/associate"
 	"github.com/catalyzeio/cli/commands/associated"
@@ -15,8 +16,10 @@ import (
 	"github.com/catalyzeio/cli/commands/default"
 	"github.com/catalyzeio/cli/commands/deploykeys"
 	"github.com/catalyzeio/cli/commands/disassociate"
+	"github.com/catalyzeio/cli/commands/domain"
 	"github.com/catalyzeio/cli/commands/environments"
 	"github.com/catalyzeio/cli/commands/files"
+	"github.com/catalyzeio/cli/commands/git"
 	"github.com/catalyzeio/cli/commands/invites"
 	"github.com/catalyzeio/cli/commands/keys"
 	"github.com/catalyzeio/cli/commands/logout"
@@ -126,7 +129,8 @@ func Run() {
 		*settings = *r.GetSettings(*givenEnvName, "", accountsHost, authHost, "", paasHost, "", *username, *password)
 		logrus.Debugf("%+v", settings)
 
-		if settings.Pods == nil || len(*settings.Pods) == 0 {
+		if settings.Pods == nil || len(*settings.Pods) == 0 || settings.PodCheck < time.Now().Unix() {
+			settings.PodCheck = time.Now().Unix() + 86400
 			p := pods.New(settings)
 			pods, err := p.List()
 			if err == nil {
@@ -175,8 +179,10 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.Command(defaultcmd.Cmd.Name, defaultcmd.Cmd.ShortHelp, defaultcmd.Cmd.CmdFunc(settings))
 	app.Command(deploykeys.Cmd.Name, deploykeys.Cmd.ShortHelp, deploykeys.Cmd.CmdFunc(settings))
 	app.Command(disassociate.Cmd.Name, disassociate.Cmd.ShortHelp, disassociate.Cmd.CmdFunc(settings))
+	app.Command(domain.Cmd.Name, domain.Cmd.ShortHelp, domain.Cmd.CmdFunc(settings))
 	app.Command(environments.Cmd.Name, environments.Cmd.ShortHelp, environments.Cmd.CmdFunc(settings))
 	app.Command(files.Cmd.Name, files.Cmd.ShortHelp, files.Cmd.CmdFunc(settings))
+	app.Command(git.Cmd.Name, git.Cmd.ShortHelp, git.Cmd.CmdFunc(settings))
 	app.Command(invites.Cmd.Name, invites.Cmd.ShortHelp, invites.Cmd.CmdFunc(settings))
 	app.Command(keys.Cmd.Name, keys.Cmd.ShortHelp, keys.Cmd.CmdFunc(settings))
 	app.Command(logout.Cmd.Name, logout.Cmd.ShortHelp, logout.Cmd.CmdFunc(settings))

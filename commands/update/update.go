@@ -8,7 +8,6 @@ import (
 
 	"github.com/catalyzeio/cli/lib/pods"
 	"github.com/catalyzeio/cli/lib/updater"
-	"github.com/catalyzeio/cli/models"
 )
 
 func CmdUpdate(iu IUpdate) error {
@@ -33,6 +32,7 @@ func CmdUpdate(iu IUpdate) error {
 	if err != nil {
 		return err
 	}
+	iu.UpdatePods()
 	logrus.Printf("Your CLI has been updated to version %s", updater.AutoUpdater.Info.Version)
 	return nil
 }
@@ -43,7 +43,7 @@ func exeGenericError() error {
 
 func (u *SUpdate) Check() (bool, error) {
 	updater.AutoUpdater.FetchInfo()
-	if updater.AutoUpdater.CurrentVersion == updater.AutoUpdater.Info.Version {
+	if updater.AutoUpdater.CurrentVersion >= updater.AutoUpdater.Info.Version {
 		return false, nil
 	}
 	return true, nil
@@ -55,14 +55,15 @@ func (u *SUpdate) Update() error {
 	return nil
 }
 
-func updatePods(settings *models.Settings) {
+// UpdatePods retrieves the latest list of pods and refreshes the local cache. If an error occurs,
+// the local cache is unchanged.
+func (u *SUpdate) UpdatePods() {
 	logrus.Debugf("Updating cached pods...")
-	p := pods.New(settings)
+	p := pods.New(u.Settings)
 	pods, err := p.List()
 	if err == nil {
-		settings.Pods = pods
+		u.Settings.Pods = pods
 	} else {
-		settings.Pods = &[]models.Pod{}
 		logrus.Debugf("Error listing pods: %s", err.Error())
 	}
 }

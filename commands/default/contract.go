@@ -11,8 +11,8 @@ import (
 // name, arguments, and required/optional arguments and flags for the command.
 var Cmd = models.Command{
 	Name:      "default",
-	ShortHelp: "Set the default associated environment",
-	LongHelp:  "Set the default associated environment",
+	ShortHelp: "[DEPRECATED] Set the default associated environment",
+	LongHelp:  "[DEPRECATED] Set the default associated environment",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			alias := cmd.StringArg("ENV_ALIAS", "", "The alias of an already associated environment to set as the default")

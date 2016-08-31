@@ -2,9 +2,6 @@
 	"ImportPath": "github.com/catalyzeio/cli",
 	"GoVersion": "go1.6",
 	"GodepVersion": "v62",
-	"Packages": [
-		"./..."
-	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/Azure/go-ansiterm",
@@ -206,6 +203,11 @@
 		{
 			"ImportPath": "github.com/skratchdot/open-golang/open",
 			"Rev": "c8748311a7528d0ba7330d302adbc5a677ef9c9e"
+		},
+		{
+			"ImportPath": "github.com/tj/go-spin",
+			"Comment": "1.0.0-14-g8667629",
+			"Rev": "866762925be273d8db6a8b816f359ca41d61bcdb"
 		},
 		{
 			"ImportPath": "github.com/zakjan/cert-chain-resolver/certUtil",

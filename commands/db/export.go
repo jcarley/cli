@@ -84,19 +84,23 @@ func (d *SDb) Export(filePath string, job *models.Job, service *models.Service) 
 	}()
 	tempURL, err := d.TempDownloadURL(job.ID, service)
 	if err != nil {
+		done <- struct{}{}
 		return err
 	}
 	resp, err := http.Get(tempURL.URL)
 	if err != nil {
+		done <- struct{}{}
 		return err
 	}
 	defer resp.Body.Close()
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 	if err != nil {
+		done <- struct{}{}
 		return err
 	}
 	dfw, err := d.Crypto.NewDecryptWriteCloser(file, job.Backup.Key, job.Backup.IV)
 	if err != nil {
+		done <- struct{}{}
 		return err
 	}
 	_, err = io.Copy(dfw, resp.Body)

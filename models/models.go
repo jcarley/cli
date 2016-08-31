@@ -175,6 +175,7 @@ type Settings struct {
 	Environments    map[string]AssociatedEnv `json:"environments"`
 	Default         string                   `json:"default"`
 	Pods            *[]Pod                   `json:"pods"`
+	PodCheck        int64                    `json:"pod_check"`
 }
 
 // PodWrapper pod wrapper
@@ -197,16 +198,6 @@ type AssociatedEnv struct {
 	Name          string `json:"name"`
 	Pod           string `json:"pod"`
 	OrgID         string `json:"organizationId"`
-}
-
-// Breadcrumb is stored in a local git repo to make a link back to the
-// global list of associated envs
-type Breadcrumb struct {
-	EnvName       string `json:"env_name"`
-	EnvironmentID string `json:"environmentId,omitempty"` // for backwards compatibility
-	ServiceID     string `json:"serviceId,omitempty"`     // for backwards compatibility
-	SessionToken  string `json:"token,omitempty"`         // for backwards compatibility
-	UsersID       string `json:"user_id,omitempty"`       // for backwards compatibility
 }
 
 // ConsoleCredentials hold the keys necessary for connecting to a console service

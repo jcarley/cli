@@ -3,9 +3,9 @@ package associate
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/environments"
+	"github.com/catalyzeio/cli/commands/git"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/auth"
-	"github.com/catalyzeio/cli/lib/git"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
@@ -23,7 +23,7 @@ var Cmd = models.Command{
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the primary code service to associate with this environment (i.e. 'app01')")
 			alias := cmd.StringOpt("a alias", "", "A shorter name to reference your environment by for local commands")
 			remote := cmd.StringOpt("r remote", "catalyze", "The name of the remote")
-			defaultEnv := cmd.BoolOpt("d default", false, "Specifies whether or not the associated environment will be the default")
+			defaultEnv := cmd.BoolOpt("d default", false, "[DEPRECATED] Specifies whether or not the associated environment will be the default")
 			cmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())

@@ -74,8 +74,10 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 	}()
 	tempURL, err := d.TempDownloadURL(backupID, service)
 	if err != nil {
+		done <- struct{}{}
 		return err
 	}
+
 	u, _ := url.Parse(tempURL.URL)
 	svc := s3.New(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.AnonymousCredentials}))
 	req, resp := svc.GetObjectRequest(&s3.GetObjectInput{
@@ -85,6 +87,7 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 	req.HTTPRequest.URL.RawQuery = u.RawQuery
 	err = req.Send()
 	if err != nil {
+		done <- struct{}{}
 		return err
 	}
 	defer resp.Body.Close()
