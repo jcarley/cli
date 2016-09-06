@@ -28,8 +28,7 @@ var client *http.Client
 func init() {
 	var tr = &http.Transport{
 		TLSClientConfig: &tls.Config{
-			MinVersion:         tls.VersionTLS12,
-			InsecureSkipVerify: true,
+			MinVersion: tls.VersionTLS12,
 		},
 	}
 

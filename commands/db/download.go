@@ -89,6 +89,7 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 		done <- struct{}{}
 		return err
 	}
+	logrus.Debugf("Downloading to temporary file at %s", tmpFile.Name())
 
 	u, _ := url.Parse(tempURL.URL)
 	svc := s3.New(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.AnonymousCredentials}))
