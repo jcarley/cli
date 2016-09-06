@@ -120,6 +120,7 @@ type Payload struct {
 type Service struct {
 	ID             string            `json:"id,omitempty"`
 	Identifier     string            `json:"identifier,omitempty"`
+	DNS            string            `json:"internal_domain,omitempty"`
 	Type           string            `json:"type,omitempty"`
 	Label          string            `json:"label"`
 	Size           ServiceSize       `json:"size"`
