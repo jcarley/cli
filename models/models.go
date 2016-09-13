@@ -104,6 +104,7 @@ type Job struct {
 	CreatedAt   string           `json:"created_at"`
 	MetricsData *[]MetricsData   `json:"metrics"`
 	Spec        *Spec            `json:"spec"`
+	Target      string           `json:"target,omitempty"`
 }
 
 // Spec is a job specification
@@ -307,4 +308,9 @@ type Release struct {
 	Name      string `json:"release,omitempty"`
 	CreatedAt string `json:"created_at,omitempty"`
 	Notes     string `json:"metadata,omitempty"`
+}
+
+type Workers struct {
+	Limit   int            `json:"worker_limit,omitempty"`
+	Workers map[string]int `json:"workers,omitempty"`
 }

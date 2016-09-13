@@ -5,6 +5,7 @@ import (
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/auth"
+	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
@@ -26,7 +27,7 @@ var Cmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdRedeploy(*serviceName, New(settings), services.New(settings))
+				err := CmdRedeploy(*serviceName, jobs.New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -34,21 +35,4 @@ var Cmd = models.Command{
 			cmd.Spec = "SERVICE_NAME"
 		}
 	},
-}
-
-// IRedeploy
-type IRedeploy interface {
-	Redeploy(releaseName, svcID string) error
-}
-
-// SRedeploy is a concrete implementation of IRedeploy
-type SRedeploy struct {
-	Settings *models.Settings
-}
-
-// New returns an instance of IRedeploy
-func New(settings *models.Settings) IRedeploy {
-	return &SRedeploy{
-		Settings: settings,
-	}
 }
