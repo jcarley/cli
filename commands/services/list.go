@@ -19,9 +19,9 @@ func CmdServices(is IServices) error {
 		logrus.Println("No services found")
 		return nil
 	}
-	data := [][]string{{"NAME", "IDENTIFIER", "RAM (GB)", "CPU", "STORAGE (GB)"}}
+	data := [][]string{{"NAME", "DNS", "RAM (GB)", "CPU", "STORAGE (GB)"}}
 	for _, s := range *svcs {
-		data = append(data, []string{s.Label, s.Identifier, fmt.Sprintf("%d", s.Size.RAM), fmt.Sprintf("%d", s.Size.CPU), fmt.Sprintf("%d", s.Size.Storage)})
+		data = append(data, []string{s.Label, s.DNS, fmt.Sprintf("%d", s.Size.RAM), fmt.Sprintf("%d", s.Size.CPU), fmt.Sprintf("%d", s.Size.Storage)})
 	}
 
 	table := tablewriter.NewWriter(logrus.StandardLogger().Out)
