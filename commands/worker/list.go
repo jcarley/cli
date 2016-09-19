@@ -5,6 +5,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
+	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/models"
 	"github.com/olekukonko/tablewriter"
@@ -22,6 +23,7 @@ func CmdList(svcName string, iw IWorker, is services.IServices, ij jobs.IJobs) e
 	if err != nil {
 		return err
 	}
+
 	jobs, err := ij.RetrieveByType(service.ID, "worker", 1, 1000)
 	if err != nil {
 		return err
@@ -34,16 +36,15 @@ func CmdList(svcName string, iw IWorker, is services.IServices, ij jobs.IJobs) e
 	for target, scale := range workers.Workers {
 		workerJobs[target] = &workerJob{scale, 0}
 	}
+	if len(workerJobs) == 0 {
+		logrus.Printf("No workers found for service %s", svcName)
+		return nil
+	}
 	for _, j := range *jobs {
 		if _, ok := workerJobs[j.Target]; !ok {
 			workerJobs[j.Target] = &workerJob{0, 0}
 		}
 		workerJobs[j.Target].running = 1
-	}
-
-	if len(workerJobs) == 0 {
-		logrus.Printf("No workers found for service %s", svcName)
-		return nil
 	}
 
 	data := [][]string{{"TARGET", "SCALE", "RUNNING JOBS"}}
@@ -63,5 +64,15 @@ func CmdList(svcName string, iw IWorker, is services.IServices, ij jobs.IJobs) e
 }
 
 func (w *SWorker) Retrieve(svcID string) (*models.Workers, error) {
-	return nil, nil
+	headers := httpclient.GetHeaders(w.Settings.SessionToken, w.Settings.Version, w.Settings.Pod, w.Settings.UsersID)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/workers", w.Settings.PaasHost, w.Settings.PaasHostVersion, w.Settings.EnvironmentID, svcID), headers)
+	if err != nil {
+		return nil, err
+	}
+	var workers models.Workers
+	err = httpclient.ConvertResp(resp, statusCode, &workers)
+	if err != nil {
+		return nil, err
+	}
+	return &workers, nil
 }
