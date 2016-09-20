@@ -49,6 +49,7 @@ var Cmd = models.Command{
 type ILogs interface {
 	Output(queryString, sessionToken, domain string, follow bool, hours, minutes, seconds, from int, startTimestamp time.Time, endTimestamp time.Time, env *models.Environment) (int, time.Time, error)
 	Stream(queryString, sessionToken, domain string, follow bool, hours, minutes, seconds, from int, timestamp time.Time, env *models.Environment) error
+	Watch(queryString, domain, sessionToken string) error
 }
 
 // SLogs is a concrete implementation of ILogs
