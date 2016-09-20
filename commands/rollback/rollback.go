@@ -5,13 +5,13 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/redeploy"
 	"github.com/catalyzeio/cli/commands/releases"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/config"
+	"github.com/catalyzeio/cli/lib/jobs"
 )
 
-func CmdRollback(svcName, releaseName string, ir redeploy.IRedeploy, irs releases.IReleases, is services.IServices) error {
+func CmdRollback(svcName, releaseName string, ij jobs.IJobs, irs releases.IReleases, is services.IServices) error {
 	if strings.ContainsAny(releaseName, config.InvalidChars) {
 		return fmt.Errorf("Invalid release name. Names must not contain the following characters: %s", config.InvalidChars)
 	}
@@ -30,7 +30,7 @@ func CmdRollback(svcName, releaseName string, ir redeploy.IRedeploy, irs release
 	if release == nil {
 		return fmt.Errorf("Could not find a release with the name \"%s\". You can list releases for this code service with the \"catalyze releases list %s\" command.", releaseName, svcName)
 	}
-	err = ir.Redeploy(releaseName, service.ID)
+	err = ij.DeployRelease(releaseName, service.ID)
 	if err != nil {
 		return err
 	}

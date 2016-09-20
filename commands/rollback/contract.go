@@ -2,11 +2,11 @@ package rollback
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/redeploy"
 	"github.com/catalyzeio/cli/commands/releases"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/auth"
+	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
 	"github.com/jawher/mow.cli"
@@ -29,7 +29,7 @@ var Cmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdRollback(*serviceName, *releaseName, redeploy.New(settings), releases.New(settings), services.New(settings))
+				err := CmdRollback(*serviceName, *releaseName, jobs.New(settings), releases.New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}

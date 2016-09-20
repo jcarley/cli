@@ -48,3 +48,17 @@ func (j *SJobs) RetrieveByType(svcID, jobType string, page, pageSize int) (*[]mo
 	}
 	return &jobs, nil
 }
+
+func (j *SJobs) RetrieveByTarget(svcID, target string, page, pageSize int) (*[]models.Job, error) {
+	headers := httpclient.GetHeaders(j.Settings.SessionToken, j.Settings.Version, j.Settings.Pod, j.Settings.UsersID)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs?type=worker&target=%s&pageNumber=%d&pageSize=%d", j.Settings.PaasHost, j.Settings.PaasHostVersion, j.Settings.EnvironmentID, svcID, target, page, pageSize), headers)
+	if err != nil {
+		return nil, err
+	}
+	var jobs []models.Job
+	err = httpclient.ConvertResp(resp, statusCode, &jobs)
+	if err != nil {
+		return nil, err
+	}
+	return &jobs, nil
+}
