@@ -28,6 +28,9 @@ type LogMessage struct {
 }
 
 func (l *SLogs) Watch(queryString, domain, sessionToken string) error {
+	if queryString == "*" {
+		queryString = ""
+	}
 	query, err := regexp.Compile(queryString)
 	if err != nil {
 		return err
