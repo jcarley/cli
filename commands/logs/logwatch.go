@@ -16,9 +16,7 @@ import (
 )
 
 const (
-	pongWait   = 60 * time.Second
-	writeWait  = 10 * time.Second
-	pingPeriod = (pongWait * 9) / 10
+	writeTimeout = 5 * time.Second
 )
 
 type LogMessage struct {
@@ -67,11 +65,10 @@ func (l *SLogs) Watch(queryString, domain, sessionToken string) error {
 // Reads incoming data from the websocket and forwards it to stdout.
 func readWS(ws *websocket.Conn, query *regexp.Regexp, done chan struct{}) {
 	ws.SetPingHandler(func(string) error {
-		ws.SetReadDeadline(time.Now().Add(pongWait))
+		ws.SetWriteDeadline(time.Now().Add(writeTimeout))
 		return ws.WriteMessage(websocket.PongMessage, []byte{})
 	})
 	for {
-		ws.SetReadDeadline(time.Now().Add(pongWait))
 		_, msg, err := ws.ReadMessage()
 		if err != nil {
 			done <- struct{}{}
