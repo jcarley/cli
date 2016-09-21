@@ -158,6 +158,11 @@
 			"Rev": "776aa739ce9373377cd16f526cdf06cb4c89b40f"
 		},
 		{
+			"ImportPath": "github.com/gorilla/websocket",
+			"Comment": "v1.0.0-20-ga69d25b",
+			"Rev": "a69d25be2fe2923a97c2af6849b2f52426f68fc0"
+		},
+		{
 			"ImportPath": "github.com/jawher/mow.cli",
 			"Rev": "ec353aa1195a385f193bd2e681d26f739b584b6e"
 		},

@@ -41,7 +41,7 @@ func (l *SLogs) Watch(queryString, domain, sessionToken string) error {
 		},
 	}
 	headers := http.Header{"Cookie": {"sessionToken=" + url.QueryEscape(sessionToken)}}
-	urlString := fmt.Sprintf("wss://%s/stream", domain)
+	urlString := fmt.Sprintf("wss://%s/stream/", domain)
 	c, _, err := dialer.Dial(urlString, headers)
 	if err != nil {
 		return err
