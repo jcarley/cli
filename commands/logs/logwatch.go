@@ -64,6 +64,9 @@ func (l *SLogs) Watch(queryString, domain, sessionToken string) error {
 
 // Reads incoming data from the websocket and forwards it to stdout.
 func readWS(ws *websocket.Conn, query *regexp.Regexp, done chan struct{}) {
+	defer func() {
+		done <- struct{}{}
+	}()
 	ws.SetPingHandler(func(string) error {
 		ws.SetWriteDeadline(time.Now().Add(writeTimeout))
 		return ws.WriteMessage(websocket.PongMessage, []byte{})
@@ -71,7 +74,6 @@ func readWS(ws *websocket.Conn, query *regexp.Regexp, done chan struct{}) {
 	for {
 		_, msg, err := ws.ReadMessage()
 		if err != nil {
-			done <- struct{}{}
 			return
 		}
 		var log LogMessage
