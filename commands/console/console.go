@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"runtime"
 	"strings"
 
 	"golang.org/x/net/websocket"
@@ -41,11 +42,19 @@ func (c *SConsole) Open(command string, service *models.Service) error {
 	if !isTermIn {
 		return errors.New("StdIn is not a terminal")
 	}
-	stdInSize, err := term.GetWinsize(fdIn)
+	var size *term.Winsize
+	var err error
+	if runtime.GOOS != "windows" {
+		size, err = term.GetWinsize(fdIn)
+	} else {
+		fdOut, _ := term.GetFdInfo(stdout)
+		size, err = term.GetWinsize(fdOut)
+	}
+
 	if err != nil {
 		return err
 	}
-	if stdInSize.Width != 80 {
+	if size.Width != 80 {
 		logrus.Warnln("Your terminal width is not 80 characters. Please resize your terminal to be exactly 80 characters wide to avoid line wrapping issues.")
 	} else {
 		logrus.Warnln("Keep your terminal width at 80 characters. Resizing your terminal will introduce line wrapping issues.")
