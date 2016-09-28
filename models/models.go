@@ -312,5 +312,5 @@ type Release struct {
 
 type Workers struct {
 	Limit   int            `json:"worker_limit,omitempty"`
-	Workers map[string]int `json:"workers,omitempty"`
+	Workers map[string]int `json:"workers"`
 }
