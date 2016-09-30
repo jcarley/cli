@@ -56,8 +56,6 @@ func CmdLogs(queryString string, follow bool, hours, minutes, seconds int, envID
 	if follow {
 		if err := il.Watch(queryString, domain, settings.SessionToken); err != nil {
 			logrus.Debugf("Error attempting to stream logs from logwatch: %s", err)
-			logrus.Warnln("Please redeploy your logging service with \"catalyze redeploy logging\" to take advantage of a more reliable way to stream logs in real time")
-			logrus.Warnln("Falling back to legacy mode")
 		} else {
 			return nil
 		}
