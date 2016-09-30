@@ -37,6 +37,7 @@ import (
 	"github.com/catalyzeio/cli/commands/update"
 	"github.com/catalyzeio/cli/commands/users"
 	"github.com/catalyzeio/cli/commands/vars"
+	"github.com/catalyzeio/cli/commands/version"
 	"github.com/catalyzeio/cli/commands/whoami"
 	"github.com/catalyzeio/cli/commands/worker"
 
@@ -151,11 +152,6 @@ func Run() {
 	versionString := fmt.Sprintf("version %s %s", config.VERSION, config.ArchString())
 	logrus.Debugln(versionString)
 	app.Version("v version", versionString)
-	app.Command("version", "Output the version and quit", func(cmd *cli.Cmd) {
-		cmd.Action = func() {
-			fmt.Println(versionString)
-		}
-	})
 
 	app.Run(os.Args)
 }
@@ -202,6 +198,7 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	}
 	app.Command(users.Cmd.Name, users.Cmd.ShortHelp, users.Cmd.CmdFunc(settings))
 	app.Command(vars.Cmd.Name, vars.Cmd.ShortHelp, vars.Cmd.CmdFunc(settings))
+	app.Command(version.Cmd.Name, version.Cmd.ShortHelp, version.Cmd.CmdFunc(settings))
 	app.Command(whoami.Cmd.Name, whoami.Cmd.ShortHelp, whoami.Cmd.CmdFunc(settings))
 	app.Command(worker.Cmd.Name, worker.Cmd.ShortHelp, worker.Cmd.CmdFunc(settings))
 }

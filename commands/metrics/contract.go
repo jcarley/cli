@@ -24,7 +24,9 @@ const (
 var Cmd = models.Command{
 	Name:      "metrics",
 	ShortHelp: "Print service and environment metrics in your local time zone",
-	LongHelp:  "Print service and environment metrics in your local time zone",
+	LongHelp: "The `metrics` command gives access to environment metrics or individual service metrics through a variety of formats. " +
+		"This is useful for checking on the status and performance of your application or environment as a whole. " +
+		"The metrics command cannot be run directly but has sub commands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Command(CPUSubCmd.Name, CPUSubCmd.ShortHelp, CPUSubCmd.CmdFunc(settings))
@@ -38,7 +40,17 @@ var Cmd = models.Command{
 var CPUSubCmd = models.Command{
 	Name:      "cpu",
 	ShortHelp: "Print service and environment CPU metrics in your local time zone",
-	LongHelp:  "Print service and environment CPU metrics in your local time zone",
+	LongHelp: "`metrics cpu` prints out CPU metrics for your environment or individual services. " +
+		"You can print out metrics in csv, json, plain text, or spark lines format. " +
+		"If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. " +
+		"You can only stream metrics using plain text or spark lines formats. " +
+		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
+		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. " +
+		"Here are some sample commands\n\n" +
+		"```catalyze metrics cpu\n" +
+		"catalyze metrics cpu app01 --stream\n" +
+		"catalyze metrics cpu --json\n" +
+		"catalyze metrics cpu db01 --csv -m 60```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
@@ -67,7 +79,17 @@ var CPUSubCmd = models.Command{
 var MemorySubCmd = models.Command{
 	Name:      "memory",
 	ShortHelp: "Print service and environment memory metrics in your local time zone",
-	LongHelp:  "Print service and environment memory metrics in your local time zone",
+	LongHelp: "`metrics memory` prints out memory metrics for your environment or individual services. " +
+		"You can print out metrics in csv, json, plain text, or spark lines format. " +
+		"If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. " +
+		"You can only stream metrics using plain text or spark lines formats. " +
+		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
+		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. " +
+		"Here are some sample commands\n\n" +
+		"```catalyze metrics memory\n" +
+		"catalyze metrics memory app01 --stream\n" +
+		"catalyze metrics memory --json\n" +
+		"catalyze metrics memory db01 --csv -m 60```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
@@ -96,7 +118,16 @@ var MemorySubCmd = models.Command{
 var NetworkInSubCmd = models.Command{
 	Name:      "network-in",
 	ShortHelp: "Print service and environment received network data metrics in your local time zone",
-	LongHelp:  "Print service and environment received network data metrics in your local time zone",
+	LongHelp: "`metrics network-in` prints out received network metrics for your environment or individual services. " +
+		"You can print out metrics in csv, json, plain text, or spark lines format. " +
+		"If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. " +
+		"You can only stream metrics using plain text or spark lines formats. " +
+		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
+		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands\n\n" +
+		"```catalyze metrics network-in\n" +
+		"catalyze metrics network-in app01 --stream\n" +
+		"catalyze metrics network-in --json\n" +
+		"catalyze metrics network-in db01 --csv -m 60```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
@@ -125,7 +156,17 @@ var NetworkInSubCmd = models.Command{
 var NetworkOutSubCmd = models.Command{
 	Name:      "network-out",
 	ShortHelp: "Print service and environment transmitted network data metrics in your local time zone",
-	LongHelp:  "Print service and environment transmitted network data metrics in your local time zone",
+	LongHelp: "`metrics network-out` prints out transmitted network metrics for your environment or individual services. " +
+		"You can print out metrics in csv, json, plain text, or spark lines format. " +
+		"If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. " +
+		"You can only stream metrics using plain text or spark lines formats. " +
+		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
+		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. " +
+		"Here are some sample commands\n\n" +
+		"```catalyze metrics network-out\n" +
+		"catalyze metrics network-out app01 --stream\n" +
+		"catalyze metrics network-out --json\n" +
+		"catalyze metrics network-out db01 --csv -m 60```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")

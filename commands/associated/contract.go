@@ -11,7 +11,9 @@ import (
 var Cmd = models.Command{
 	Name:      "associated",
 	ShortHelp: "Lists all associated environments",
-	LongHelp:  "Lists all previously associated environments along with their alias and service.",
+	LongHelp: "`associated` outputs information about all previously associated environments on your local machine. " +
+		"The information that is printed out includes the alias, environment ID, actual environment name, service ID, and the git repo directory. Here is a sample command\n\n" +
+		"```catalyze associated```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

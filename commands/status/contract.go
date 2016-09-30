@@ -17,7 +17,10 @@ import (
 var Cmd = models.Command{
 	Name:      "status",
 	ShortHelp: "Get quick readout of the current status of your associated environment and all of its services",
-	LongHelp:  "Get quick readout of the current status of your associated environment and all of its services",
+	LongHelp: "`status` will give a quick readout of your environment's health. " +
+		"This includes your environment name, environment ID, and for each service the name, size, build status, deploy status, and service ID. " +
+		"Here is a sample command\n\n" +
+		"```catalyze status```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

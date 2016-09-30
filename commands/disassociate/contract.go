@@ -12,7 +12,9 @@ import (
 var Cmd = models.Command{
 	Name:      "disassociate",
 	ShortHelp: "Remove the association with an environment",
-	LongHelp:  "Remove the association with an environment",
+	LongHelp: "`disassociate` removes the environment from your list of associated environments but **does not** remove the catalyze git remote on the git repo. " +
+		"Disassociate does not have to be run from within a git repo. Here is a sample command\n\n" +
+		"```catalyze disassociate myprod```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			alias := cmd.StringArg("ENV_ALIAS", "", "The alias of an already associated environment to disassociate")

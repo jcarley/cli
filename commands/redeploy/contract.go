@@ -16,7 +16,11 @@ import (
 var Cmd = models.Command{
 	Name:      "redeploy",
 	ShortHelp: "Redeploy a service without having to do a git push",
-	LongHelp:  "Redeploy a service without having to do a git push",
+	LongHelp: "`redeploy` deploys an identical copy of the given service. " +
+		"For code services, this avoids having to perform a code push. You skip the git push and the build. " +
+		"For service proxies, new instances simply replace the old ones. " +
+		"All other service types cannot be redeployed with this command. Here is a sample command\n\n" +
+		"```catalyze redeploy app01```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to redeploy (i.e. 'app01')")

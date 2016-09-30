@@ -11,7 +11,8 @@ import (
 var Cmd = models.Command{
 	Name:      "dashboard",
 	ShortHelp: "Open the Catalyze Dashboard in your default browser",
-	LongHelp:  "Open the Catalyze Dashboard in your default browser",
+	LongHelp: "`dashboard` opens up the Catalyze Dashboard homepage in your default web browser. Here is a sample command\n\n" +
+		"```catalyze dashboard```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

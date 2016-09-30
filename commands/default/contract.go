@@ -12,7 +12,11 @@ import (
 var Cmd = models.Command{
 	Name:      "default",
 	ShortHelp: "[DEPRECATED] Set the default associated environment",
-	LongHelp:  "[DEPRECATED] Set the default associated environment",
+	LongHelp: "The `default` command has been deprecated! It will be removed in a future version. Please specify `-E` on all commands instead of using the default.\n\n" +
+		"`default` sets the default environment for all commands that don't specify an environment with the `-E` flag. " +
+		"See [scope](#global-scope) for more information on scope and default environments. " +
+		"When setting a default environment, you must give the alias of the environment if one was set when it was associated and not the real environment name. Here is a sample command\n\n" +
+		"```catalyze default prod```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			alias := cmd.StringArg("ENV_ALIAS", "", "The alias of an already associated environment to set as the default")

@@ -16,7 +16,9 @@ import (
 var Cmd = models.Command{
 	Name:      "worker",
 	ShortHelp: "Manage a service's workers",
-	LongHelp:  "Manage a service's workers",
+	LongHelp: "This command has been moved! Please use [worker deploy](#worker-deploy) instead. This alias will be removed in the next CLI update.\n\n" +
+		"The `worker` commands allow you to manage your environment variables per service. " +
+		"The `worker` command cannot be run directly, but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Command(DeploySubCmd.Name, DeploySubCmd.ShortHelp, DeploySubCmd.CmdFunc(settings))
@@ -51,7 +53,10 @@ var Cmd = models.Command{
 var DeploySubCmd = models.Command{
 	Name:      "deploy",
 	ShortHelp: "Deploy new workers for a given service",
-	LongHelp:  "Deploy new workers for a given service",
+	LongHelp: "`worker deploy` allows you to start a background process asynchronously. The TARGET must be specified in your Procfile. " +
+		"Once the worker is started, any output can be found in your logging Dashboard or using the [logs](#logs) command. " +
+		"Here is a sample command\n\n" +
+		"```catalyze worker deploy code-1 mailer```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to use to deploy a worker")
@@ -76,7 +81,7 @@ var DeploySubCmd = models.Command{
 var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "Lists all workers for a given service",
-	LongHelp:  "Lists all workers for a given service",
+	LongHelp:  "`worker list` lists all workers and their scale for a given code service along with the number of currently running instances of each worker target.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to list workers for")
@@ -100,7 +105,7 @@ var ListSubCmd = models.Command{
 var RmSubCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Remove all workers for a given service and target",
-	LongHelp:  "Remove all workers for a given service and target",
+	LongHelp:  "`worker rm` removes a worker by the given TARGET and stops all currently running instances of that TARGET.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service running the workers")
@@ -125,7 +130,10 @@ var RmSubCmd = models.Command{
 var ScaleSubCmd = models.Command{
 	Name:      "scale",
 	ShortHelp: "Scale existing workers up or down for a given service and target",
-	LongHelp:  "Scale existing workers up or down for a given service and target",
+	LongHelp: "`worker scale` allows you to scale up or down a given worker TARGET. " +
+		"Scaling up will launch new instances of the worker TARGET while scaling down will immediately stop running instances of the worker TARGET if applicable. Here are some sample commands\n\n" +
+		"```catalyze worker scale code-1 mailer 1\n" +
+		"catalyze worker scale code-1 mailer -- -2```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service running the workers")

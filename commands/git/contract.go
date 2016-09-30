@@ -15,7 +15,8 @@ import (
 var Cmd = models.Command{
 	Name:      "git-remote",
 	ShortHelp: "Manage git remotes to Catalyze code services",
-	LongHelp:  "Manage git remotes to Catalyze code services",
+	LongHelp: "The `git-remote` command allows you to interact with code service remote git URLs. " +
+		"The git-remote command can not be run directly but has sub commands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Command(AddSubCmd.Name, AddSubCmd.ShortHelp, AddSubCmd.CmdFunc(settings))
@@ -27,7 +28,9 @@ var Cmd = models.Command{
 var AddSubCmd = models.Command{
 	Name:      "add",
 	ShortHelp: "Add the git remote for the given code service to the local git repo",
-	LongHelp:  "Add the git remote for the given code service to the local git repo",
+	LongHelp: "`git-remote add` adds the proper git remote to a local git repository with the given remote name and service. " +
+		"Here is a sample command\n\n" +
+		"```catalyze git-remote add code-1 -r catalyze-code-1```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to add a git remote for")
@@ -52,7 +55,10 @@ var AddSubCmd = models.Command{
 var ShowSubCmd = models.Command{
 	Name:      "show",
 	ShortHelp: "Print out the git remote for a given code service",
-	LongHelp:  "Print out the git remote for a given code service. This is useful for adding the git remote manually",
+	LongHelp: "`git-remote show` prints out the git remote URL for the given service. " +
+		"This can be used to do a manual push or use the git remote for another purpose such as a CI integration. " +
+		"Here is a sample command\n\n" +
+		"```catalyze git-remote show code-1```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to add a git remote for")

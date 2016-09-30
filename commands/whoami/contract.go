@@ -13,7 +13,9 @@ import (
 var Cmd = models.Command{
 	Name:      "whoami",
 	ShortHelp: "Retrieve your user ID",
-	LongHelp:  "Retrieve your user ID",
+	LongHelp: "`whoami` prints out the currently logged in user's users ID. " +
+		"This is used with Catalyze support engineers. Here is a sample command\n\n" +
+		"```catalyze whoami```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

@@ -17,7 +17,7 @@ import (
 var Cmd = models.Command{
 	Name:      "deploy-keys",
 	ShortHelp: "Tasks for SSH deploy keys",
-	LongHelp:  "Tasks for SSH deploy keys",
+	LongHelp:  "The `deploy-keys` command gives access to SSH deploy keys for environment services. The deploy-keys command can not be run directly but has sub commands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Command(AddSubCmd.Name, AddSubCmd.ShortHelp, AddSubCmd.CmdFunc(settings))
@@ -30,7 +30,11 @@ var Cmd = models.Command{
 var AddSubCmd = models.Command{
 	Name:      "add",
 	ShortHelp: "Add a new deploy key",
-	LongHelp:  "Add a new deploy key to a code service on the associated environment",
+	LongHelp: "`deploy-keys add` allows you to upload an SSH public key in OpenSSH format. " +
+		"These keys are used for pushing code to your code services but are not required. " +
+		"You should be using personal SSH keys with the [keys](#keys) command unless you are pushing code from Continuous Integration or Continuous Deployment scenarios. " +
+		"Deploy keys are intended to be shared among an organization. Here are some sample commands\n\n" +
+		"```catalyze deploy-keys add app01_public ~/.ssh/app01_rsa.pub app01```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name for the new key, for your own purposes")
@@ -56,7 +60,8 @@ var AddSubCmd = models.Command{
 var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List all deploy keys",
-	LongHelp:  "List all deploy keys for a code service on the associated environment",
+	LongHelp: "`deploy-keys list` will list all of your previously uploaded deploy keys by name including the key's fingerprint in SHA256 format. Here is a sample command\n\n" +
+		"```catalyze deploy-keys list app01```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the code service to list deploy keys")
@@ -80,7 +85,10 @@ var ListSubCmd = models.Command{
 var RmSubCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Remove a deploy key",
-	LongHelp:  "Remove a deploy key from a code service on the associated environment",
+	LongHelp: "`deploy-keys rm` will remove a previously created deploy key by name. " +
+		"It is a good idea to rotate deploy keys on a set schedule as they are intended to be shared among an organization. " +
+		"Here are some sample commands\n\n" +
+		"```catalyze deploy-keys rm app01_public app01```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of the key to remove")

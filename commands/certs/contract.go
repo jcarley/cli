@@ -16,7 +16,7 @@ import (
 var Cmd = models.Command{
 	Name:      "certs",
 	ShortHelp: "Manage your SSL certificates and domains",
-	LongHelp:  "Manage your SSL certificates and domains",
+	LongHelp:  "The `certs` command gives access to certificate and private key management for public facing services. The certs command cannot be run directly but has sub commands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Command(CreateSubCmd.Name, CreateSubCmd.ShortHelp, CreateSubCmd.CmdFunc(settings))
@@ -30,7 +30,15 @@ var Cmd = models.Command{
 var CreateSubCmd = models.Command{
 	Name:      "create",
 	ShortHelp: "Create a new domain with an SSL certificate and private key",
-	LongHelp:  "Create a new domain with an SSL certificate and private key",
+	LongHelp: "`certs create` allows you to upload an SSL certificate and private key which can be used to secure your public facing code service. " +
+		"Cert creation can be done at any time, even after environment provisioning, but must be done before [creating a site](#sites-create). " +
+		"When creating a cert, the CLI will check to ensure the certificate and private key match. If you are using a self signed cert, pass in the `-s` flag and the hostname check will be skipped. " +
+		"Catalyze requires that your certificate include your own certificate, intermediate certificates, and the root certificate in that order. " +
+		"If you only include your certificate, the CLI will attempt to resolve this and fetch intermediate and root certificates for you. " +
+		"It is advised that you create a full chain before running this command as the `-r` flag is accomplished on a \"best effort\" basis.\n\n" +
+		"The `HOSTNAME` for a certificate does not need to match the valid Subject of the actual SSL certificate nor does it need to match the `site` name used in the `sites create` command. " +
+		"The `HOSTNAME` is used for organizational purposes only and can be named anything with the exclusion of the following characters: `/`, `&`, `%`. Here is a sample command\n\n" +
+		"```catalyze certs create wildcard_mysitecom ~/path/to/cert.pem ~/path/to/priv.key```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("HOSTNAME", "", "The hostname of this domain and SSL certificate plus private key pair")
@@ -58,7 +66,9 @@ var CreateSubCmd = models.Command{
 var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List all existing domains that have SSL certificate and private key pairs",
-	LongHelp:  "List all existing domains that have SSL certificate and private key pairs",
+	LongHelp: "`certs list` lists all of the available certs you have created on your environment. " +
+		"The displayed names are the names that should be used as the `DOMAIN` parameter in the [sites create](#sites-create) command. Here is a sample command\n\n" +
+		"```catalyze certs list```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
@@ -80,7 +90,8 @@ var ListSubCmd = models.Command{
 var RmSubCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Remove an existing domain and its associated SSL certificate and private key pair",
-	LongHelp:  "Remove an existing domain and its associated SSL certificate and private key pair",
+	LongHelp: "`certs rm` allows you to delete old certificate and private key pairs. Only certs that are not in use by a site can be deleted. Here is a sample command\n\n" +
+		"```catalyze certs rm mywebsite.com```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("HOSTNAME", "", "The hostname of the domain and SSL certificate and private key pair")
@@ -104,7 +115,10 @@ var RmSubCmd = models.Command{
 var UpdateSubCmd = models.Command{
 	Name:      "update",
 	ShortHelp: "Update the SSL certificate and private key pair for an existing domain",
-	LongHelp:  "Update the SSL certificate and private key pair for an existing domain",
+	LongHelp: "`certs update` works nearly identical to the [certs create](#certs-create) command. " +
+		"All rules regarding self signed certs and certificate resolution from the `certs create` command apply to the `certs update` command. " +
+		"This is useful for when your certificates have expired and you need to upload new ones. Update your certs and then redeploy your service_proxy. Here is a sample command\n\n" +
+		"```catalyze certs update mywebsite.com ~/path/to/new/cert.pem ~/path/to/new/priv.key```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("HOSTNAME", "", "The hostname of this domain and SSL certificate and private key pair")
