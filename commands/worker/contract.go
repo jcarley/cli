@@ -21,10 +21,10 @@ var Cmd = models.Command{
 		"The `worker` command cannot be run directly, but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			cmd.Command(DeploySubCmd.Name, DeploySubCmd.ShortHelp, DeploySubCmd.CmdFunc(settings))
-			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
-			cmd.Command(RmSubCmd.Name, RmSubCmd.ShortHelp, RmSubCmd.CmdFunc(settings))
-			cmd.Command(ScaleSubCmd.Name, ScaleSubCmd.ShortHelp, ScaleSubCmd.CmdFunc(settings))
+			cmd.CommandLong(DeploySubCmd.Name, DeploySubCmd.ShortHelp, DeploySubCmd.LongHelp, DeploySubCmd.CmdFunc(settings))
+			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))
+			cmd.CommandLong(RmSubCmd.Name, RmSubCmd.ShortHelp, RmSubCmd.LongHelp, RmSubCmd.CmdFunc(settings))
+			cmd.CommandLong(ScaleSubCmd.Name, ScaleSubCmd.ShortHelp, ScaleSubCmd.LongHelp, ScaleSubCmd.CmdFunc(settings))
 
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to use to start a worker. Defaults to the associated service.")
 			target := cmd.StringArg("TARGET", "", "The name of the Procfile target to invoke as a worker")

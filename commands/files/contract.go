@@ -20,8 +20,8 @@ var Cmd = models.Command{
 		"The files command can not be run directly but has sub commands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			cmd.Command(DownloadSubCmd.Name, DownloadSubCmd.ShortHelp, DownloadSubCmd.CmdFunc(settings))
-			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
+			cmd.CommandLong(DownloadSubCmd.Name, DownloadSubCmd.ShortHelp, DownloadSubCmd.LongHelp, DownloadSubCmd.CmdFunc(settings))
+			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))
 		}
 	},
 }

@@ -1,8 +1,8 @@
-# Overview 
+# Overview
 
 ```
 
-Usage:  [OPTIONS] COMMAND [arg...]
+Usage: catalyze [OPTIONS] COMMAND [arg...]
 
 
 Options:
@@ -47,17 +47,15 @@ Commands:
   whoami	Retrieve your user ID
   worker	Manage a service's workers
 
-Run ' COMMAND --help' for more information on a command.
+Run 'catalyze COMMAND --help' for more information on a command.
 
 ```
 
-
-
-#  Associate
+# Associate
 
 ```
 
-Usage:  associate ENV_NAME SERVICE_NAME [-a] [-r] [-d]
+Usage: catalyze associate ENV_NAME SERVICE_NAME [-a] [-r] [-d]
 
 Associates an environment
 
@@ -78,11 +76,11 @@ Options:
 catalyze associate My-Production-Environment app01 -a prod
 ```
 
-#  Associated
+# Associated
 
 ```
 
-Usage:  associated
+Usage: catalyze associated
 
 Lists all associated environments
 
@@ -94,15 +92,15 @@ Lists all associated environments
 catalyze associated
 ```
 
-#  Certs
+# Certs
 
 The `certs` command gives access to certificate and private key management for public facing services. The certs command cannot be run directly but has sub commands.
 
-##  Certs Create
+## Certs Create
 
 ```
 
-Usage:  certs create HOSTNAME PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r]
+Usage: catalyze certs create HOSTNAME PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r]
 
 Create a new domain with an SSL certificate and private key
 
@@ -117,25 +115,35 @@ Options:
 
 ```
 
+`certs create` allows you to upload an SSL certificate and private key which can be used to secure your public facing code service. Cert creation can be done at any time, even after environment provisioning, but must be done before [creating a site](#sites-create). When creating a cert, the CLI will check to ensure the certificate and private key match. If you are using a self signed cert, pass in the `-s` flag and the hostname check will be skipped. Catalyze requires that your certificate include your own certificate, intermediate certificates, and the root certificate in that order. If you only include your certificate, the CLI will attempt to resolve this and fetch intermediate and root certificates for you. It is advised that you create a full chain before running this command as the `-r` flag is accomplished on a "best effort" basis.
 
+The `HOSTNAME` for a certificate does not need to match the valid Subject of the actual SSL certificate nor does it need to match the `site` name used in the `sites create` command. The `HOSTNAME` is used for organizational purposes only and can be named anything with the exclusion of the following characters: `/`, `&`, `%`. Here is a sample command
 
-##  Certs List
+```
+catalyze certs create wildcard_mysitecom ~/path/to/cert.pem ~/path/to/priv.key
+```
+
+## Certs List
 
 ```
 
-Usage:  certs list
+Usage: catalyze certs list
 
 List all existing domains that have SSL certificate and private key pairs
 
 ```
 
+`certs list` lists all of the available certs you have created on your environment. The displayed names are the names that should be used as the `DOMAIN` parameter in the [sites create](#sites-create) command. Here is a sample command
 
+```
+catalyze certs list
+```
 
-##  Certs Rm
+## Certs Rm
 
 ```
 
-Usage:  certs rm HOSTNAME
+Usage: catalyze certs rm HOSTNAME
 
 Remove an existing domain and its associated SSL certificate and private key pair
 
@@ -144,13 +152,17 @@ Arguments:
 
 ```
 
+`certs rm` allows you to delete old certificate and private key pairs. Only certs that are not in use by a site can be deleted. Here is a sample command
 
+```
+catalyze certs rm mywebsite.com
+```
 
-##  Certs Update
+## Certs Update
 
 ```
 
-Usage:  certs update HOSTNAME PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r]
+Usage: catalyze certs update HOSTNAME PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r]
 
 Update the SSL certificate and private key pair for an existing domain
 
@@ -165,13 +177,17 @@ Options:
 
 ```
 
+`certs update` works nearly identical to the [certs create](#certs-create) command. All rules regarding self signed certs and certificate resolution from the `certs create` command apply to the `certs update` command. This is useful for when your certificates have expired and you need to upload new ones. Update your certs and then redeploy your service_proxy. Here is a sample command
 
+```
+catalyze certs update mywebsite.com ~/path/to/new/cert.pem ~/path/to/new/priv.key
+```
 
-#  Clear
+# Clear
 
 ```
 
-Usage:  clear [--private-key] [--session] [--environments] [--default] [--pods] [--all]
+Usage: catalyze clear [--private-key] [--session] [--environments] [--default] [--pods] [--all]
 
 Clear out information in the global settings file to fix a misconfigured CLI.
 
@@ -193,11 +209,11 @@ catalyze clear --environments # removes your associated environments
 catalyze clear --session --private-key # removes all session and private key authentication information
 ```
 
-#  Console
+# Console
 
 ```
 
-Usage:  console SERVICE_NAME [COMMAND]
+Usage: catalyze console SERVICE_NAME [COMMAND]
 
 Open a secure console to a service
 
@@ -214,11 +230,11 @@ catalyze console db01
 catalyze console app01 "bundle exec rails console"
 ```
 
-#  Dashboard
+# Dashboard
 
 ```
 
-Usage:  dashboard
+Usage: catalyze dashboard
 
 Open the Catalyze Dashboard in your default browser
 
@@ -230,15 +246,15 @@ Open the Catalyze Dashboard in your default browser
 catalyze dashboard
 ```
 
-#  Db
+# Db
 
 The `db` command gives access to backup, import, and export services for databases. The db command can not be run directly but has sub commands.
 
-##  Db Backup
+## Db Backup
 
 ```
 
-Usage:  db backup DATABASE_NAME [-s]
+Usage: catalyze db backup DATABASE_NAME [-s]
 
 Create a new backup
 
@@ -250,13 +266,17 @@ Options:
 
 ```
 
+`db backup` creates a new backup for the given database service. The backup is started and unless `-s` is specified, the CLI will poll every few seconds until it finishes. Regardless of a successful backup or not, the logs for the backup will be printed to the console when the backup is finished. If an error occurs and the logs are not printed, you can use the [db logs](#db-logs) command to print out historical backup job logs. Here is a sample command
 
+```
+catalyze db backup db01
+```
 
-##  Db Download
+## Db Download
 
 ```
 
-Usage:  db download DATABASE_NAME BACKUP_ID FILEPATH [-f]
+Usage: catalyze db download DATABASE_NAME BACKUP_ID FILEPATH [-f]
 
 Download a previously created backup
 
@@ -270,13 +290,23 @@ Options:
 
 ```
 
+`db download` downloads a previously created backup to your local hard drive. Be careful using this command is it could download PHI. Be sure that all hard drive encryption and necessary precautions have been taken before performing a download. The ID of the backup is found by first running the [db list](#db-list) command. Here is a sample command
 
+```
+catalyze db download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.sql
+```
 
-##  Db Export
+This assumes you are downloading a MySQL or PostgreSQL backup which takes the `.sql` file format. If you are downloading a mongo backup, the command might look like this
+
+```
+catalyze db download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.tar.gz
+```
+
+## Db Export
 
 ```
 
-Usage:  db export DATABASE_NAME FILEPATH [-f]
+Usage: catalyze db export DATABASE_NAME FILEPATH [-f]
 
 Export data from a database
 
@@ -289,13 +319,23 @@ Options:
 
 ```
 
+`db export` is a simple wrapper around the `db backup` and `db download` commands. When you request an export, a backup is created that will be added to the list of backups shown when you perform the [db list](#db-list) command. Then that backup is immediately downloaded. Regardless of a successful export or not, the logs for the backup will be printed to the console when the export is finished. If an error occurs and the logs are not printed, you can use the [db logs](#db-logs) command to print out historical backup job logs. Here is a sample command
 
+```
+catalyze db export db01 ./dbexport.sql
+```
 
-##  Db Import
+This assumes you are exporting a MySQL or PostgreSQL database which takes the `.sql` file format. If you are exporting a mongo database, the command might look like this
+
+```
+catalyze db export db01 ./dbexport.tar.gz
+```
+
+## Db Import
 
 ```
 
-Usage:  db import DATABASE_NAME FILEPATH [-d [-c]]
+Usage: catalyze db import DATABASE_NAME FILEPATH [-d [-c]]
 
 Import data into a database
 
@@ -309,13 +349,28 @@ Options:
 
 ```
 
+`db import` allows you to inject new data into your database service. For example, if you wrote a simple SQL file
 
+```
+CREATE TABLE mytable (
+id TEXT PRIMARY KEY,
+val TEXT
+);
 
-##  Db List
+INSERT INTO mytable (id, val) values ('1', 'test');
+```
+
+and stored it at `./db.sql` you could import this into your database service. When importing data into mongo, you may specify the database and collection to import into using the `-d` and `-c` flags respectively. Regardless of a successful import or not, the logs for the import will be printed to the console when the import is finished. Before an import takes place, your database is backed up automatically in case any issues arise. Here is a sample command
+
+```
+catalyze db import db01 ./db.sql
+```
+
+## Db List
 
 ```
 
-Usage:  db list DATABASE_NAME [-p] [-n]
+Usage: catalyze db list DATABASE_NAME [-p] [-n]
 
 List created backups
 
@@ -328,13 +383,17 @@ Options:
 
 ```
 
+`db list` lists all previously created backups. After listing backups you can copy the backup ID and use it to [download](#db-download) that backup or [view the logs](#db-logs) from that backup. Here is a sample command
 
+```
+catalyze db list db01
+```
 
-##  Db Logs
+## Db Logs
 
 ```
 
-Usage:  db logs DATABASE_NAME BACKUP_ID
+Usage: catalyze db logs DATABASE_NAME BACKUP_ID
 
 Print out the logs from a previous database backup job
 
@@ -344,13 +403,17 @@ Arguments:
 
 ```
 
+`db logs` allows you to view backup logs from historical backup jobs. You can find the backup ID from using the `db list` command. Here is a sample command
 
+```
+catalyze db logs db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203
+```
 
-#  Default
+# Default
 
 ```
 
-Usage:  default ENV_ALIAS
+Usage: catalyze default ENV_ALIAS
 
 [DEPRECATED] Set the default associated environment
 
@@ -367,15 +430,15 @@ The `default` command has been deprecated! It will be removed in a future versio
 catalyze default prod
 ```
 
-#  Deploy-keys
+# Deploy-keys
 
 The `deploy-keys` command gives access to SSH deploy keys for environment services. The deploy-keys command can not be run directly but has sub commands.
 
-##  Deploy-keys Add
+## Deploy-keys Add
 
 ```
 
-Usage:  deploy-keys add NAME KEY_PATH SERVICE_NAME
+Usage: catalyze deploy-keys add NAME KEY_PATH SERVICE_NAME
 
 Add a new deploy key
 
@@ -386,13 +449,17 @@ Arguments:
 
 ```
 
+`deploy-keys add` allows you to upload an SSH public key in OpenSSH format. These keys are used for pushing code to your code services but are not required. You should be using personal SSH keys with the [keys](#keys) command unless you are pushing code from Continuous Integration or Continuous Deployment scenarios. Deploy keys are intended to be shared among an organization. Here are some sample commands
 
+```
+catalyze deploy-keys add app01_public ~/.ssh/app01_rsa.pub app01
+```
 
-##  Deploy-keys List
+## Deploy-keys List
 
 ```
 
-Usage:  deploy-keys list SERVICE_NAME
+Usage: catalyze deploy-keys list SERVICE_NAME
 
 List all deploy keys
 
@@ -401,13 +468,17 @@ Arguments:
 
 ```
 
+`deploy-keys list` will list all of your previously uploaded deploy keys by name including the key's fingerprint in SHA256 format. Here is a sample command
 
+```
+catalyze deploy-keys list app01
+```
 
-##  Deploy-keys Rm
+## Deploy-keys Rm
 
 ```
 
-Usage:  deploy-keys rm NAME SERVICE_NAME
+Usage: catalyze deploy-keys rm NAME SERVICE_NAME
 
 Remove a deploy key
 
@@ -417,13 +488,17 @@ Arguments:
 
 ```
 
+`deploy-keys rm` will remove a previously created deploy key by name. It is a good idea to rotate deploy keys on a set schedule as they are intended to be shared among an organization. Here are some sample commands
 
+```
+catalyze deploy-keys rm app01_public app01
+```
 
-#  Disassociate
+# Disassociate
 
 ```
 
-Usage:  disassociate ENV_ALIAS
+Usage: catalyze disassociate ENV_ALIAS
 
 Remove the association with an environment
 
@@ -438,11 +513,11 @@ Arguments:
 catalyze disassociate myprod
 ```
 
-#  Domain
+# Domain
 
 ```
 
-Usage:  domain
+Usage: catalyze domain
 
 Print out the temporary domain name of the environment
 
@@ -454,29 +529,33 @@ Print out the temporary domain name of the environment
 catalyze domain
 ```
 
-#  Environments
+# Environments
 
 This command has been moved! Please use [environments list](#environments-list) instead. This alias will be removed in the next CLI update.
 
 The `environments` command allows you to manage your environments. The environments command can not be run directly but has sub commands.
 
-##  Environments List
+## Environments List
 
 ```
 
-Usage:  environments list
+Usage: catalyze environments list
 
 List all environments you have access to
 
 ```
 
+`environments list` lists all environments that you are granted access to. These environments include those you created and those that other Catalyze customers have added you to. Here is a sample command
 
+```
+catalyze environments list
+```
 
-##  Environments Rename
+## Environments Rename
 
 ```
 
-Usage:  environments rename NAME
+Usage: catalyze environments rename NAME
 
 Rename an environment
 
@@ -485,17 +564,21 @@ Arguments:
 
 ```
 
+`environments rename` allows you to rename your environment. Here is a sample command
 
+```
+catalyze environments rename MyNewEnvName
+```
 
-#  Files
+# Files
 
 The `files` command gives access to service files on your environment's services. Service files can include Nginx configs, SSL certificates, and any other file that might be injected into your running service. The files command can not be run directly but has sub commands.
 
-##  Files Download
+## Files Download
 
 ```
 
-Usage:  files download [SERVICE_NAME] FILE_NAME [-o] [-f]
+Usage: catalyze files download [SERVICE_NAME] FILE_NAME [-o] [-f]
 
 Download a file to your localhost with the same file permissions as on the remote host or print it to stdout
 
@@ -509,13 +592,17 @@ Options:
 
 ```
 
+`files download` allows you to view the contents of a service file and save it to your local machine. Most service files are stored on your service_proxy and therefore you should not have to specify the `SERVICE_NAME` argument. Simply supply the `FILE_NAME` found from the [files list](#files-list) command and the contents of the file, as well as the permissions string, will be printed to your console. You can always store the file locally, applying the same permissions as those on the remote server, by specifying an output file with the `-o` flag. Here is a sample command
 
+```
+catalyze files download /etc/nginx/sites-enabled/mywebsite.com
+```
 
-##  Files List
+## Files List
 
 ```
 
-Usage:  files list [SERVICE_NAME]
+Usage: catalyze files list [SERVICE_NAME]
 
 List all files available for a given service
 
@@ -524,17 +611,21 @@ Arguments:
 
 ```
 
+`files list` prints out a listing of all service files available for download. Nearly all service files are stored on the service_proxy and therefore you should not have to specify the `SERVICE_NAME` argument. Here is a sample command
 
+```
+catalyze files list
+```
 
-#  Git-remote
+# Git-remote
 
 The `git-remote` command allows you to interact with code service remote git URLs. The git-remote command can not be run directly but has sub commands.
 
-##  Git-remote Add
+## Git-remote Add
 
 ```
 
-Usage:  git-remote add SERVICE_NAME [-r]
+Usage: catalyze git-remote add SERVICE_NAME [-r]
 
 Add the git remote for the given code service to the local git repo
 
@@ -546,13 +637,17 @@ Options:
 
 ```
 
+`git-remote add` adds the proper git remote to a local git repository with the given remote name and service. Here is a sample command
 
+```
+catalyze git-remote add code-1 -r catalyze-code-1
+```
 
-##  Git-remote Show
+## Git-remote Show
 
 ```
 
-Usage:  git-remote show SERVICE_NAME
+Usage: catalyze git-remote show SERVICE_NAME
 
 Print out the git remote for a given code service
 
@@ -561,17 +656,21 @@ Arguments:
 
 ```
 
+`git-remote show` prints out the git remote URL for the given service. This can be used to do a manual push or use the git remote for another purpose such as a CI integration. Here is a sample command
 
+```
+catalyze git-remote show code-1
+```
 
-#  Invites
+# Invites
 
 The `invites` command gives access to organization invitations. Every environment is owned by an organization and users join organizations in order to access individual environments. You can invite new users by email and manage pending invites through the CLI. You cannot call the `invites` command directly, but must call one of its subcommands.
 
-##  Invites Accept
+## Invites Accept
 
 ```
 
-Usage:  invites accept INVITE_CODE
+Usage: catalyze invites accept INVITE_CODE
 
 Accept an organization invite
 
@@ -580,25 +679,33 @@ Arguments:
 
 ```
 
+`invites accept` is an alternative form of accepting an invitation sent by email. The invitation email you receive will have instructions as well as the invite code to use with this command. Here is a sample command
 
+```
+catalyze invites accept 5a206aa8-04f4-4bc1-a017-ede7e6c7dbe2
+```
 
-##  Invites List
+## Invites List
 
 ```
 
-Usage:  invites list
+Usage: catalyze invites list
 
 List all pending organization invitations
 
 ```
 
+`invites list` lists all pending invites for the associated environment's organization. Any invites that have already been accepted will not appear in this list. To manage users who have already accepted invitations or are already granted access to your environment, use the [users](#users) group of commands. Here is a sample command
 
+```
+catalyze invites list
+```
 
-##  Invites Rm
+## Invites Rm
 
 ```
 
-Usage:  invites rm INVITE_ID
+Usage: catalyze invites rm INVITE_ID
 
 Remove a pending organization invitation
 
@@ -607,13 +714,17 @@ Arguments:
 
 ```
 
+`invites rm` removes a pending invitation found by using the [invites list](#invites-list) command. Once an invite has already been accepted, it cannot be removed. Removing an invitation is helpful if an email was misspelled or an invitation was sent to an incorrect email address. If you want to revoke access to a user who already has been given access to your environment, use the [users rm](#users-rm) command. Here is a sample command
 
+```
+catalyze invites rm 78b5d0ed-f71c-47f7-a4c8-6c8c58c29db1
+```
 
-##  Invites Send
+## Invites Send
 
 ```
 
-Usage:  invites send EMAIL [-m | -a]
+Usage: catalyze invites send EMAIL [-m | -a]
 
 Send an invite to a user by email for a given organization
 
@@ -626,17 +737,21 @@ Options:
 
 ```
 
+`invites send` invites a new user to your environment's organization. The only piece of information required is the email address to send the invitation to. The invited user will join the organization as a basic member, unless otherwise specified with the `-a` flag. The recipient does **not** need to have a Dashboard account in order to send them an invitation. However, they will need to have a Dashboard account to accept the invitation. Here is a sample command
 
+```
+catalyze invites send coworker@catalyze.io -a
+```
 
-#  Keys
+# Keys
 
 The `keys` command gives access to SSH key management for your user account. SSH keys can be used for authentication and pushing code to the Catalyze platform. Any SSH keys added to your user account should not be shared but be treated as private SSH keys. Any SSH key uploaded to your user account will be able to be used with all code services and environments that you have access to. The keys command can not be run directly but has sub commands.
 
-##  Keys Add
+## Keys Add
 
 ```
 
-Usage:  keys add NAME PUBLIC_KEY_PATH
+Usage: catalyze keys add NAME PUBLIC_KEY_PATH
 
 Add a public key
 
@@ -646,25 +761,33 @@ Arguments:
 
 ```
 
+`keys add` allows you to add a new SSH key to your user account. SSH keys added to your user account should be private and not shared with others. SSH keys can be used for authentication (as opposed to the traditional username and password) as well as pushing code to an environment's code services. Please note, you must specify the path to the public key file and not the private key. All SSH keys should be in either OpenSSH RSA format or PEM format. Here is a sample command
 
+```
+catalyze keys add my_prod_key ~/.ssh/prod_rsa.pub
+```
 
-##  Keys List
+## Keys List
 
 ```
 
-Usage:  keys list
+Usage: catalyze keys list
 
 List your public keys
 
 ```
 
+`keys list` lists all public keys by name that have been uploaded to your user account including the key's fingerprint in SHA256 format. Here is a sample command
 
+```
+catalyze keys list
+```
 
-##  Keys Rm
+## Keys Rm
 
 ```
 
-Usage:  keys rm NAME
+Usage: catalyze keys rm NAME
 
 Remove a public key
 
@@ -673,13 +796,17 @@ Arguments:
 
 ```
 
+`keys rm` allows you to remove an SSH key previously uploaded to your account. The name of the key can be found by using the [keys list](#keys-list) command. Here is a sample command
 
+```
+catalyze keys rm my_prod_key
+```
 
-##  Keys Set
+## Keys Set
 
 ```
 
-Usage:  keys set PRIVATE_KEY_PATH
+Usage: catalyze keys set PRIVATE_KEY_PATH
 
 Set your auth key
 
@@ -688,13 +815,17 @@ Arguments:
 
 ```
 
+`keys set` allows the CLI to use an SSH key for authentication instead of the traditional username and password combination. This can be useful for automation or where shared workstations are involved. Please note that you must pass in the path to the private key and not the public key. The given key must already be added to your account by using the [keys add](#keys-add) command. Here is a sample command
 
+```
+catalyze keys set ~/.ssh/my_key
+```
 
-#  Logout
+# Logout
 
 ```
 
-Usage:  logout
+Usage: catalyze logout
 
 Clear the stored user information from your local machine
 
@@ -706,11 +837,11 @@ When using the CLI, your username and password are **never** stored in any file 
 catalyze logout
 ```
 
-#  Logs
+# Logs
 
 ```
 
-Usage:  logs [QUERY] [(-f | -t)] [--hours] [--minutes] [--seconds]
+Usage: catalyze logs [QUERY] [(-f | -t)] [--hours] [--minutes] [--seconds]
 
 Show the logs in your terminal streamed from your logging dashboard
 
@@ -733,15 +864,15 @@ catalyze logs --hours=6 --minutes=30
 catalyze logs -f
 ```
 
-#  Metrics
+# Metrics
 
 The `metrics` command gives access to environment metrics or individual service metrics through a variety of formats. This is useful for checking on the status and performance of your application or environment as a whole. The metrics command cannot be run directly but has sub commands.
 
-##  Metrics Cpu
+## Metrics Cpu
 
 ```
 
-Usage:  metrics cpu [SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]
+Usage: catalyze metrics cpu [SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]
 
 Print service and environment CPU metrics in your local time zone
 
@@ -757,13 +888,20 @@ Options:
 
 ```
 
+`metrics cpu` prints out CPU metrics for your environment or individual services. You can print out metrics in csv, json, plain text, or spark lines format. If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. You can only stream metrics using plain text or spark lines formats. To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands
 
+```
+catalyze metrics cpu
+catalyze metrics cpu app01 --stream
+catalyze metrics cpu --json
+catalyze metrics cpu db01 --csv -m 60
+```
 
-##  Metrics Memory
+## Metrics Memory
 
 ```
 
-Usage:  metrics memory [SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]
+Usage: catalyze metrics memory [SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]
 
 Print service and environment memory metrics in your local time zone
 
@@ -779,13 +917,20 @@ Options:
 
 ```
 
+`metrics memory` prints out memory metrics for your environment or individual services. You can print out metrics in csv, json, plain text, or spark lines format. If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. You can only stream metrics using plain text or spark lines formats. To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands
 
+```
+catalyze metrics memory
+catalyze metrics memory app01 --stream
+catalyze metrics memory --json
+catalyze metrics memory db01 --csv -m 60
+```
 
-##  Metrics Network-in
+## Metrics Network-in
 
 ```
 
-Usage:  metrics network-in [SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]
+Usage: catalyze metrics network-in [SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]
 
 Print service and environment received network data metrics in your local time zone
 
@@ -801,13 +946,20 @@ Options:
 
 ```
 
+`metrics network-in` prints out received network metrics for your environment or individual services. You can print out metrics in csv, json, plain text, or spark lines format. If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. You can only stream metrics using plain text or spark lines formats. To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands
 
+```
+catalyze metrics network-in
+catalyze metrics network-in app01 --stream
+catalyze metrics network-in --json
+catalyze metrics network-in db01 --csv -m 60
+```
 
-##  Metrics Network-out
+## Metrics Network-out
 
 ```
 
-Usage:  metrics network-out [SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]
+Usage: catalyze metrics network-out [SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]
 
 Print service and environment transmitted network data metrics in your local time zone
 
@@ -823,13 +975,20 @@ Options:
 
 ```
 
+`metrics network-out` prints out transmitted network metrics for your environment or individual services. You can print out metrics in csv, json, plain text, or spark lines format. If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. You can only stream metrics using plain text or spark lines formats. To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands
 
+```
+catalyze metrics network-out
+catalyze metrics network-out app01 --stream
+catalyze metrics network-out --json
+catalyze metrics network-out db01 --csv -m 60
+```
 
-#  Rake
+# Rake
 
 ```
 
-Usage:  rake [SERVICE_NAME] TASK_NAME
+Usage: catalyze rake [SERVICE_NAME] TASK_NAME
 
 Execute a rake task
 
@@ -845,11 +1004,11 @@ Arguments:
 catalyze rake code-1 db:migrate
 ```
 
-#  Redeploy
+# Redeploy
 
 ```
 
-Usage:  redeploy SERVICE_NAME
+Usage: catalyze redeploy SERVICE_NAME
 
 Redeploy a service without having to do a git push
 
@@ -864,15 +1023,15 @@ Arguments:
 catalyze redeploy app01
 ```
 
-#  Releases
+# Releases
 
 The `releases` command allows you to manage your code service releases. A release is automatically created each time you perform a git push. The release is tagged with the git SHA of the commit. Releases are a way of tagging specific points in time of your git history. You can rollback to a specific release by using the [rollback](#rollback) command. The releases command cannot be run directly but has sub commands.
 
-##  Releases List
+## Releases List
 
 ```
 
-Usage:  releases list SERVICE_NAME
+Usage: catalyze releases list SERVICE_NAME
 
 List all releases for a given code service
 
@@ -881,13 +1040,17 @@ Arguments:
 
 ```
 
+`releases list` lists all of the releases for a given service. A release is automatically created each time a git push is performed. Here is a sample command
 
+```
+catalyze releases list code-1
+```
 
-##  Releases Rm
+## Releases Rm
 
 ```
 
-Usage:  releases rm SERVICE_NAME RELEASE_NAME
+Usage: catalyze releases rm SERVICE_NAME RELEASE_NAME
 
 Remove a release from a code service
 
@@ -897,13 +1060,17 @@ Arguments:
 
 ```
 
+`releases rm` removes an existing release. This is useful in the case of a misbehaving code service. Removing the release avoids the risk of rolling back to a "bad" build. Here is a sample command
 
+```
+catalyze releases rm code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883
+```
 
-##  Releases Update
+## Releases Update
 
 ```
 
-Usage:  releases update SERVICE_NAME RELEASE_NAME [--notes] [--release]
+Usage: catalyze releases update SERVICE_NAME RELEASE_NAME [--notes] [--release]
 
 Update a release from a code service
 
@@ -917,13 +1084,17 @@ Options:
 
 ```
 
+`releases update` allows you to rename or add notes to an existing release. By default, releases are named with the git SHA of the commit used to create the release. Renaming them allows you to organize your releases. Here is a sample command
 
+```
+catalyze releases update code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883 --notes "This is a stable build" --release v1
+```
 
-#  Rollback
+# Rollback
 
 ```
 
-Usage:  rollback SERVICE_NAME RELEASE_NAME
+Usage: catalyze rollback SERVICE_NAME RELEASE_NAME
 
 Rollback a code service to a specific release
 
@@ -939,27 +1110,31 @@ Arguments:
 catalyze rollback code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883
 ```
 
-#  Services
+# Services
 
 The `services` command allows you to manage your services. The services command cannot be run directly but has sub commands.
 
-##  Services List
+## Services List
 
 ```
 
-Usage:  services list
+Usage: catalyze services list
 
 List all services for your environment
 
 ```
 
+`services list` prints out a list of all services in your environment and their sizes. The services will be printed regardless of their currently running state. To see which services are currently running and which are not, use the [status](#status) command. Here is a sample command
 
+```
+catalyze services list
+```
 
-##  Services Stop
+## Services Stop
 
 ```
 
-Usage:  services stop SERVICE_NAME
+Usage: catalyze services stop SERVICE_NAME
 
 Stop all instances of a given service (including all workers, rake tasks, and open consoles)
 
@@ -968,13 +1143,17 @@ Arguments:
 
 ```
 
+`services stop` shuts down all running instances of a given service. This is useful when performing maintenance and a service must be shutdown to perform that maintenance. Take caution when running this command as all instances of the service, all workers, all rake tasks, and all open console sessions will be stopped. Here is a sample command
 
+```
+catalyze services stop code-1
+```
 
-##  Services Rename
+## Services Rename
 
 ```
 
-Usage:  services rename SERVICE_NAME NEW_NAME
+Usage: catalyze services rename SERVICE_NAME NEW_NAME
 
 Rename a service
 
@@ -984,17 +1163,21 @@ Arguments:
 
 ```
 
+`services rename` allows you to rename any service in your environment. Here is a sample command
 
+```
+catalyze services rename code-1 api-svc
+```
 
-#  Sites
+# Sites
 
 The `sites` command gives access to hostname and SSL certificate usage for public facing services. `sites` are different from `certs` in that `sites` use an instance of a `cert` and are associated with a single service. `certs` can be used by multiple sites. The sites command can not be run directly but has sub commands.
 
-##  Sites Create
+## Sites Create
 
 ```
 
-Usage:  sites create SITE_NAME SERVICE_NAME HOSTNAME [--client-max-body-size] [--proxy-connect-timeout] [--proxy-read-timeout] [--proxy-send-timeout] [--proxy-upstream-timeout] [--enable-cors] [--enable-websockets]
+Usage: catalyze sites create SITE_NAME SERVICE_NAME HOSTNAME [--client-max-body-size] [--proxy-connect-timeout] [--proxy-read-timeout] [--proxy-send-timeout] [--proxy-upstream-timeout] [--enable-cors] [--enable-websockets]
 
 Create a new site linking it to an existing cert instance
 
@@ -1014,25 +1197,55 @@ Options:
 
 ```
 
+`sites create` allows you to create a site configuration that is tied to a single service. To create a site, you must first [create a cert](#certs-create). A site has three pieces of information, a name, the service it's tied to, and the cert instance it will use. The name is the `server_name` that will be injected into this site's Nginx configuration file. It is important that this site name match what URL your site will respond to. If this is a bare domain, using `mysite.com` is sufficient. If it should respond to the APEX domain and all subdomains, it should be named `.mysite.com` notice the leading `.`. The service is a code service that will use this site configuration. Lastly, the cert instance must be specified by the `HOSTNAME` argument used in the [certs create](#certs-create) command. You can also set Nginx configuration values directly by specifying one of the above flags. Specifying `--enable-cors` will add the following lines to your Nginx configuration
 
+```
+add_header 'Access-Control-Allow-Origin' '$http_origin' always;
+add_header 'Access-Control-Allow-Credentials' 'true' always;
+add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT, HEAD, PATCH' always;
+add_header 'Access-Control-Allow-Headers' 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Accept,Authorization' always;
+add_header 'Access-Control-Max-Age' 1728000 always;
+if ($request_method = 'OPTIONS') {
+  return 204;
+}
+```
 
-##  Sites List
+Specifying `--enable-websockets` will add the following lines to your Nginx configuration
+
+```
+proxy_http_version 1.1;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+```
+
+Here are some sample commands
+
+```
+catalyze sites create .mysite.com app01 wildcard_mysitecom
+catalyze sites create .mysite.com app01 wildcard_mysitecom --client-max-body-size 50 --enable-cors
+```
+
+## Sites List
 
 ```
 
-Usage:  sites list
+Usage: catalyze sites list
 
 List details for all site configurations
 
 ```
 
+`sites list` lists all sites for the given environment. The names printed out can be used in the other sites commands. Here is a sample command
 
+```
+catalyze sites list
+```
 
-##  Sites Rm
+## Sites Rm
 
 ```
 
-Usage:  sites rm NAME
+Usage: catalyze sites rm NAME
 
 Remove a site configuration
 
@@ -1041,13 +1254,17 @@ Arguments:
 
 ```
 
+`sites rm` allows you to remove a site by name. Since sites cannot be updated, if you want to change the name of a site, you must `rm` the site and then [create](#sites-create) it again. If you simply need to update your SSL certificates, you can use the [certs update](#certs-update) command on the cert instance used by the site in question. Here is a sample command
 
+```
+catalyze sites rm mywebsite.com
+```
 
-##  Sites Show
+## Sites Show
 
 ```
 
-Usage:  sites show NAME
+Usage: catalyze sites show NAME
 
 Shows the details for a given site
 
@@ -1056,17 +1273,21 @@ Arguments:
 
 ```
 
+`sites show` will print out detailed information for a single site. The name of the site can be found from the [sites list](#sites-list) command. Here is a sample command
 
+```
+catalyze sites show mywebsite.com
+```
 
-#  Ssl
+# Ssl
 
 The `ssl` command offers access to subcommands that deal with SSL certificates. You cannot run the SSL command directly but must call a subcommand.
 
-##  Ssl Resolve
+## Ssl Resolve
 
 ```
 
-Usage:  ssl resolve CHAIN PRIVATE_KEY HOSTNAME [OUTPUT] [-f]
+Usage: catalyze ssl resolve CHAIN PRIVATE_KEY HOSTNAME [OUTPUT] [-f]
 
 Verify that an SSL certificate is signed by a valid CA and attempt to resolve any incomplete certificate chains that are found
 
@@ -1081,13 +1302,42 @@ Options:
 
 ```
 
+`ssl resolve` is a tool that will attempt to fix invalid SSL certificates chains. A well formatted SSL certificate will include your certificate, intermediate certificates, and root certificates. It should follow this format
 
+```
+-----BEGIN CERTIFICATE-----
+<Your SSL certificate here>
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+<One or more intermediate certificates here>
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+<Root CA here>
+-----END CERTIFICATE-----
+```
 
-##  Ssl Verify
+If your certificate only includes your own certificate, such as the following format shows
+
+```
+-----BEGIN CERTIFICATE-----
+<Your SSL certificate here>
+-----END CERTIFICATE-----
+```
+
+then the SSL resolve command will attempt to resolve this by downloading public intermediate certificates and root certificates. A general rule of thumb is, if your certificate passes the `ssl resolve` check, it will almost always work on the Catalyze platform. You can specify where to save the updated chain or omit the `OUTPUT` argument to print it to STDOUT.
+
+Please note you all certificates and private keys should be in PEM format. You cannot use self signed certificates with this command as they cannot be resolved as they are not signed by a valid CA. Here are some sample commands
+
+```
+catalyze ssl resolve ~/mysites_cert.pem ~/mysites_key.key *.mysite.com ~/updated_mysites_cert.pem -f
+catalyze ssl resolve ~/mysites_cert.pem ~/mysites_key.key *.mysite.com
+```
+
+## Ssl Verify
 
 ```
 
-Usage:  ssl verify CHAIN PRIVATE_KEY HOSTNAME [-s]
+Usage: catalyze ssl verify CHAIN PRIVATE_KEY HOSTNAME [-s]
 
 Verify whether a certificate chain is complete and if it matches the given private key
 
@@ -1101,13 +1351,34 @@ Options:
 
 ```
 
+`ssl verify` will tell you if your SSL certificate and private key are properly formatted for use with Stratum. Before uploading a certificate to Catalyze you should verify it creates a full chain and matches the given private key with this command. Both your chain and private key should be **unencrypted** and in **PEM** format. The private key is the only key in the key file. However, for the chain, you should include your SSL certificate, intermediate certificates, and root certificate in the following order and format.
 
+```
+-----BEGIN CERTIFICATE-----
+<Your SSL certificate here>
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+<One or more intermediate certificates here>
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+<Root CA here>
+-----END CERTIFICATE-----
+```
 
-#  Status
+This command also requires you to specify the hostname that you are using the SSL certificate for in order to verify that the hostname matches what is in the chain. If it is a wildcard certificate, your hostname would be in the following format: `*.catalyze.io`. This command will verify a complete chain can be made from your certificate down through the intermediate certificates all the way to a root certificate that you have given or one found in your system.
+
+You can also use this command to verify self-signed certificates match a given private key. To do so, add the `-s` option which will skip verifying the certificate to root chain and just tell you if your certificate matches your private key. Please note that the empty quotes are required for checking self signed certificates. This is the required parameter HOSTNAME which is ignored when checking self signed certificates. Here are some sample commands
+
+```
+catalyze ssl verify ./catalyze.crt ./catalyze.key *.catalyze.io
+catalyze ssl verify ~/self-signed.crt ~/self-signed.key "" -s
+```
+
+# Status
 
 ```
 
-Usage:  status
+Usage: catalyze status
 
 Get quick readout of the current status of your associated environment and all of its services
 
@@ -1119,11 +1390,11 @@ Get quick readout of the current status of your associated environment and all o
 catalyze status
 ```
 
-#  Support-ids
+# Support-ids
 
 ```
 
-Usage:  support-ids
+Usage: catalyze support-ids
 
 Print out various IDs related to your associated environment to be used when contacting Catalyze support
 
@@ -1135,11 +1406,11 @@ Print out various IDs related to your associated environment to be used when con
 catalyze support-ids
 ```
 
-#  Update
+# Update
 
 ```
 
-Usage:  update
+Usage: catalyze update
 
 Checks for available updates and updates the CLI if a new update is available
 
@@ -1151,27 +1422,31 @@ Checks for available updates and updates the CLI if a new update is available
 catalyze update
 ```
 
-#  Users
+# Users
 
 The `users` command allows you to manage who has access to your environment through the organization that owns the environment. The users command can not be run directly but has three sub commands.
 
-##  Users List
+## Users List
 
 ```
 
-Usage:  users list
+Usage: catalyze users list
 
 List all users who have access to the given organization
 
 ```
 
+`users list` shows every user that belongs to your environment's organization. Users who belong to your environment's organization may access to your environment's services and data depending on their role in the organization. Here is a sample command
 
+```
+catalyze users list
+```
 
-##  Users Rm
+## Users Rm
 
 ```
 
-Usage:  users rm EMAIL
+Usage: catalyze users rm EMAIL
 
 Revoke access to the given organization for the given user
 
@@ -1180,17 +1455,21 @@ Arguments:
 
 ```
 
+`users rm` revokes a users access to your environment's organization. Revoking a user's access to your environment's organization will revoke their access to your organization's environments. Here is a sample command
 
+```
+catalyze users rm user@example.com
+```
 
-#  Vars
+# Vars
 
 The `vars` command allows you to manage environment variables for your code services. The vars command can not be run directly but has sub commands.
 
-##  Vars List
+## Vars List
 
 ```
 
-Usage:  vars list [SERVICE_NAME] [--json | --yaml]
+Usage: catalyze vars list [SERVICE_NAME] [--json | --yaml]
 
 List all environment variables
 
@@ -1203,13 +1482,18 @@ Options:
 
 ```
 
+`vars list` prints out all known environment variables for the given code service. You can print out environment variables in JSON or YAML format through the `--json` or `--yaml` flags. Here are some sample commands
 
+```
+catalyze vars list code-1
+catalyze vars list code-1 --json
+```
 
-##  Vars Set
+## Vars Set
 
 ```
 
-Usage:  vars set [SERVICE_NAME] -v...
+Usage: catalyze vars set [SERVICE_NAME] -v...
 
 Set one or more new environment variables or update the values of existing ones
 
@@ -1221,13 +1505,17 @@ Options:
 
 ```
 
+`vars set` allows you to add new environment variables or update the value of an existing environment variable on the given code service. You can set/update 1 or more environment variables at a time with this command by repeating the `-v` option multiple times. Once new environment variables are added or values updated, a [redeploy](#redeploy) is required for the given code service to have access to the new values. The environment variables must be of the form `<key>=<value>`. Here is a sample command
 
+```
+catalyze vars set code-1 -v AWS_ACCESS_KEY_ID=1234 -v AWS_SECRET_ACCESS_KEY=5678
+```
 
-##  Vars Unset
+## Vars Unset
 
 ```
 
-Usage:  vars unset [SERVICE_NAME] VARIABLE
+Usage: catalyze vars unset [SERVICE_NAME] VARIABLE
 
 Unset (delete) an existing environment variable
 
@@ -1237,13 +1525,17 @@ Arguments:
 
 ```
 
+`vars unset` removes an environment variables from the given code service. Only the environment variable name is required to unset. Once environment variables are unset, a [redeploy](#redeploy) is required for the given code service to realize the variable was removed. Here is a sample command
 
+```
+catalyze vars unset code-1 AWS_ACCESS_KEY_ID
+```
 
-#  Version
+# Version
 
 ```
 
-Usage:  version
+Usage: catalyze version
 
 Output the version and quit
 
@@ -1255,11 +1547,11 @@ Output the version and quit
 catalyze version
 ```
 
-#  Whoami
+# Whoami
 
 ```
 
-Usage:  whoami
+Usage: catalyze whoami
 
 Retrieve your user ID
 
@@ -1271,17 +1563,17 @@ Retrieve your user ID
 catalyze whoami
 ```
 
-#  Worker
+# Worker
 
 This command has been moved! Please use [worker deploy](#worker-deploy) instead. This alias will be removed in the next CLI update.
 
 The `worker` commands allow you to manage your environment variables per service. The `worker` command cannot be run directly, but has subcommands.
 
-##  Worker Deploy
+## Worker Deploy
 
 ```
 
-Usage:  worker deploy SERVICE_NAME TARGET
+Usage: catalyze worker deploy SERVICE_NAME TARGET
 
 Deploy new workers for a given service
 
@@ -1291,13 +1583,17 @@ Arguments:
 
 ```
 
+`worker deploy` allows you to start a background process asynchronously. The TARGET must be specified in your Procfile. Once the worker is started, any output can be found in your logging Dashboard or using the [logs](#logs) command. Here is a sample command
 
+```
+catalyze worker deploy code-1 mailer
+```
 
-##  Worker List
+## Worker List
 
 ```
 
-Usage:  worker list SERVICE_NAME
+Usage: catalyze worker list SERVICE_NAME
 
 Lists all workers for a given service
 
@@ -1306,13 +1602,17 @@ Arguments:
 
 ```
 
+`worker list` lists all workers and their scale for a given code service along with the number of currently running instances of each worker target. Here is a sample command
 
+```
+catalyze worker list code-1
+```
 
-##  Worker Rm
+## Worker Rm
 
 ```
 
-Usage:  worker rm SERVICE_NAME TARGET
+Usage: catalyze worker rm SERVICE_NAME TARGET
 
 Remove all workers for a given service and target
 
@@ -1322,13 +1622,17 @@ Arguments:
 
 ```
 
+`worker rm` removes a worker by the given TARGET and stops all currently running instances of that TARGET. Here is a sample command
 
+```
+catalyze worker rm code-1 mailer
+```
 
-##  Worker Scale
+## Worker Scale
 
 ```
 
-Usage:  worker scale SERVICE_NAME TARGET SCALE
+Usage: catalyze worker scale SERVICE_NAME TARGET SCALE
 
 Scale existing workers up or down for a given service and target
 
@@ -1339,4572 +1643,10 @@ Arguments:
 
 ```
 
+`worker scale` allows you to scale up or down a given worker TARGET. Scaling up will launch new instances of the worker TARGET while scaling down will immediately stop running instances of the worker TARGET if applicable. Here are some sample commands
 
-
- Here is a sample command
-
-```
-catalyze support-ids
-```
-
-#  Update
-
-```
-
-Usage:  update
-
-Checks for available updates and updates the CLI if a new update is available
-
-```
-
-`update` is a shortcut to update your CLI instantly. If a newer version of the CLI is available, it will be downloaded and installed automatically. This is used when you want to apply an update before the CLI automatically applies it on its own. Here is a sample command
-
-```
-catalyze update
-```
-
-#  Users
-
-```
-
-Usage:  users COMMAND [arg...]
-
-Manage users who have access to the given organization
-
-Commands:
-  list	List all users who have access to the given organization
-  rm	Revoke access to the given organization for the given user
-
-Run ' users COMMAND --help' for more information on a command.
-
-```
-
-The `users` command allows you to manage who has access to your environment through the organization that owns the environment. The users command can not be run directly but has three sub commands.
-
-##  Users List
-
-```
-
-Usage:  users list
-
-List all users who have access to the given organization
-
-```
-
-
-
-##  Users Rm
-
-```
-
-Usage:  users rm EMAIL
-
-Revoke access to the given organization for the given user
-
-Arguments:
-  EMAIL=""     The email address of the user to revoke access from for the given organization
-
-```
-
-
-
-#  Vars
-
-```
-
-Usage:  vars COMMAND [arg...]
-
-Interaction with environment variables for the associated environment
-
-Commands:
-  list	List all environment variables
-  set	Set one or more new environment variables or update the values of existing ones
-  unset	Unset (delete) an existing environment variable
-
-Run ' vars COMMAND --help' for more information on a command.
-
-```
-
-The `vars` command allows you to manage environment variables for your code services. The vars command can not be run directly but has sub commands.
-
-##  Vars List
-
-```
-
-Usage:  vars list [SERVICE_NAME] [--json | --yaml]
-
-List all environment variables
-
-Arguments:
-  SERVICE_NAME=""   The name of the service containing the environment variables. Defaults to the associated service.
-
-Options:
-  --json=false   Output environment variables in JSON format
-  --yaml=false   Output environment variables in YAML format
-
-```
-
-
-
-##  Vars Set
-
-```
-
-Usage:  vars set [SERVICE_NAME] -v...
-
-Set one or more new environment variables or update the values of existing ones
-
-Arguments:
-  SERVICE_NAME=""   The name of the service on which the environment variables will be set. Defaults to the associated service.
-
-Options:
-  -v, --variable    The env variable to set or update in the form "<key>=<value>"
-
-```
-
-
-
-##  Vars Unset
-
-```
-
-Usage:  vars unset [SERVICE_NAME] VARIABLE
-
-Unset (delete) an existing environment variable
-
-Arguments:
-  SERVICE_NAME=""   The name of the service on which the environment variables will be unset. Defaults to the associated service.
-  VARIABLE=""       The name of the environment variable to unset
-
-```
-
-
-
-#  Version
-
-```
-
-Usage:  version
-
-Output the version and quit
-
-```
-
-`version` prints out the current CLI version as well as the architecture it was built for (64-bit or 32-bit). This is useful to see if you have the latest version of the CLI and when working with Catalyze support engineers to ensure you have the correct CLI installed. Here is a sample command
-
-```
-catalyze version
-```
-
-#  Whoami
-
-```
-
-Usage:  whoami
-
-Retrieve your user ID
-
-```
-
-`whoami` prints out the currently logged in user's users ID. This is used with Catalyze support engineers. Here is a sample command
-
-```
-catalyze whoami
-```
-
-#  Worker
-
-```
-
-Usage:  worker [SERVICE_NAME] [TARGET] COMMAND [arg...]
-
-Manage a service's workers
-
-Arguments:
-  SERVICE_NAME=""   The name of the service to use to start a worker. Defaults to the associated service.
-  TARGET=""         The name of the Procfile target to invoke as a worker
-
-Commands:
-  deploy	Deploy new workers for a given service
-  list	Lists all workers for a given service
-  rm	Remove all workers for a given service and target
-  scale	Scale existing workers up or down for a given service and target
-
-Run ' worker COMMAND --help' for more information on a command.
-
-```
-
-This command has been moved! Please use [worker deploy](#worker-deploy) instead. This alias will be removed in the next CLI update.
-
-The `worker` commands allow you to manage your environment variables per service. The `worker` command cannot be run directly, but has subcommands.
-
-##  Worker Deploy
-
-```
-
-Usage:  worker deploy SERVICE_NAME TARGET
-
-Deploy new workers for a given service
-
-Arguments:
-  SERVICE_NAME=""   The name of the service to use to deploy a worker
-  TARGET=""         The name of the Procfile target to invoke as a worker
-
-```
-
-
-
-##  Worker List
-
-```
-
-Usage:  worker list SERVICE_NAME
-
-Lists all workers for a given service
-
-Arguments:
-  SERVICE_NAME=""   The name of the service to list workers for
-
-```
-
-
-
-##  Worker Rm
-
-```
-
-Usage:  worker rm SERVICE_NAME TARGET
-
-Remove all workers for a given service and target
-
-Arguments:
-  SERVICE_NAME=""   The name of the service running the workers
-  TARGET=""         The worker target to remove
-
-```
-
-
-
-##  Worker Scale
-
-```
-
-Usage:  worker scale SERVICE_NAME TARGET SCALE
-
-Scale existing workers up or down for a given service and target
-
-Arguments:
-  SERVICE_NAME=""   The name of the service running the workers
-  TARGET=""         The worker target to scale up or down
-  SCALE=""          The new scale (or change in scale) for the given worker target. This can be a single value (i.e. 2) representing the final number of workers that should be running. Or this can be a change represented by a plus or minus sign followed by the value (i.e. +2 or -1). When using a change in value, be sure to insert the "--" operator to signal the end of options. For example, "catalyze worker scale code-1 worker -- -1"
-
-```
-
-
-
-CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Db Logs
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-#  Default
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-The `default` command has been deprecated! It will be removed in a future version. Please specify `-E` on all commands instead of using the default.
-
-`default` sets the default environment for all commands that don't specify an environment with the `-E` flag. See [scope](#global-scope) for more information on scope and default environments. When setting a default environment, you must give the alias of the environment if one was set when it was associated and not the real environment name. Here is a sample command
-
-```
-catalyze default prod
-```
-
-#  Deploy-keys
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-The `deploy-keys` command gives access to SSH deploy keys for environment services. The deploy-keys command can not be run directly but has sub commands.
-
-##  Deploy-keys Add
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Deploy-keys List
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Deploy-keys Rm
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-#  Disassociate
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-`disassociate` removes the environment from your list of associated environments but **does not** remove the catalyze git remote on the git repo. Disassociate does not have to be run from within a git repo. Here is a sample command
-
-```
-catalyze disassociate myprod
-```
-
-#  Domain
-
-```
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-`domain` prints out the temporary domain name setup by Catalyze for an environment. This domain name typically takes the form podXXXXX.catalyzeapps.com but may vary based on the environment. Here is a sample command
-
-```
-catalyze domain
-```
-
-#  Environments
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-This command has been moved! Please use [environments list](#environments-list) instead. This alias will be removed in the next CLI update.
-
-The `environments` command allows you to manage your environments. The environments command can not be run directly but has sub commands.
-
-##  Environments List
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Environments Rename
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-#  Files
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-The `files` command gives access to service files on your environment's services. Service files can include Nginx configs, SSL certificates, and any other file that might be injected into your running service. The files command can not be run directly but has sub commands.
-
-##  Files Download
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Files List
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-#  Git-remote
-
-```
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-The `git-remote` command allows you to interact with code service remote git URLs. The git-remote command can not be run directly but has sub commands.
-
-##  Git-remote Add
-
-```
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Git-remote Show
-
-```
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-#  Invites
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-The `invites` command gives access to organization invitations. Every environment is owned by an organization and users join organizations in order to access individual environments. You can invite new users by email and manage pending invites through the CLI. You cannot call the `invites` command directly, but must call one of its subcommands.
-
-##  Invites Accept
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Invites List
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Invites Rm
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Invites Send
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-#  Keys
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-The `keys` command gives access to SSH key management for your user account. SSH keys can be used for authentication and pushing code to the Catalyze platform. Any SSH keys added to your user account should not be shared but be treated as private SSH keys. Any SSH key uploaded to your user account will be able to be used with all code services and environments that you have access to. The keys command can not be run directly but has sub commands.
-
-##  Keys Add
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Keys List
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Keys Rm
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Keys Set
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-#  Logout
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-When using the CLI, your username and password are **never** stored in any file on your filesystem. However, in order to not type in your username and password each and every command, a session token is stored in the CLI's configuration file and used until it expires. `logout` removes this session token from the configuration file. Here is a sample command
-
-```
-catalyze logout
-```
-
-#  Logs
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-`logs` prints out your application logs directly from your logging Dashboard. If you do not see your logs, try adjusting the number of hours, minutes, or seconds of logs that are retrieved with the `--hours`, `--minutes`, and `--seconds` options respectively. You can also follow the logs with the `-f` option. When using `-f` all logs will be printed to the console within the given time frame as well as any new logs that are sent to the logging Dashboard for the duration of the command. When using the `-f` option, hit ctrl-c to stop. Here are some sample commands
-
-```
-catalyze logs --hours=6 --minutes=30
-catalyze logs -f
-```
-
-#  Metrics
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-The `metrics` command gives access to environment metrics or individual service metrics through a variety of formats. This is useful for checking on the status and performance of your application or environment as a whole. The metrics command cannot be run directly but has sub commands.
-
-##  Metrics Cpu
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Metrics Memory
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Metrics Network-in
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Metrics Network-out
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-#  Rake
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-`rake` executes a rake task by its name asynchronously. Once executed, the output of the task can be seen through your logging Dashboard. Here is a sample command
-
-```
-catalyze rake code-1 db:migrate
-```
-
-#  Redeploy
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-`redeploy` deploys an identical copy of the given service. For code services, this avoids having to perform a code push. You skip the git push and the build. For service proxies, new instances simply replace the old ones. All other service types cannot be redeployed with this command. Here is a sample command
-
-```
-catalyze redeploy app01
-```
-
-#  Releases
-
-```
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-The `releases` command allows you to manage your code service releases. A release is automatically created each time you perform a git push. The release is tagged with the git SHA of the commit. Releases are a way of tagging specific points in time of your git history. You can rollback to a specific release by using the [rollback](#rollback) command. The releases command cannot be run directly but has sub commands.
-
-##  Releases List
-
-```
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Releases Rm
-
-```
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Releases Update
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-#  Rollback
-
-```
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-`rollback` is a way to redeploy older versions of your code service. You must specify the name of the service to rollback and the name of an existing release to rollback to. Releases can be found with the [releases list](#releases-list) command. Here are some sample commands
-
-```
-catalyze rollback code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883
-```
-
-#  Services
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-The `services` command allows you to manage your services. The services command cannot be run directly but has sub commands.
-
-##  Services List
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Services Stop
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Services Rename
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-#  Sites
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-The `sites` command gives access to hostname and SSL certificate usage for public facing services. `sites` are different from `certs` in that `sites` use an instance of a `cert` and are associated with a single service. `certs` can be used by multiple sites. The sites command can not be run directly but has sub commands.
-
-##  Sites Create
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Sites List
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Sites Rm
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Sites Show
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-#  Ssl
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-The `ssl` command offers access to subcommands that deal with SSL certificates. You cannot run the SSL command directly but must call a subcommand.
-
-##  Ssl Resolve
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Ssl Verify
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-#  Status
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-`status` will give a quick readout of your environment's health. This includes your environment name, environment ID, and for each service the name, size, build status, deploy status, and service ID. Here is a sample command
-
-```
-catalyze status
-```
-
-#  Support-ids
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-`support-ids` is helpful when contacting Catalyze support by sending an email to support@catalyze.io. If you are having an issue with a CLI command or anything with your environment, it is helpful to run this command and copy the output into the initial correspondence with a Catalyze engineer. This will help Catalyze identify the environment faster and help come to resolution faster. Here is a sample command
-
-```
-catalyze support-ids
-```
-
-#  Update
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-`update` is a shortcut to update your CLI instantly. If a newer version of the CLI is available, it will be downloaded and installed automatically. This is used when you want to apply an update before the CLI automatically applies it on its own. Here is a sample command
-
-```
-catalyze update
-```
-
-#  Users
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-The `users` command allows you to manage who has access to your environment through the organization that owns the environment. The users command can not be run directly but has three sub commands.
-
-##  Users List
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
 ```
-
-
-
-##  Users Rm
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-#  Vars
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-The `vars` command allows you to manage environment variables for your code services. The vars command can not be run directly but has sub commands.
-
-##  Vars List
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Vars Set
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Vars Unset
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-#  Version
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-`version` prints out the current CLI version as well as the architecture it was built for (64-bit or 32-bit). This is useful to see if you have the latest version of the CLI and when working with Catalyze support engineers to ensure you have the correct CLI installed. Here is a sample command
-
-```
-catalyze version
-```
-
-#  Whoami
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-`whoami` prints out the currently logged in user's users ID. This is used with Catalyze support engineers. Here is a sample command
-
-```
-catalyze whoami
-```
-
-#  Worker
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-This command has been moved! Please use [worker deploy](#worker-deploy) instead. This alias will be removed in the next CLI update.
-
-The `worker` commands allow you to manage your environment variables per service. The `worker` command cannot be run directly, but has subcommands.
-
-##  Worker Deploy
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Worker List
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Worker Rm
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Worker Scale
-
+catalyze worker scale code-1 mailer 1
+catalyze worker scale code-1 mailer -- -2
 ```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.1.5
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-ificates and domains
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  environments   List all environments you have access to
-  files          Tasks for managing service files
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  logout         Clear the stored user information from your local machine
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  services       List all services for your environment
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Start a background worker
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-ns
-  keys           Tasks for SSH keys
-  logout         Clear the stored user information from your local machine
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  releases       Manage releases for code services
-  rollback       Rollback a code service to a specific release
-  services       Perform operations on an environment's services
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Manage a service's workers
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-The `vars` command allows you to manage environment variables for your code services. The vars command can not be run directly but has sub commands.
-
-##  Vars List
-
-```
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.3.0
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  clear          Clear out information in the global settings file to fix a misconfigured CLI.
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        [DEPRECATED] Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  domain         Print out the temporary domain name of the environment
-  environments   Manage environments for which you have access
-  files          Tasks for managing service files
-  git-remote     Manage git remotes to Catalyze code services
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logout         Clear the stored user information from your local machine
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  releases       Manage releases for code services
-  rollback       Rollback a code service to a specific release
-  services       Perform operations on an environment's services
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Manage a service's workers
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Vars Set
-
-```
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.3.0
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  clear          Clear out information in the global settings file to fix a misconfigured CLI.
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        [DEPRECATED] Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  domain         Print out the temporary domain name of the environment
-  environments   Manage environments for which you have access
-  files          Tasks for managing service files
-  git-remote     Manage git remotes to Catalyze code services
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logout         Clear the stored user information from your local machine
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  releases       Manage releases for code services
-  rollback       Rollback a code service to a specific release
-  services       Perform operations on an environment's services
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Manage a service's workers
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Vars Unset
-
-```
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.3.0
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  clear          Clear out information in the global settings file to fix a misconfigured CLI.
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        [DEPRECATED] Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  domain         Print out the temporary domain name of the environment
-  environments   Manage environments for which you have access
-  files          Tasks for managing service files
-  git-remote     Manage git remotes to Catalyze code services
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logout         Clear the stored user information from your local machine
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  releases       Manage releases for code services
-  rollback       Rollback a code service to a specific release
-  services       Perform operations on an environment's services
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Manage a service's workers
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-#  Version
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.3.0
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  clear          Clear out information in the global settings file to fix a misconfigured CLI.
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        [DEPRECATED] Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  domain         Print out the temporary domain name of the environment
-  environments   Manage environments for which you have access
-  files          Tasks for managing service files
-  git-remote     Manage git remotes to Catalyze code services
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logout         Clear the stored user information from your local machine
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  releases       Manage releases for code services
-  rollback       Rollback a code service to a specific release
-  services       Perform operations on an environment's services
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Manage a service's workers
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-`version` prints out the current CLI version as well as the architecture it was built for (64-bit or 32-bit). This is useful to see if you have the latest version of the CLI and when working with Catalyze support engineers to ensure you have the correct CLI installed. Here is a sample command
-
-```
-catalyze version
-```
-
-#  Whoami
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.3.0
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  clear          Clear out information in the global settings file to fix a misconfigured CLI.
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        [DEPRECATED] Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  domain         Print out the temporary domain name of the environment
-  environments   Manage environments for which you have access
-  files          Tasks for managing service files
-  git-remote     Manage git remotes to Catalyze code services
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logout         Clear the stored user information from your local machine
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  releases       Manage releases for code services
-  rollback       Rollback a code service to a specific release
-  services       Perform operations on an environment's services
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Manage a service's workers
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-`whoami` prints out the currently logged in user's users ID. This is used with Catalyze support engineers. Here is a sample command
-
-```
-catalyze whoami
-```
-
-#  Worker
-
-```
-Error: incorrect usage
-
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.3.0
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  clear          Clear out information in the global settings file to fix a misconfigured CLI.
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        [DEPRECATED] Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  domain         Print out the temporary domain name of the environment
-  environments   Manage environments for which you have access
-  files          Tasks for managing service files
-  git-remote     Manage git remotes to Catalyze code services
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logout         Clear the stored user information from your local machine
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  releases       Manage releases for code services
-  rollback       Rollback a code service to a specific release
-  services       Perform operations on an environment's services
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Manage a service's workers
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-This command has been moved! Please use [worker deploy](#worker-deploy) instead. This alias will be removed in the next CLI update.
-
-The `worker` commands allow you to manage your environment variables per service. The `worker` command cannot be run directly, but has subcommands.
-
-##  Worker Deploy
-
-```
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.3.0
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  clear          Clear out information in the global settings file to fix a misconfigured CLI.
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        [DEPRECATED] Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  domain         Print out the temporary domain name of the environment
-  environments   Manage environments for which you have access
-  files          Tasks for managing service files
-  git-remote     Manage git remotes to Catalyze code services
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logout         Clear the stored user information from your local machine
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  releases       Manage releases for code services
-  rollback       Rollback a code service to a specific release
-  services       Perform operations on an environment's services
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Manage a service's workers
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Worker List
-
-```
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.3.0
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  clear          Clear out information in the global settings file to fix a misconfigured CLI.
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        [DEPRECATED] Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  domain         Print out the temporary domain name of the environment
-  environments   Manage environments for which you have access
-  files          Tasks for managing service files
-  git-remote     Manage git remotes to Catalyze code services
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logout         Clear the stored user information from your local machine
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  releases       Manage releases for code services
-  rollback       Rollback a code service to a specific release
-  services       Perform operations on an environment's services
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Manage a service's workers
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Worker Rm
-
-```
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.3.0
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  clear          Clear out information in the global settings file to fix a misconfigured CLI.
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        [DEPRECATED] Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  domain         Print out the temporary domain name of the environment
-  environments   Manage environments for which you have access
-  files          Tasks for managing service files
-  git-remote     Manage git remotes to Catalyze code services
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logout         Clear the stored user information from your local machine
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  releases       Manage releases for code services
-  rollback       Rollback a code service to a specific release
-  services       Perform operations on an environment's services
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Manage a service's workers
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-##  Worker Scale
-
-```
-Usage: catalyze [OPTIONS] COMMAND [arg...]
-
-Catalyze CLI. Version 3.3.0
-
-Options:
-  -U, --username        Catalyze Username ($CATALYZE_USERNAME)
-  -P, --password        Catalyze Password ($CATALYZE_PASSWORD)
-  -E, --env             The local alias of the environment in which this command will be run ($CATALYZE_ENV)
-  -v, --version=false   Show the version and exit
-
-Commands:
-  associate      Associates an environment
-  associated     Lists all associated environments
-  certs          Manage your SSL certificates and domains
-  clear          Clear out information in the global settings file to fix a misconfigured CLI.
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        [DEPRECATED] Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  domain         Print out the temporary domain name of the environment
-  environments   Manage environments for which you have access
-  files          Tasks for managing service files
-  git-remote     Manage git remotes to Catalyze code services
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logout         Clear the stored user information from your local machine
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  releases       Manage releases for code services
-  rollback       Rollback a code service to a specific release
-  services       Perform operations on an environment's services
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Manage a service's workers
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
-
-erts          Manage your SSL certificates and domains
-  clear          Clear out information in the global settings file to fix a misconfigured CLI.
-  console        Open a secure console to a service
-  dashboard      Open the Catalyze Dashboard in your default browser
-  db             Tasks for databases
-  default        [DEPRECATED] Set the default associated environment
-  deploy-keys    Tasks for SSH deploy keys
-  disassociate   Remove the association with an environment
-  domain         Print out the temporary domain name of the environment
-  environments   Manage environments for which you have access
-  files          Tasks for managing service files
-  git-remote     Manage git remotes to Catalyze code services
-  invites        Manage invitations for your organizations
-  keys           Tasks for SSH keys
-  logout         Clear the stored user information from your local machine
-  logs           Show the logs in your terminal streamed from your logging dashboard
-  metrics        Print service and environment metrics in your local time zone
-  rake           Execute a rake task
-  redeploy       Redeploy a service without having to do a git push
-  releases       Manage releases for code services
-  rollback       Rollback a code service to a specific release
-  services       Perform operations on an environment's services
-  sites          Tasks for updating sites, including hostnames, SSL certificates, and private keys
-  ssl            Perform operations on local certificates to verify their validity
-  status         Get quick readout of the current status of your associated environment and all of its services
-  support-ids    Print out various IDs related to your associated environment to be used when contacting Catalyze support
-  update         Checks for available updates and updates the CLI if a new update is available
-  users          Manage users who have access to the given organization
-  vars           Interaction with environment variables for the associated environment
-  whoami         Retrieve your user ID
-  worker         Manage a service's workers
-  version        Output the version and quit
-
-Run 'catalyze COMMAND --help' for more information on a command.
-```
-
-
 

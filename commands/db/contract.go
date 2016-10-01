@@ -20,12 +20,12 @@ var Cmd = models.Command{
 	LongHelp:  "The `db` command gives access to backup, import, and export services for databases. The db command can not be run directly but has sub commands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			cmd.Command(BackupSubCmd.Name, BackupSubCmd.ShortHelp, BackupSubCmd.CmdFunc(settings))
-			cmd.Command(DownloadSubCmd.Name, DownloadSubCmd.ShortHelp, DownloadSubCmd.CmdFunc(settings))
-			cmd.Command(ExportSubCmd.Name, ExportSubCmd.ShortHelp, ExportSubCmd.CmdFunc(settings))
-			cmd.Command(ImportSubCmd.Name, ImportSubCmd.ShortHelp, ImportSubCmd.CmdFunc(settings))
-			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
-			cmd.Command(LogsSubCmd.Name, LogsSubCmd.ShortHelp, LogsSubCmd.CmdFunc(settings))
+			cmd.CommandLong(BackupSubCmd.Name, BackupSubCmd.ShortHelp, BackupSubCmd.LongHelp, BackupSubCmd.CmdFunc(settings))
+			cmd.CommandLong(DownloadSubCmd.Name, DownloadSubCmd.ShortHelp, DownloadSubCmd.LongHelp, DownloadSubCmd.CmdFunc(settings))
+			cmd.CommandLong(ExportSubCmd.Name, ExportSubCmd.ShortHelp, ExportSubCmd.LongHelp, ExportSubCmd.CmdFunc(settings))
+			cmd.CommandLong(ImportSubCmd.Name, ImportSubCmd.ShortHelp, ImportSubCmd.LongHelp, ImportSubCmd.CmdFunc(settings))
+			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))
+			cmd.CommandLong(LogsSubCmd.Name, LogsSubCmd.ShortHelp, LogsSubCmd.LongHelp, LogsSubCmd.CmdFunc(settings))
 		}
 	},
 }

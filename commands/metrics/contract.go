@@ -29,10 +29,10 @@ var Cmd = models.Command{
 		"The metrics command cannot be run directly but has sub commands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			cmd.Command(CPUSubCmd.Name, CPUSubCmd.ShortHelp, CPUSubCmd.CmdFunc(settings))
-			cmd.Command(MemorySubCmd.Name, MemorySubCmd.ShortHelp, MemorySubCmd.CmdFunc(settings))
-			cmd.Command(NetworkInSubCmd.Name, NetworkInSubCmd.ShortHelp, NetworkInSubCmd.CmdFunc(settings))
-			cmd.Command(NetworkOutSubCmd.Name, NetworkOutSubCmd.ShortHelp, NetworkOutSubCmd.CmdFunc(settings))
+			cmd.CommandLong(CPUSubCmd.Name, CPUSubCmd.ShortHelp, CPUSubCmd.LongHelp, CPUSubCmd.CmdFunc(settings))
+			cmd.CommandLong(MemorySubCmd.Name, MemorySubCmd.ShortHelp, MemorySubCmd.LongHelp, MemorySubCmd.CmdFunc(settings))
+			cmd.CommandLong(NetworkInSubCmd.Name, NetworkInSubCmd.ShortHelp, NetworkInSubCmd.LongHelp, NetworkInSubCmd.CmdFunc(settings))
+			cmd.CommandLong(NetworkOutSubCmd.Name, NetworkOutSubCmd.ShortHelp, NetworkOutSubCmd.LongHelp, NetworkOutSubCmd.CmdFunc(settings))
 		}
 	},
 }

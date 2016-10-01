@@ -18,8 +18,8 @@ var Cmd = models.Command{
 		"The `environments` command allows you to manage your environments. The environments command can not be run directly but has sub commands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
-			cmd.Command(RenameSubCmd.Name, RenameSubCmd.ShortHelp, RenameSubCmd.CmdFunc(settings))
+			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))
+			cmd.CommandLong(RenameSubCmd.Name, RenameSubCmd.ShortHelp, RenameSubCmd.LongHelp, RenameSubCmd.CmdFunc(settings))
 			cmd.Action = func() {
 				logrus.Warnln("This command has been moved! Please use \"catalyze environments list\" instead. This alias will be removed in the next CLI update.")
 				logrus.Warnln("You can list all available environments subcommands by running \"catalyze environments --help\".")

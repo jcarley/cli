@@ -18,9 +18,9 @@ var Cmd = models.Command{
 	LongHelp:  "The `vars` command allows you to manage environment variables for your code services. The vars command can not be run directly but has sub commands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
-			cmd.Command(SetSubCmd.Name, SetSubCmd.ShortHelp, SetSubCmd.CmdFunc(settings))
-			cmd.Command(UnsetSubCmd.Name, UnsetSubCmd.ShortHelp, UnsetSubCmd.CmdFunc(settings))
+			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))
+			cmd.CommandLong(SetSubCmd.Name, SetSubCmd.ShortHelp, SetSubCmd.LongHelp, SetSubCmd.CmdFunc(settings))
+			cmd.CommandLong(UnsetSubCmd.Name, UnsetSubCmd.ShortHelp, UnsetSubCmd.LongHelp, UnsetSubCmd.CmdFunc(settings))
 		}
 	},
 }

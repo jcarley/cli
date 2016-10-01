@@ -18,9 +18,9 @@ var Cmd = models.Command{
 	LongHelp:  "The `services` command allows you to manage your services. The services command cannot be run directly but has sub commands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
-			cmd.Command(StopSubCmd.Name, StopSubCmd.ShortHelp, StopSubCmd.CmdFunc(settings))
-			cmd.Command(RenameSubCmd.Name, RenameSubCmd.ShortHelp, RenameSubCmd.CmdFunc(settings))
+			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))
+			cmd.CommandLong(StopSubCmd.Name, StopSubCmd.ShortHelp, StopSubCmd.LongHelp, StopSubCmd.CmdFunc(settings))
+			cmd.CommandLong(RenameSubCmd.Name, RenameSubCmd.ShortHelp, RenameSubCmd.LongHelp, RenameSubCmd.CmdFunc(settings))
 			cmd.Action = func() {
 				logrus.Warnln("This command has been moved! Please use \"catalyze services list\" instead. This alias will be removed in the next CLI update.")
 				logrus.Warnln("You can list all available services subcommands by running \"catalyze services --help\".")

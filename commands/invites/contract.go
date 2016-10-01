@@ -20,10 +20,10 @@ var Cmd = models.Command{
 		"You cannot call the `invites` command directly, but must call one of its subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			cmd.Command(AcceptSubCmd.Name, AcceptSubCmd.ShortHelp, AcceptSubCmd.CmdFunc(settings))
-			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
-			cmd.Command(RmSubCmd.Name, RmSubCmd.ShortHelp, RmSubCmd.CmdFunc(settings))
-			cmd.Command(SendSubCmd.Name, SendSubCmd.ShortHelp, SendSubCmd.CmdFunc(settings))
+			cmd.CommandLong(AcceptSubCmd.Name, AcceptSubCmd.ShortHelp, AcceptSubCmd.LongHelp, AcceptSubCmd.CmdFunc(settings))
+			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))
+			cmd.CommandLong(RmSubCmd.Name, RmSubCmd.ShortHelp, RmSubCmd.LongHelp, RmSubCmd.CmdFunc(settings))
+			cmd.CommandLong(SendSubCmd.Name, SendSubCmd.ShortHelp, SendSubCmd.LongHelp, SendSubCmd.CmdFunc(settings))
 		}
 	},
 }

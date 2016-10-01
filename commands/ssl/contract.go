@@ -38,8 +38,8 @@ var Cmd = models.Command{
 	LongHelp:  "The `ssl` command offers access to subcommands that deal with SSL certificates. You cannot run the SSL command directly but must call a subcommand.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			cmd.Command(ResolveSubCmd.Name, ResolveSubCmd.ShortHelp, ResolveSubCmd.CmdFunc(settings))
-			cmd.Command(VerifySubCmd.Name, VerifySubCmd.ShortHelp, VerifySubCmd.CmdFunc(settings))
+			cmd.CommandLong(ResolveSubCmd.Name, ResolveSubCmd.ShortHelp, ResolveSubCmd.LongHelp, ResolveSubCmd.CmdFunc(settings))
+			cmd.CommandLong(VerifySubCmd.Name, VerifySubCmd.ShortHelp, VerifySubCmd.LongHelp, VerifySubCmd.CmdFunc(settings))
 		}
 	},
 }
