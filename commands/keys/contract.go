@@ -6,7 +6,7 @@ import (
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd for keys
@@ -36,7 +36,7 @@ var AddSubCmd = models.Command{
 		"SSH keys can be used for authentication (as opposed to the traditional username and password) as well as pushing code to an environment's code services. " +
 		"Please note, you must specify the path to the public key file and not the private key. " +
 		"All SSH keys should be in either OpenSSH RSA format or PEM format. Here is a sample command\n\n" +
-		"```catalyze keys add my_prod_key ~/.ssh/prod_rsa.pub```",
+		"```\ncatalyze keys add my_prod_key ~/.ssh/prod_rsa.pub\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			name := cmd.StringArg("NAME", "", "The name for the new key, for your own purposes")
@@ -59,7 +59,7 @@ var ListSubCmd = models.Command{
 	ShortHelp: "List your public keys",
 	LongHelp: "`keys list` lists all public keys by name that have been uploaded to your user account including the key's fingerprint in SHA256 format. " +
 		"Here is a sample command\n\n" +
-		"```catalyze keys list```",
+		"```\ncatalyze keys list\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {
@@ -80,7 +80,7 @@ var RemoveSubCmd = models.Command{
 	ShortHelp: "Remove a public key",
 	LongHelp: "`keys rm` allows you to remove an SSH key previously uploaded to your account. " +
 		"The name of the key can be found by using the [keys list](#keys-list) command. Here is a sample command\n\n" +
-		"```catalyze keys rm my_prod_key```",
+		"```\ncatalyze keys rm my_prod_key\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			name := cmd.StringArg("NAME", "", "The name of the key to remove.")
@@ -105,7 +105,7 @@ var SetSubCmd = models.Command{
 		"Please note that you must pass in the path to the private key and not the public key. " +
 		"The given key must already be added to your account by using the [keys add](#keys-add) command. " +
 		"Here is a sample command\n\n" +
-		"```catalyze keys set ~/.ssh/my_key```",
+		"```\ncatalyze keys set ~/.ssh/my_key\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			path := cmd.StringArg("PRIVATE_KEY_PATH", "", "Relative path to the private key file")

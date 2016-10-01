@@ -7,7 +7,7 @@ import (
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd is the contract between the user and the CLI. This specifies the command
@@ -31,8 +31,8 @@ var ListSubCmd = models.Command{
 	LongHelp: "`vars list` prints out all known environment variables for the given code service. " +
 		"You can print out environment variables in JSON or YAML format through the `--json` or `--yaml` flags. " +
 		"Here are some sample commands\n\n" +
-		"```catalyze vars list code-1\n" +
-		"catalyze vars list code-1 --json```",
+		"```\ncatalyze vars list code-1\n" +
+		"catalyze vars list code-1 --json\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service containing the environment variables. Defaults to the associated service.")
@@ -70,7 +70,7 @@ var SetSubCmd = models.Command{
 		"You can set/update 1 or more environment variables at a time with this command by repeating the `-v` option multiple times. " +
 		"Once new environment variables are added or values updated, a [redeploy](#redeploy) is required for the given code service to have access to the new values. " +
 		"The environment variables must be of the form `<key>=<value>`. Here is a sample command\n\n" +
-		"```catalyze vars set code-1 -v AWS_ACCESS_KEY_ID=1234 -v AWS_SECRET_ACCESS_KEY=5678```",
+		"```\ncatalyze vars set code-1 -v AWS_ACCESS_KEY_ID=1234 -v AWS_SECRET_ACCESS_KEY=5678\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service on which the environment variables will be set. Defaults to the associated service.")
@@ -104,7 +104,7 @@ var UnsetSubCmd = models.Command{
 		"Only the environment variable name is required to unset. " +
 		"Once environment variables are unset, a [redeploy](#redeploy) is required for the given code service to realize the variable was removed. " +
 		"Here is a sample command\n\n" +
-		"```catalyze vars unset code-1 AWS_ACCESS_KEY_ID```",
+		"```\ncatalyze vars unset code-1 AWS_ACCESS_KEY_ID\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service on which the environment variables will be unset. Defaults to the associated service.")

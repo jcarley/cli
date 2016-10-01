@@ -3,7 +3,7 @@ package associated
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd is the contract between the user and the CLI. This specifies the command
@@ -13,7 +13,7 @@ var Cmd = models.Command{
 	ShortHelp: "Lists all associated environments",
 	LongHelp: "`associated` outputs information about all previously associated environments on your local machine. " +
 		"The information that is printed out includes the alias, environment ID, actual environment name, service ID, and the git repo directory. Here is a sample command\n\n" +
-		"```catalyze associated```",
+		"```\ncatalyze associated\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

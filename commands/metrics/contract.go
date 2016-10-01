@@ -7,7 +7,7 @@ import (
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 type MetricType uint8
@@ -47,10 +47,10 @@ var CPUSubCmd = models.Command{
 		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
 		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. " +
 		"Here are some sample commands\n\n" +
-		"```catalyze metrics cpu\n" +
+		"```\ncatalyze metrics cpu\n" +
 		"catalyze metrics cpu app01 --stream\n" +
 		"catalyze metrics cpu --json\n" +
-		"catalyze metrics cpu db01 --csv -m 60```",
+		"catalyze metrics cpu db01 --csv -m 60\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
@@ -86,10 +86,10 @@ var MemorySubCmd = models.Command{
 		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
 		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. " +
 		"Here are some sample commands\n\n" +
-		"```catalyze metrics memory\n" +
+		"```\ncatalyze metrics memory\n" +
 		"catalyze metrics memory app01 --stream\n" +
 		"catalyze metrics memory --json\n" +
-		"catalyze metrics memory db01 --csv -m 60```",
+		"catalyze metrics memory db01 --csv -m 60\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
@@ -124,10 +124,10 @@ var NetworkInSubCmd = models.Command{
 		"You can only stream metrics using plain text or spark lines formats. " +
 		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
 		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands\n\n" +
-		"```catalyze metrics network-in\n" +
+		"```\ncatalyze metrics network-in\n" +
 		"catalyze metrics network-in app01 --stream\n" +
 		"catalyze metrics network-in --json\n" +
-		"catalyze metrics network-in db01 --csv -m 60```",
+		"catalyze metrics network-in db01 --csv -m 60\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
@@ -163,10 +163,10 @@ var NetworkOutSubCmd = models.Command{
 		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
 		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. " +
 		"Here are some sample commands\n\n" +
-		"```catalyze metrics network-out\n" +
+		"```\ncatalyze metrics network-out\n" +
 		"catalyze metrics network-out app01 --stream\n" +
 		"catalyze metrics network-out --json\n" +
-		"catalyze metrics network-out db01 --csv -m 60```",
+		"catalyze metrics network-out db01 --csv -m 60\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")

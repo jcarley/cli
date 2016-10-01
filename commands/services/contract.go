@@ -7,7 +7,7 @@ import (
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd is the contract between the user and the CLI. This specifies the command
@@ -46,7 +46,7 @@ var ListSubCmd = models.Command{
 		"The services will be printed regardless of their currently running state. " +
 		"To see which services are currently running and which are not, use the [status](#status) command. " +
 		"Here is a sample command\n\n" +
-		"```catalyze services list```",
+		"```\ncatalyze services list\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
@@ -69,7 +69,7 @@ var RenameSubCmd = models.Command{
 	Name:      "rename",
 	ShortHelp: "Rename a service",
 	LongHelp: "`services rename` allows you to rename any service in your environment. Here is a sample command\n\n" +
-		"```catalyze services rename code-1 api-svc```",
+		"```\ncatalyze services rename code-1 api-svc\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The service to rename")
@@ -98,7 +98,7 @@ var StopSubCmd = models.Command{
 		"This is useful when performing maintenance and a service must be shutdown to perform that maintenance. " +
 		"Take caution when running this command as all instances of the service, all workers, all rake tasks, and all open console sessions will be stopped. " +
 		"Here is a sample command\n\n" +
-		"```catalyze services stop code-1```",
+		"```\ncatalyze services stop code-1\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			svcName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to stop")

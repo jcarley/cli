@@ -9,7 +9,7 @@ import (
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd is the contract between the user and the CLI. This specifies the command
@@ -37,7 +37,7 @@ var BackupSubCmd = models.Command{
 		"The backup is started and unless `-s` is specified, the CLI will poll every few seconds until it finishes. " +
 		"Regardless of a successful backup or not, the logs for the backup will be printed to the console when the backup is finished. " +
 		"If an error occurs and the logs are not printed, you can use the [db logs](#db-logs) command to print out historical backup job logs. Here is a sample command\n\n" +
-		"```catalyze db backup db01```",
+		"```\ncatalyze db backup db01\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			databaseName := subCmd.StringArg("DATABASE_NAME", "", "The name of the database service to create a backup for (i.e. 'db01')")
@@ -66,9 +66,9 @@ var DownloadSubCmd = models.Command{
 		"Be careful using this command is it could download PHI. " +
 		"Be sure that all hard drive encryption and necessary precautions have been taken before performing a download. " +
 		"The ID of the backup is found by first running the [db list](#db-list) command. Here is a sample command\n\n" +
-		"```catalyze db download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.sql```\n\n" +
+		"```\ncatalyze db download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.sql\n```\n\n" +
 		"This assumes you are downloading a MySQL or PostgreSQL backup which takes the `.sql` file format. If you are downloading a mongo backup, the command might look like this\n\n" +
-		"```catalyze db download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.tar.gz```",
+		"```\ncatalyze db download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.tar.gz\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			databaseName := subCmd.StringArg("DATABASE_NAME", "", "The name of the database service which was backed up (i.e. 'db01')")
@@ -99,9 +99,9 @@ var ExportSubCmd = models.Command{
 		"When you request an export, a backup is created that will be added to the list of backups shown when you perform the [db list](#db-list) command. " +
 		"Then that backup is immediately downloaded. Regardless of a successful export or not, the logs for the backup will be printed to the console when the export is finished. " +
 		"If an error occurs and the logs are not printed, you can use the [db logs](#db-logs) command to print out historical backup job logs. Here is a sample command\n\n" +
-		"```catalyze db export db01 ./dbexport.sql```\n\n" +
+		"```\ncatalyze db export db01 ./dbexport.sql\n```\n\n" +
 		"This assumes you are exporting a MySQL or PostgreSQL database which takes the `.sql` file format. If you are exporting a mongo database, the command might look like this\n\n" +
-		"```catalyze db export db01 ./dbexport.tar.gz```",
+		"```\ncatalyze db export db01 ./dbexport.tar.gz\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			databaseName := subCmd.StringArg("DATABASE_NAME", "", "The name of the database to export data from (i.e. 'db01')")
@@ -128,16 +128,16 @@ var ImportSubCmd = models.Command{
 	Name:      "import",
 	ShortHelp: "Import data into a database",
 	LongHelp: "`db import` allows you to inject new data into your database service. For example, if you wrote a simple SQL file\n\n" +
-		"```CREATE TABLE mytable (\n" +
+		"```\nCREATE TABLE mytable (\n" +
 		"id TEXT PRIMARY KEY,\n" +
 		"val TEXT\n" +
 		");\n\n" +
-		"INSERT INTO mytable (id, val) values ('1', 'test');```\n\n" +
+		"INSERT INTO mytable (id, val) values ('1', 'test');\n```\n\n" +
 		"and stored it at `./db.sql` you could import this into your database service. " +
 		"When importing data into mongo, you may specify the database and collection to import into using the `-d` and `-c` flags respectively. " +
 		"Regardless of a successful import or not, the logs for the import will be printed to the console when the import is finished. " +
 		"Before an import takes place, your database is backed up automatically in case any issues arise. Here is a sample command\n\n" +
-		"```catalyze db import db01 ./db.sql```",
+		"```\ncatalyze db import db01 ./db.sql\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			databaseName := subCmd.StringArg("DATABASE_NAME", "", "The name of the database to import data to (i.e. 'db01')")
@@ -166,7 +166,7 @@ var ListSubCmd = models.Command{
 	ShortHelp: "List created backups",
 	LongHelp: "`db list` lists all previously created backups. " +
 		"After listing backups you can copy the backup ID and use it to [download](#db-download) that backup or [view the logs](#db-logs) from that backup. Here is a sample command\n\n" +
-		"```catalyze db list db01```",
+		"```\ncatalyze db list db01\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			databaseName := subCmd.StringArg("DATABASE_NAME", "", "The name of the database service to list backups for (i.e. 'db01')")
@@ -194,7 +194,7 @@ var LogsSubCmd = models.Command{
 	ShortHelp: "Print out the logs from a previous database backup job",
 	LongHelp: "`db logs` allows you to view backup logs from historical backup jobs. " +
 		"You can find the backup ID from using the `db list` command. Here is a sample command\n\n" +
-		"```catalyze db logs db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203```",
+		"```\ncatalyze db logs db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			databaseName := subCmd.StringArg("DATABASE_NAME", "", "The name of the database service (i.e. 'db01')")

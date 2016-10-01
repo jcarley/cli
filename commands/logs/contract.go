@@ -11,7 +11,7 @@ import (
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd is the contract between the user and the CLI. This specifies the command
@@ -24,8 +24,8 @@ var Cmd = models.Command{
 		"You can also follow the logs with the `-f` option. " +
 		"When using `-f` all logs will be printed to the console within the given time frame as well as any new logs that are sent to the logging Dashboard for the duration of the command. " +
 		"When using the `-f` option, hit ctrl-c to stop. Here are some sample commands\n\n" +
-		"```catalyze logs --hours=6 --minutes=30\n" +
-		"catalyze logs -f```",
+		"```\ncatalyze logs --hours=6 --minutes=30\n" +
+		"catalyze logs -f\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			query := cmd.StringArg("QUERY", "*", "The query to send to your logging dashboard's elastic search (regex is supported)")

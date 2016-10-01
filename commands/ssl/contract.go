@@ -5,7 +5,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // IncompleteChainError represents an error thrown when an SSL certificate is
@@ -50,7 +50,7 @@ var ResolveSubCmd = models.Command{
 	LongHelp: "`ssl resolve` is a tool that will attempt to fix invalid SSL certificates chains. " +
 		"A well formatted SSL certificate will include your certificate, intermediate certificates, and root certificates. " +
 		"It should follow this format\n\n" +
-		"```-----BEGIN CERTIFICATE-----\n" +
+		"```\n-----BEGIN CERTIFICATE-----\n" +
 		"<Your SSL certificate here>\n" +
 		"-----END CERTIFICATE-----\n" +
 		"-----BEGIN CERTIFICATE-----\n" +
@@ -58,19 +58,19 @@ var ResolveSubCmd = models.Command{
 		"-----END CERTIFICATE-----\n" +
 		"-----BEGIN CERTIFICATE-----\n" +
 		"<Root CA here>\n" +
-		"-----END CERTIFICATE-----```\n\n" +
+		"-----END CERTIFICATE-----\n```\n\n" +
 		"If your certificate only includes your own certificate, such as the following format shows\n\n" +
-		"```-----BEGIN CERTIFICATE-----\n" +
+		"```\n-----BEGIN CERTIFICATE-----\n" +
 		"<Your SSL certificate here>\n" +
-		"-----END CERTIFICATE-----```\n\n" +
+		"-----END CERTIFICATE-----\n```\n\n" +
 		"then the SSL resolve command will attempt to resolve this by downloading public intermediate certificates and root certificates. " +
 		"A general rule of thumb is, if your certificate passes the `ssl resolve` check, it will almost always work on the Catalyze platform. " +
 		"You can specify where to save the updated chain or omit the `OUTPUT` argument to print it to STDOUT.\n\n" +
 		"Please note you all certificates and private keys should be in PEM format. " +
 		"You cannot use self signed certificates with this command as they cannot be resolved as they are not signed by a valid CA. " +
 		"Here are some sample commands\n\n" +
-		"```catalyze ssl resolve ~/mysites_cert.pem ~/mysites_key.key *.mysite.com ~/updated_mysites_cert.pem -f\n" +
-		"catalyze ssl resolve ~/mysites_cert.pem ~/mysites_key.key *.mysite.com```",
+		"```\ncatalyze ssl resolve ~/mysites_cert.pem ~/mysites_key.key *.mysite.com ~/updated_mysites_cert.pem -f\n" +
+		"catalyze ssl resolve ~/mysites_cert.pem ~/mysites_key.key *.mysite.com\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			chain := subCmd.StringArg("CHAIN", "", "The path to your full certificate chain in PEM format")
@@ -97,7 +97,7 @@ var VerifySubCmd = models.Command{
 		"Both your chain and private key should be **unencrypted** and in **PEM** format. " +
 		"The private key is the only key in the key file. " +
 		"However, for the chain, you should include your SSL certificate, intermediate certificates, and root certificate in the following order and format.\n\n" +
-		"```-----BEGIN CERTIFICATE-----\n" +
+		"```\n-----BEGIN CERTIFICATE-----\n" +
 		"<Your SSL certificate here>\n" +
 		"-----END CERTIFICATE-----\n" +
 		"-----BEGIN CERTIFICATE-----\n" +
@@ -105,7 +105,7 @@ var VerifySubCmd = models.Command{
 		"-----END CERTIFICATE-----\n" +
 		"-----BEGIN CERTIFICATE-----\n" +
 		"<Root CA here>\n" +
-		"-----END CERTIFICATE-----```\n\n" +
+		"-----END CERTIFICATE-----\n```\n\n" +
 		"This command also requires you to specify the hostname that you are using the SSL certificate for in order to verify that the hostname matches what is in the chain. " +
 		"If it is a wildcard certificate, your hostname would be in the following format: `*.catalyze.io`. " +
 		"This command will verify a complete chain can be made from your certificate down through the intermediate certificates all the way to a root certificate that you have given or one found in your system.\n\n" +
@@ -114,8 +114,8 @@ var VerifySubCmd = models.Command{
 		"Please note that the empty quotes are required for checking self signed certificates. " +
 		"This is the required parameter HOSTNAME which is ignored when checking self signed certificates. " +
 		"Here are some sample commands\n\n" +
-		"```catalyze ssl verify ./catalyze.crt ./catalyze.key *.catalyze.io\n" +
-		"catalyze ssl verify ~/self-signed.crt ~/self-signed.key \"\" -s```",
+		"```\ncatalyze ssl verify ./catalyze.crt ./catalyze.key *.catalyze.io\n" +
+		"catalyze ssl verify ~/self-signed.crt ~/self-signed.key \"\" -s\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			chain := subCmd.StringArg("CHAIN", "", "The path to your full certificate chain in PEM format")

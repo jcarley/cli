@@ -7,7 +7,7 @@ import (
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd is the contract between the user and the CLI. This specifies the command
@@ -31,7 +31,7 @@ var ListSubCmd = models.Command{
 	LongHelp: "`users list` shows every user that belongs to your environment's organization. " +
 		"Users who belong to your environment's organization may access to your environment's services and data depending on their role in the organization. " +
 		"Here is a sample command\n\n" +
-		"```catalyze users list```",
+		"```\ncatalyze users list\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
@@ -56,7 +56,7 @@ var RmSubCmd = models.Command{
 	LongHelp: "`users rm` revokes a users access to your environment's organization. " +
 		"Revoking a user's access to your environment's organization will revoke their access to your organization's environments. " +
 		"Here is a sample command\n\n" +
-		"```catalyze users rm user@example.com```",
+		"```\ncatalyze users rm user@example.com\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			email := subCmd.StringArg("EMAIL", "", "The email address of the user to revoke access from for the given organization")

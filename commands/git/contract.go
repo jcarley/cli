@@ -7,7 +7,7 @@ import (
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd is the contract between the user and the CLI. This specifies the command
@@ -30,7 +30,7 @@ var AddSubCmd = models.Command{
 	ShortHelp: "Add the git remote for the given code service to the local git repo",
 	LongHelp: "`git-remote add` adds the proper git remote to a local git repository with the given remote name and service. " +
 		"Here is a sample command\n\n" +
-		"```catalyze git-remote add code-1 -r catalyze-code-1```",
+		"```\ncatalyze git-remote add code-1 -r catalyze-code-1\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to add a git remote for")
@@ -58,7 +58,7 @@ var ShowSubCmd = models.Command{
 	LongHelp: "`git-remote show` prints out the git remote URL for the given service. " +
 		"This can be used to do a manual push or use the git remote for another purpose such as a CI integration. " +
 		"Here is a sample command\n\n" +
-		"```catalyze git-remote show code-1```",
+		"```\ncatalyze git-remote show code-1\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to add a git remote for")

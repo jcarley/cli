@@ -7,7 +7,7 @@ import (
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd is the contract between the user and the CLI. This specifies the command
@@ -17,7 +17,7 @@ var Cmd = models.Command{
 	ShortHelp: "Execute a rake task",
 	LongHelp: "`rake` executes a rake task by its name asynchronously. " +
 		"Once executed, the output of the task can be seen through your logging Dashboard. Here is a sample command\n\n" +
-		"```catalyze rake code-1 db:migrate```",
+		"```\ncatalyze rake code-1 db:migrate\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The service that will run the rake task. Defaults to the associated service.")

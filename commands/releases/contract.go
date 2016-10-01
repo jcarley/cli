@@ -7,7 +7,7 @@ import (
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd for keys
@@ -35,7 +35,7 @@ var ListSubCmd = models.Command{
 	LongHelp: "`releases list` lists all of the releases for a given service. " +
 		"A release is automatically created each time a git push is performed. " +
 		"Here is a sample command\n\n" +
-		"```catalyze releases list code-1```",
+		"```\ncatalyze releases list code-1\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to list releases for")
@@ -60,7 +60,7 @@ var RmSubCmd = models.Command{
 	ShortHelp: "Remove a release from a code service",
 	LongHelp: "`releases rm` removes an existing release. This is useful in the case of a misbehaving code service. " +
 		"Removing the release avoids the risk of rolling back to a \"bad\" build. Here is a sample command\n\n" +
-		"```catalyze releases rm code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883```",
+		"```\ncatalyze releases rm code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to remove a release from")
@@ -87,7 +87,7 @@ var UpdateSubCmd = models.Command{
 	LongHelp: "`releases update` allows you to rename or add notes to an existing release. " +
 		"By default, releases are named with the git SHA of the commit used to create the release. " +
 		"Renaming them allows you to organize your releases. Here is a sample command\n\n" +
-		"```catalyze releases update code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883 --notes \"This is a stable build\" --release v1```",
+		"```\ncatalyze releases update code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883 --notes \"This is a stable build\" --release v1\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to update a release for")

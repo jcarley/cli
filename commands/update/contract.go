@@ -3,7 +3,7 @@ package update
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd is the contract between the user and the CLI. This specifies the command
@@ -15,7 +15,7 @@ var Cmd = models.Command{
 		"If a newer version of the CLI is available, it will be downloaded and installed automatically. " +
 		"This is used when you want to apply an update before the CLI automatically applies it on its own. " +
 		"Here is a sample command\n\n" +
-		"```catalyze update```",
+		"```\ncatalyze update\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

@@ -1,6 +1,6 @@
 package models
 
-import "github.com/jawher/mow.cli"
+import "github.com/jault3/mow.cli"
 
 type Role struct {
 	ID   int    `json:"id"`

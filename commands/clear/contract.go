@@ -3,7 +3,7 @@ package clear
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd is the contract between the user and the CLI. This specifies the command
@@ -15,9 +15,9 @@ var Cmd = models.Command{
 		"The global settings file is stored in your home directory at `~/.catalyze`. " +
 		"You can clear out all settings or pick and choose which ones need to be removed. " +
 		"After running the `clear` command, any other CLI command will reset the removed settings to their appropriate values. Here are some sample commands\n\n" +
-		"```catalyze clear --all\n" +
+		"```\ncatalyze clear --all\n" +
 		"catalyze clear --environments # removes your associated environments\n" +
-		"catalyze clear --session --private-key # removes all session and private key authentication information```",
+		"catalyze clear --session --private-key # removes all session and private key authentication information\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			privateKey := cmd.BoolOpt("private-key", false, "Clear out the saved private key information")

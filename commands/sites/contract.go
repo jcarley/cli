@@ -7,7 +7,7 @@ import (
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd is the contract between the user and the CLI. This specifies the command
@@ -42,21 +42,21 @@ var CreateSubCmd = models.Command{
 		"Lastly, the cert instance must be specified by the `HOSTNAME` argument used in the [certs create](#certs-create) command. " +
 		"You can also set Nginx configuration values directly by specifying one of the above flags. " +
 		"Specifying `--enable-cors` will add the following lines to your Nginx configuration\n\n" +
-		"```add_header 'Access-Control-Allow-Origin' '$http_origin' always;\n" +
+		"```\nadd_header 'Access-Control-Allow-Origin' '$http_origin' always;\n" +
 		"add_header 'Access-Control-Allow-Credentials' 'true' always;\n" +
 		"add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT, HEAD, PATCH' always;\n" +
 		"add_header 'Access-Control-Allow-Headers' 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Accept,Authorization' always;\n" +
 		"add_header 'Access-Control-Max-Age' 1728000 always;\n" +
 		"if ($request_method = 'OPTIONS') {\n" +
 		"  return 204;\n" +
-		"}```\n\n" +
+		"}\n```\n\n" +
 		"Specifying `--enable-websockets` will add the following lines to your Nginx configuration\n\n" +
-		"```proxy_http_version 1.1;\n" +
+		"```\nproxy_http_version 1.1;\n" +
 		"proxy_set_header Upgrade $http_upgrade;\n" +
-		"proxy_set_header Connection \"upgrade\";```\n\n" +
+		"proxy_set_header Connection \"upgrade\";\n```\n\n" +
 		"Here are some sample commands\n\n" +
-		"```catalyze sites create .mysite.com app01 wildcard_mysitecom\n" +
-		"catalyze sites create .mysite.com app01 wildcard_mysitecom --client-max-body-size 50 --enable-cors```",
+		"```\ncatalyze sites create .mysite.com app01 wildcard_mysitecom\n" +
+		"catalyze sites create .mysite.com app01 wildcard_mysitecom --client-max-body-size 50 --enable-cors\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("SITE_NAME", "", "The name of the site to be created. This will be used in this site's nginx configuration file (i.e. \".example.com\")")
@@ -91,7 +91,7 @@ var ListSubCmd = models.Command{
 	ShortHelp: "List details for all site configurations",
 	LongHelp: "`sites list` lists all sites for the given environment. " +
 		"The names printed out can be used in the other sites commands. Here is a sample command\n\n" +
-		"```catalyze sites list```",
+		"```\ncatalyze sites list\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
@@ -117,7 +117,7 @@ var RmSubCmd = models.Command{
 		"Since sites cannot be updated, if you want to change the name of a site, you must `rm` the site and then [create](#sites-create) it again. " +
 		"If you simply need to update your SSL certificates, you can use the [certs update](#certs-update) command on the cert instance used by the site in question. " +
 		"Here is a sample command\n\n" +
-		"```catalyze sites rm mywebsite.com```",
+		"```\ncatalyze sites rm mywebsite.com\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of the site configuration to delete")
@@ -143,7 +143,7 @@ var ShowSubCmd = models.Command{
 	ShortHelp: "Shows the details for a given site",
 	LongHelp: "`sites show` will print out detailed information for a single site. " +
 		"The name of the site can be found from the [sites list](#sites-list) command. Here is a sample command\n\n" +
-		"```catalyze sites show mywebsite.com```",
+		"```\ncatalyze sites show mywebsite.com\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of the site configuration to show")
