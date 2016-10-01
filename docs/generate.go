@@ -19,14 +19,23 @@ func main() {
 	catalyze.InitGlobalOpts(app, settings)
 	catalyze.InitCLI(app, settings)
 
+	intro, err := os.OpenFile("intro.md", os.O_RDONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer intro.Close()
 	output, err := os.OpenFile("cli-docs.md", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		panic(err)
 	}
 	defer output.Close()
+	_, err = io.Copy(output, intro)
+	if err != nil {
+		panic(err)
+	}
 
 	app.Cmd.DoInit()
-	if _, err = output.WriteString("# Overview\n\n"); err != nil {
+	if _, err = output.WriteString("\n# Overview\n\n"); err != nil {
 		panic(err)
 	}
 	output.Write([]byte("```\n"))
