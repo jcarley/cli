@@ -211,12 +211,18 @@ type Metrics struct {
 
 // MetricsData is a container for each type of metrics: network, memory, etc.
 type MetricsData struct {
-	CPUUsage     *[]MetricUsage  `json:"cpu.usage"`
-	MemoryUsage  *[]MetricUsage  `json:"memory.usage"`
+	CPUUsage     *[]CPUUsage     `json:"cpu.usage"`
+	MemoryUsage  *[]MemoryUsage  `json:"memory.usage"`
 	NetworkUsage *[]NetworkUsage `json:"network.usage"`
 }
 
-type MetricUsage struct {
+type CPUUsage struct {
+	JobID       string  `json:"job"`
+	CorePercent float64 `json:"core_percent"`
+	TS          int     `json:"ts"`
+}
+
+type MemoryUsage struct {
 	JobID string  `json:"job"`
 	Total float64 `json:"total"`
 	AVG   float64 `json:"ave"`

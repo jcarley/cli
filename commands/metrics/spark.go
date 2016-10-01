@@ -64,32 +64,20 @@ func (spark *SparkTransformer) TransformGroupNetworkOut(metrics *[]models.Metric
 
 // TransformSingleCPU transforms a single service's cpu data into spark lines.
 func (spark *SparkTransformer) TransformSingleCPU(metric *models.Metrics) {
-	var cpuMin []int
-	var cpuMax []int
-	var cpuAvg []int
-	var cpuTotal []int
+	var cpuCorePercent []int
 	if metric.Data != nil && metric.Data.CPUUsage != nil {
 		for _, data := range *metric.Data.CPUUsage {
-			cpuMin = append(cpuMin, int(data.Min/1000.0))
-			cpuMax = append(cpuMax, int(data.Max/1000.0))
-			cpuAvg = append(cpuAvg, int(data.AVG/1000.0))
-			cpuTotal = append(cpuTotal, int(data.Total/1000.0))
+			cpuCorePercent = append(cpuCorePercent, int(data.CorePercent*100.0))
 		}
 	}
 	var sparkLines = spark.SparkLines[metric.ServiceLabel]
 	if sparkLines == nil {
-		sparkLines = addSparkLine(metric.ServiceLabel, []string{"CPU Min", "CPU Max", "CPU AVG", "CPU Total"}, cpuColor)
+		sparkLines = addSparkLine(metric.ServiceLabel, []string{"CPU Percentage"}, cpuColor)
 		spark.SparkLines[metric.ServiceLabel] = sparkLines
 	}
 	for i := range sparkLines.Lines {
-		if sparkLines.Lines[i].Title == "CPU Min" {
-			sparkLines.Lines[i].Data = cpuMin
-		} else if sparkLines.Lines[i].Title == "CPU Max" {
-			sparkLines.Lines[i].Data = cpuMax
-		} else if sparkLines.Lines[i].Title == "CPU AVG" {
-			sparkLines.Lines[i].Data = cpuAvg
-		} else if sparkLines.Lines[i].Title == "CPU Total" {
-			sparkLines.Lines[i].Data = cpuTotal
+		if sparkLines.Lines[i].Title == "CPU Percentage" {
+			sparkLines.Lines[i].Data = cpuCorePercent
 		}
 	}
 	ui.Render(ui.Body)

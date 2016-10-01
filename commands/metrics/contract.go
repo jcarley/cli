@@ -56,6 +56,7 @@ var CPUSubCmd = models.Command{
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
 			json := subCmd.BoolOpt("json", false, "Output the data as json")
 			csv := subCmd.BoolOpt("csv", false, "Output the data as csv")
+			text := subCmd.BoolOpt("text", true, "Output the data in plain text")
 			spark := subCmd.BoolOpt("spark", false, "Output the data using spark lines")
 			stream := subCmd.BoolOpt("stream", false, "Repeat calls once per minute until this process is interrupted.")
 			mins := subCmd.IntOpt("m mins", 1, "How many minutes worth of metrics to retrieve.")
@@ -66,12 +67,12 @@ var CPUSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdMetrics(*serviceName, CPU, *json, *csv, *spark, *stream, *mins, New(settings), services.New(settings))
+				err := CmdMetrics(*serviceName, CPU, *json, *csv, *text, *spark, *stream, *mins, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "[SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]"
+			subCmd.Spec = "[SERVICE_NAME] [(--json | --csv | --text | --spark)] [--stream] [-m]"
 		}
 	},
 }
@@ -95,6 +96,7 @@ var MemorySubCmd = models.Command{
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
 			json := subCmd.BoolOpt("json", false, "Output the data as json")
 			csv := subCmd.BoolOpt("csv", false, "Output the data as csv")
+			text := subCmd.BoolOpt("text", true, "Output the data in plain text")
 			spark := subCmd.BoolOpt("spark", false, "Output the data using spark lines")
 			stream := subCmd.BoolOpt("stream", false, "Repeat calls once per minute until this process is interrupted.")
 			mins := subCmd.IntOpt("m mins", 1, "How many minutes worth of metrics to retrieve.")
@@ -105,12 +107,12 @@ var MemorySubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdMetrics(*serviceName, Memory, *json, *csv, *spark, *stream, *mins, New(settings), services.New(settings))
+				err := CmdMetrics(*serviceName, Memory, *json, *csv, *text, *spark, *stream, *mins, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "[SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]"
+			subCmd.Spec = "[SERVICE_NAME] [(--json | --csv | --text | --spark)] [--stream] [-m]"
 		}
 	},
 }
@@ -133,6 +135,7 @@ var NetworkInSubCmd = models.Command{
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
 			json := subCmd.BoolOpt("json", false, "Output the data as json")
 			csv := subCmd.BoolOpt("csv", false, "Output the data as csv")
+			text := subCmd.BoolOpt("text", true, "Output the data in plain text")
 			spark := subCmd.BoolOpt("spark", false, "Output the data using spark lines")
 			stream := subCmd.BoolOpt("stream", false, "Repeat calls once per minute until this process is interrupted.")
 			mins := subCmd.IntOpt("m mins", 1, "How many minutes worth of metrics to retrieve.")
@@ -143,12 +146,12 @@ var NetworkInSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdMetrics(*serviceName, NetworkIn, *json, *csv, *spark, *stream, *mins, New(settings), services.New(settings))
+				err := CmdMetrics(*serviceName, NetworkIn, *json, *csv, *text, *spark, *stream, *mins, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "[SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]"
+			subCmd.Spec = "[SERVICE_NAME] [(--json | --csv | --text | --spark)] [--stream] [-m]"
 		}
 	},
 }
@@ -172,6 +175,7 @@ var NetworkOutSubCmd = models.Command{
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
 			json := subCmd.BoolOpt("json", false, "Output the data as json")
 			csv := subCmd.BoolOpt("csv", false, "Output the data as csv")
+			text := subCmd.BoolOpt("text", true, "Output the data in plain text")
 			spark := subCmd.BoolOpt("spark", false, "Output the data using spark lines")
 			stream := subCmd.BoolOpt("stream", false, "Repeat calls once per minute until this process is interrupted.")
 			mins := subCmd.IntOpt("m mins", 1, "How many minutes worth of metrics to retrieve.")
@@ -182,12 +186,12 @@ var NetworkOutSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdMetrics(*serviceName, NetworkOut, *json, *csv, *spark, *stream, *mins, New(settings), services.New(settings))
+				err := CmdMetrics(*serviceName, NetworkOut, *json, *csv, *text, *spark, *stream, *mins, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "[SERVICE_NAME] [(--json | --csv | --spark)] [--stream] [-m]"
+			subCmd.Spec = "[SERVICE_NAME] [(--json | --csv | --text | --spark)] [--stream] [-m]"
 		}
 	},
 }
