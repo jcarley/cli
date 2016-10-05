@@ -8,7 +8,7 @@ import (
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd is the contract between the user and the CLI. This specifies the command
@@ -16,7 +16,9 @@ import (
 var Cmd = models.Command{
 	Name:      "associate",
 	ShortHelp: "Associates an environment",
-	LongHelp:  "Associates an environment and service using the given alias to your local machine. For all further commands, the alias will be used instead. If no alias is given, the environment name is used.",
+	LongHelp: "`associate` is the entry point of the cli. You need to associate an environment before you can run most other commands. " +
+		"Check out [scope](#global-scope) and [aliases](#environment-aliases) for more info on the value of the alias and default options. Here is a sample command\n\n" +
+		"```\ncatalyze associate My-Production-Environment app01 -a prod\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			envName := cmd.StringArg("ENV_NAME", "", "The name of your environment")

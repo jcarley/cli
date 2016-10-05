@@ -7,7 +7,7 @@ import (
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd is the contract between the user and the CLI. This specifies the command
@@ -15,13 +15,15 @@ import (
 var Cmd = models.Command{
 	Name:      "sites",
 	ShortHelp: "Tasks for updating sites, including hostnames, SSL certificates, and private keys",
-	LongHelp:  "Tasks for updating sites, including hostnames, SSL certificates, and private keys",
+	LongHelp: "The `sites` command gives access to hostname and SSL certificate usage for public facing services. " +
+		"`sites` are different from `certs` in that `sites` use an instance of a `cert` and are associated with a single service. " +
+		"`certs` can be used by multiple sites. The sites command can not be run directly but has sub commands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			cmd.Command(CreateSubCmd.Name, CreateSubCmd.ShortHelp, CreateSubCmd.CmdFunc(settings))
-			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
-			cmd.Command(RmSubCmd.Name, RmSubCmd.ShortHelp, RmSubCmd.CmdFunc(settings))
-			cmd.Command(ShowSubCmd.Name, ShowSubCmd.ShortHelp, ShowSubCmd.CmdFunc(settings))
+			cmd.CommandLong(CreateSubCmd.Name, CreateSubCmd.ShortHelp, CreateSubCmd.LongHelp, CreateSubCmd.CmdFunc(settings))
+			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))
+			cmd.CommandLong(RmSubCmd.Name, RmSubCmd.ShortHelp, RmSubCmd.LongHelp, RmSubCmd.CmdFunc(settings))
+			cmd.CommandLong(ShowSubCmd.Name, ShowSubCmd.ShortHelp, ShowSubCmd.LongHelp, ShowSubCmd.CmdFunc(settings))
 		}
 	},
 }
@@ -29,7 +31,32 @@ var Cmd = models.Command{
 var CreateSubCmd = models.Command{
 	Name:      "create",
 	ShortHelp: "Create a new site linking it to an existing cert instance",
-	LongHelp:  "Create a new site linking it to an existing cert instance",
+	LongHelp: "`sites create` allows you to create a site configuration that is tied to a single service. " +
+		"To create a site, you must first [create a cert](#certs-create). " +
+		"A site has three pieces of information: a name, the service it's tied to, and the cert instance it will use. " +
+		"The name is the `server_name` that will be injected into this site's Nginx configuration file. " +
+		"It is important that this site name match what URL your site will respond to. " +
+		"If this is a bare domain, using `mysite.com` is sufficient. " +
+		"If it should respond to the APEX domain and all subdomains, it should be named `.mysite.com` notice the leading `.`. " +
+		"The service is a code service that will use this site configuration. " +
+		"Lastly, the cert instance must be specified by the `HOSTNAME` argument used in the [certs create](#certs-create) command. " +
+		"You can also set Nginx configuration values directly by specifying one of the above flags. " +
+		"Specifying `--enable-cors` will add the following lines to your Nginx configuration\n\n" +
+		"```\nadd_header 'Access-Control-Allow-Origin' '$http_origin' always;\n" +
+		"add_header 'Access-Control-Allow-Credentials' 'true' always;\n" +
+		"add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT, HEAD, PATCH' always;\n" +
+		"add_header 'Access-Control-Allow-Headers' 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Accept,Authorization' always;\n" +
+		"add_header 'Access-Control-Max-Age' 1728000 always;\n" +
+		"if ($request_method = 'OPTIONS') {\n" +
+		"  return 204;\n" +
+		"}\n```\n\n" +
+		"Specifying `--enable-websockets` will add the following lines to your Nginx configuration\n\n" +
+		"```\nproxy_http_version 1.1;\n" +
+		"proxy_set_header Upgrade $http_upgrade;\n" +
+		"proxy_set_header Connection \"upgrade\";\n```\n\n" +
+		"Here are some sample commands\n\n" +
+		"```\ncatalyze sites create .mysite.com app01 wildcard_mysitecom\n" +
+		"catalyze sites create .mysite.com app01 wildcard_mysitecom --client-max-body-size 50 --enable-cors\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("SITE_NAME", "", "The name of the site to be created. This will be used in this site's nginx configuration file (i.e. \".example.com\")")
@@ -62,7 +89,9 @@ var CreateSubCmd = models.Command{
 var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List details for all site configurations",
-	LongHelp:  "List details for all site configurations",
+	LongHelp: "`sites list` lists all sites for the given environment. " +
+		"The names printed out can be used in the other sites commands. Here is a sample command\n\n" +
+		"```\ncatalyze sites list\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
@@ -84,7 +113,11 @@ var ListSubCmd = models.Command{
 var RmSubCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Remove a site configuration",
-	LongHelp:  "Remove a site configuration",
+	LongHelp: "`sites rm` allows you to remove a site by name. " +
+		"Since sites cannot be updated, if you want to change the name of a site, you must `rm` the site and then [create](#sites-create) it again. " +
+		"If you simply need to update your SSL certificates, you can use the [certs update](#certs-update) command on the cert instance used by the site in question. " +
+		"Here is a sample command\n\n" +
+		"```\ncatalyze sites rm mywebsite.com\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of the site configuration to delete")
@@ -108,7 +141,9 @@ var RmSubCmd = models.Command{
 var ShowSubCmd = models.Command{
 	Name:      "show",
 	ShortHelp: "Shows the details for a given site",
-	LongHelp:  "Shows the details for a given site",
+	LongHelp: "`sites show` will print out detailed information for a single site. " +
+		"The name of the site can be found from the [sites list](#sites-list) command. Here is a sample command\n\n" +
+		"```\ncatalyze sites show mywebsite.com\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of the site configuration to show")

@@ -8,32 +8,29 @@ A framework to build command line applications in Go with most of the burden of 
 
 ## Motivation
 
-The default `flag` package is fun and very easy to use but has several limitations:
+|                                                                      | mow.cli | codegangsta/cli | flag |
+|----------------------------------------------------------------------|---------|-----------------|------|
+| Contextual help                                                      | ✓       | ✓               |      |
+| Commands                                                             | ✓       | ✓               |      |
+| Option folding  `-xyz`                                               | ✓       |                 |      |
+| Option Value folding  `-fValue`                                      | ✓       |                 |      |
+| Option exclusion: `--start ❘ --stop`                                 | ✓       |                 |      |
+| Option dependency : `[-a -b]` or `[-a [-b]]`                         | ✓       |                 |      |
+| Arguments validation : `SRC DST`                                     | ✓       |                 |      |
+| Argument optionality : `SRC [DST]`                                   | ✓       |                 |      |
+| Argument repetition : `SRC... DST`                                   | ✓       |                 |      |
+| Option/Argument dependency : `SRC [-f DST]`                          | ✓       |                 |      |
+| Any combination of the above: `[-d ❘ --rm] IMAGE [COMMAND [ARG...]]` | ✓        |                 |      |
 
-* No argument validation: it only handles flags, it is up to the developer to manually parse and validations the command arguments
-* Doesn't handle option folding: `-abc` (synonym for `-a -b -c`)
-* Doesn't handle glued options name and value: `-Ivalue`
-* Doesn't handle commands and sub commands
-* Doesn't handle mandatory/optional flags nor flag exclusion `--stop|--start`
-* And the list goes on
+In the goland, docopt is another library with rich flags and arguments validation.
+However, it falls short for many use cases:
 
-Docopt fixes many of these limitations but it too exhibits the following problems:
-
-* No contexual help: either your call is correct and it works, or the whole help message is dumped, no matter the path you took
-* It is up to you to switch on the parse result and decide what code path to execute and which parameters to pass
-
-Another popular CLI library in the Goland is `codegangsta/cli`.
-It brings many good ideas to the table: very readable (albeit a bit on the verbose side) and it spares you the switching part as it calls the correct code path.
-It too suffers from the following limitations:
-
-* Option duplication: you need to declare a flag in the command flags list (with its name and type), and then to use it, in your action you need to extract it from a context object using its name and type again.
-* Doesn't handle argument validation
-
-mow.cli is my humble attempt at solving these issues and providing an alternative.
-
-Here's a quick demo of mow.cli's contextual help messages:
-
-![help](http://i.imgur.com/LGrRiyJ.gif)
+|                             | mow.cli | docopt |
+|-----------------------------|---------|--------|
+| Contextual help             | ✓       |        |
+| Backtracking: `SRC... DST`  | ✓       |        |
+| Backtracking: `[SRC] DST`   | ✓       |        |
+| Branching: `(SRC ❘ -f DST)` | ✓        |        |
 
 ## Installation
 
@@ -41,6 +38,39 @@ To install this library, simply run:
 
 ```
 $ go get github.com/jawher/mow.cli
+```
+
+## First app
+
+Here's a sample showcasing many features of mow.cli: flags, arguments, and spec string:
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+
+    "github.com/jawher/mow.cli"
+)
+
+func main() {
+    app := cli.App("cp", "Copy files around")
+
+    app.Spec = "[-r] SRC... DST"
+
+    var (
+        recursive = app.BoolOpt("r recursive", false, "Copy files recursively")
+        src       = app.StringsArg("SRC", nil, "Source files to copy")
+        dst       = app.StringArg("DST", "", "Destination where to copy files to")
+    )
+
+    app.Action = func() {
+        fmt.Printf("Copying %v to %s [recursively: %v]\n", *src, *dst, *recursive)
+    }
+
+    app.Run(os.Args)
+}
 ```
 
 ## Basics
@@ -84,15 +114,19 @@ There is also a second set of methods Bool, String, Int, Strings and Ints, which
 
 ```go
 recursive = cp.Bool(BoolOpt{
-    Name:  "R rece",
+    Name:  "R recursive",
     Value: false,
     Desc:  "copy src files recursively",
-    EnvVar: "",
+    EnvVar: "VAR1 VAR2",
+    SetByUser: &srcSetByUser,
 })
 ```
 
 The field names are self-describing.
-There EnvVar field is a space separated list of environment variables names to be used to initialize the option.
+
+`EnvVar` accepts a space separated list of environment variables names to be used to initialize the option.
+
+If `SetByUser` is specified (by passing a pointer to a bool variable), it will be set to `true` if the user explicitly set the option.
 
 The result is a pointer to a value that will be populated after parsing the command line arguments.
 You can access the values in the Action func.
@@ -146,18 +180,23 @@ There is also a second set of methods Bool, String, Int, Strings and Ints, which
 src = cp.Strings(StringsArg{
     Name:  "SRC",
     Desc:  "The source files to copy",
-    Value: "",
-    EnvVar: "",
+    Value: "default value",
+    EnvVar: "VAR1 VAR2",
+    SetByUser: &srcSetByUser,
 })
 ```
 
 The field names are self-describing.
 The Value field is where you can set the initial value for the argument.
 
-EnvVar accepts a space separated list of environment variables names to be used to initialize the argument.
+`EnvVar` accepts a space separated list of environment variables names to be used to initialize the argument.
+
+If `SetByUser` is specified (by passing a pointer to a bool variable), it will be set to `true` if the user explicitly set the argument.
 
 The result is a pointer to a value that will be populated after parsing the command line arguments.
 You can access the values in the Action func.
+
+You can also
 
 ## Operators
 
@@ -227,6 +266,18 @@ bzk.Command("job", "actions on jobs", func(cmd *cli.Cmd) {
     cmd.Command("log", "show a job log", nil)
 })
 ```
+When you just want to set Action to cmd, you can use ActionCommand function for this
+```go
+app.Command("list", "list all configs", cli.ActionCommand(func() { list() }))
+```
+is the same as
+```go
+app.Command("list", "list all configs", func(cmd *cli.Cmd)) {
+    cmd.Action = func() {
+      list()
+    }
+}
+```
 
 This could go on to any depth if need be.
 
@@ -239,6 +290,98 @@ Since you'll want to store these pointers in variables, and to avoid having doze
 mow.cli's API was specifically tailored to take a func parameter (called CmdInitializer) which accepts the command struct.
 
 This way, the command specific variables scope is limited to this function.
+
+## Custom types
+
+Out of the box, mow.cli supports the following types for options and arguments:
+
+* bool
+* string
+* int
+* strings (slice of strings)
+* ints (slice of ints)
+
+You can however extend mow.cli to handle other types, e.g. `time.Duration`, `float64`, or even your own struct types for example.
+
+To do so, you'll need to:
+
+* implement the `flag.Value` interface for the custom type
+* declare the option or the flag using `VarOpt`, `VarArg` for the short hands, and `Var` for the full form.
+
+Here's an example:
+
+```go
+// Declare your type
+type Duration time.Duration
+
+// Make it implement flag.Value
+func (d *Duration) Set(v string) error {
+	parsed, err := time.ParseDuration(v)
+	if err != nil {
+		return err
+	}
+	*d = Duration(parsed)
+	return nil
+}
+
+func (d *Duration) String() string {
+	duration := time.Duration(*d)
+	return duration.String()
+}
+
+func main() {
+    duration := Duration(0)
+
+	app := App("var", "")
+
+	app.VarArg("DURATION", &duration, "")
+
+	app.Run([]string{"cp", "1h31m42s"})
+}
+```
+
+### Boolean custom types
+
+To make your custom type behave as a boolean option, i.e. doesn't take a value, it has to implement a `IsBoolFlag` method that returns true:
+
+```go
+type BoolLike int
+
+
+func (d *BoolLike) IsBoolFlag() bool {
+	return true
+}
+```
+
+### Multi-valued custom type
+
+To make your custom type behave as a multi-valued option or argument, i.e. takes multiple values,
+it has to implement a `Clear` method which will be called whenever the value list needs to be cleared,
+e.g. when the value was initially populated from an environment variable, and then explicitly set from the CLI:
+
+```go
+type Durations []time.Duration
+
+// Make it implement flag.Value
+func (d *Durations) Set(v string) error {
+	parsed, err := time.ParseDuration(v)
+	if err != nil {
+		return err
+	}
+	*d = append(*d, Duration(parsed))
+	return nil
+}
+
+func (d *Durations) String() string {
+	return fmt.Sprintf("%v", *d)
+}
+
+
+// Make it multi-valued
+func (d *Durations) Clear() {
+	*d = []Duration{}
+}
+```
 
 ## Interceptors
 

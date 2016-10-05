@@ -2,8 +2,9 @@ package cli
 
 import (
 	"flag"
-	"os"
 	"fmt"
+	"io"
+	"os"
 )
 
 /*
@@ -31,8 +32,8 @@ name and description will be used to construct the help message for the app:
 */
 func App(name, desc string) *Cli {
 	return &Cli{
-		Cmd:&Cmd{
-			name:          name,
+		Cmd: &Cmd{
+			Name:          name,
 			desc:          desc,
 			optionsIdx:    map[string]*opt{},
 			argsIdx:       map[string]*arg{},
@@ -48,9 +49,14 @@ printing the version string via the CLI.
 	Usage: appName --$name
 	$version
 
- */
+*/
 func (cli *Cli) Version(name, version string) {
-	cli.BoolOpt(name, false, "Show the version and exit")
+	cli.Bool(BoolOpt{
+		Name:      name,
+		Value:     false,
+		Desc:      "Show the version and exit",
+		HideValue: true,
+	})
 	names := mkOptStrs(name)
 	option := cli.optionsIdx[names[0]]
 	cli.version = &cliVersion{version, option}
@@ -77,7 +83,7 @@ In most cases the library users won't need to call this method, unless
 a more complex validation is needed.
 */
 func (cli *Cli) PrintVersion() {
-	fmt.Fprintln(os.Stderr, cli.version.version)
+	fmt.Fprintln(stdErr, cli.version.version)
 }
 
 /*
@@ -88,7 +94,7 @@ In case of an incorrect usage, and depending on the configured ErrorHandling pol
 it may return an error, panic or exit
 */
 func (cli *Cli) Run(args []string) error {
-	if err := cli.doInit(); err != nil {
+	if err := cli.DoInit(); err != nil {
 		panic(err)
 	}
 	inFlow := &step{desc: "RootIn"}
@@ -97,9 +103,22 @@ func (cli *Cli) Run(args []string) error {
 }
 
 /*
+ActionCommand(myFun) is syntactic sugar for
+func(cmd *cli.Cmd) { cmd.Action = myFun }
+
+cmd.CommandAction(_, _, myFun } is syntactic sugar for
+cmd.Command(_, _, func(cmd *cli.Cmd) { cmd.Action = myFun })
+*/
+func ActionCommand(action func()) CmdInitializer {
+	return func(cmd *Cmd) {
+		cmd.Action = action
+	}
+}
+
+/*
 Exit causes the app the exit with the specified exit code while giving the After interceptors a chance to run.
 This should be used instead of os.Exit.
- */
+*/
 func Exit(code int) {
 	panic(exit(code))
 }
@@ -109,3 +128,8 @@ type exit int
 var exiter = func(code int) {
 	os.Exit(code)
 }
+
+var (
+	stdOut io.Writer = os.Stdout
+	stdErr io.Writer = os.Stderr
+)

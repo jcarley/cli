@@ -65,13 +65,10 @@ func (text *TextTransformer) TransformSingleCPU(metric *models.Metrics) {
 	if metric.Data != nil && metric.Data.CPUUsage != nil {
 		for _, data := range *metric.Data.CPUUsage {
 			ts := time.Unix(int64(data.TS/1000.0), 0)
-			logrus.Printf("%s%s | CPU Min: %6.2f | CPU Max: %6.2f | CPU AVG: %6.2f | CPU Total: %6.2f",
+			logrus.Printf("%s%s | CPU Percentage: %6.2f%%",
 				prefix,
 				fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d", ts.Year(), ts.Month(), ts.Day(), ts.Hour(), ts.Minute(), ts.Second()),
-				data.Min/1000.0,
-				data.Max/1000.0,
-				data.AVG/1000.0,
-				data.Total/1000.0)
+				data.CorePercent*100.0)
 		}
 	}
 }

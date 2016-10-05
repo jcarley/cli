@@ -7,19 +7,24 @@ import (
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd for keys
 var Cmd = models.Command{
 	Name:      "releases",
 	ShortHelp: "Manage releases for code services",
-	LongHelp:  "Manage releases for code services",
+	LongHelp: "The `releases` command allows you to manage your code service releases. " +
+		"A release is automatically created each time you perform a git push. " +
+		"The release is tagged with the git SHA of the commit. " +
+		"Releases are a way of tagging specific points in time of your git history. " +
+		"You can rollback to a specific release by using the [rollback](#rollback) command. " +
+		"The releases command cannot be run directly but has sub commands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
-			cmd.Command(RmSubCmd.Name, RmSubCmd.ShortHelp, RmSubCmd.CmdFunc(settings))
-			cmd.Command(UpdateSubCmd.Name, UpdateSubCmd.ShortHelp, UpdateSubCmd.CmdFunc(settings))
+			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))
+			cmd.CommandLong(RmSubCmd.Name, RmSubCmd.ShortHelp, RmSubCmd.LongHelp, RmSubCmd.CmdFunc(settings))
+			cmd.CommandLong(UpdateSubCmd.Name, UpdateSubCmd.ShortHelp, UpdateSubCmd.LongHelp, UpdateSubCmd.CmdFunc(settings))
 		}
 	},
 }
@@ -27,7 +32,10 @@ var Cmd = models.Command{
 var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List all releases for a given code service",
-	LongHelp:  "List all releases for a given code service",
+	LongHelp: "`releases list` lists all of the releases for a given service. " +
+		"A release is automatically created each time a git push is performed. " +
+		"Here is a sample command\n\n" +
+		"```\ncatalyze releases list code-1\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to list releases for")
@@ -50,7 +58,9 @@ var ListSubCmd = models.Command{
 var RmSubCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Remove a release from a code service",
-	LongHelp:  "Remove a release from a code service",
+	LongHelp: "`releases rm` removes an existing release. This is useful in the case of a misbehaving code service. " +
+		"Removing the release avoids the risk of rolling back to a \"bad\" build. Here is a sample command\n\n" +
+		"```\ncatalyze releases rm code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to remove a release from")
@@ -74,7 +84,10 @@ var RmSubCmd = models.Command{
 var UpdateSubCmd = models.Command{
 	Name:      "update",
 	ShortHelp: "Update a release from a code service",
-	LongHelp:  "Update a release from a code service",
+	LongHelp: "`releases update` allows you to rename or add notes to an existing release. " +
+		"By default, releases are named with the git SHA of the commit used to create the release. " +
+		"Renaming them allows you to organize your releases. Here is a sample command\n\n" +
+		"```\ncatalyze releases update code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883 --notes \"This is a stable build\" --release v1\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to update a release for")

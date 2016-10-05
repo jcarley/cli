@@ -35,9 +35,12 @@ type Transformer interface {
 
 // CmdMetrics prints out metrics for a given service or if the service is not
 // specified, metrics for the entire environment are printed.
-func CmdMetrics(svcName string, metricType MetricType, jsonFlag, csvFlag, sparkFlag, streamFlag bool, mins int, im IMetrics, is services.IServices) error {
+func CmdMetrics(svcName string, metricType MetricType, jsonFlag, csvFlag, textFlag, sparkFlag, streamFlag bool, mins int, im IMetrics, is services.IServices) error {
+	if sparkFlag {
+		logrus.Warnln("The \"--spark\" flag has been deprecated! Please use \"--csv\", \"--json\", or \"--text\" instead. \"--spark\" will be removed in the next CLI update.")
+	}
 	if streamFlag && (jsonFlag || csvFlag || mins != 1) {
-		return fmt.Errorf("--stream cannot be used with a custom format and multiple records")
+		return fmt.Errorf("--stream cannot be used with CSV or JSON formats and multiple records")
 	}
 	if mins > 1440 {
 		return fmt.Errorf("--mins cannot be greater than 1440")
@@ -80,7 +83,7 @@ func CmdMetrics(svcName string, metricType MetricType, jsonFlag, csvFlag, sparkF
 		mt = &SparkTransformer{
 			SparkLines: map[string]*ui.Sparklines{},
 		}
-	} else {
+	} else if textFlag {
 		mt = &TextTransformer{}
 	}
 	if svcName != "" {

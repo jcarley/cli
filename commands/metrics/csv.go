@@ -22,7 +22,7 @@ type CSVTransformer struct {
 // is enabled, the service name is the first header.
 func (csv *CSVTransformer) WriteHeadersCPU() {
 	if !csv.HeadersWritten {
-		headers := []string{"timestamp", "cpu_min", "cpu_max", "cpu_avg", "cpu_total"}
+		headers := []string{"timestamp", "cpu_percentage"}
 		if csv.GroupMode {
 			headers = append([]string{"service_name"}, headers...)
 		}
@@ -132,10 +132,7 @@ func (csv *CSVTransformer) TransformSingleCPU(metric *models.Metrics) {
 		for _, data := range *metric.Data.CPUUsage {
 			row := []string{
 				fmt.Sprintf("%d", data.TS),
-				fmt.Sprintf("%f", data.Min/1000.0),
-				fmt.Sprintf("%f", data.Max/1000.0),
-				fmt.Sprintf("%f", data.AVG/1000.0),
-				fmt.Sprintf("%f", data.Total/1000.0),
+				fmt.Sprintf("%f", data.CorePercent*100.0),
 			}
 			if csv.GroupMode {
 				row = append([]string{metric.ServiceLabel}, row...)

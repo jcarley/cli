@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"os"
+	"io"
 	"strings"
 	"text/tabwriter"
 )
@@ -23,14 +23,16 @@ type Cmd struct {
 	After func()
 	// The command options and arguments
 	Spec string
+	// The command long description to be shown when help is requested
+	LongDesc string
 	// The command error handling strategy
 	ErrorHandling flag.ErrorHandling
 
 	init CmdInitializer
-	name string
+	Name string
 	desc string
 
-	commands   []*Cmd
+	Commands   []*Cmd
 	options    []*opt
 	optionsIdx map[string]*opt
 	args       []*arg
@@ -44,27 +46,44 @@ type Cmd struct {
 /*
 BoolParam represents a Bool option or argument
 */
-type BoolParam interface{}
+type BoolParam interface {
+	value() bool
+}
 
 /*
 StringParam represents a String option or argument
 */
-type StringParam interface{}
+type StringParam interface {
+	value() string
+}
 
 /*
 IntParam represents an Int option or argument
 */
-type IntParam interface{}
+type IntParam interface {
+	value() int
+}
 
 /*
 StringsParam represents a string slice option or argument
 */
-type StringsParam interface{}
+type StringsParam interface {
+	value() []string
+}
 
 /*
 IntsParam represents an int slice option or argument
 */
-type IntsParam interface{}
+type IntsParam interface {
+	value() []int
+}
+
+/*
+VarParam represents an custom option or argument where the type and format are controlled by the developer
+*/
+type VarParam interface {
+	value() flag.Value
+}
 
 /*
 CmdInitializer is a function that configures a command by adding options, arguments, a spec, sub commands and the code
@@ -85,12 +104,27 @@ the last argument, init, is a function that will be called by mow.cli to further
 (sub) command, e.g. to add options, arguments and the code to execute
 */
 func (c *Cmd) Command(name, desc string, init CmdInitializer) {
-	c.commands = append(c.commands, &Cmd{
+	c.Commands = append(c.Commands, &Cmd{
 		ErrorHandling: c.ErrorHandling,
-		name:          name,
+		Name:          name,
 		desc:          desc,
 		init:          init,
-		commands:      []*Cmd{},
+		Commands:      []*Cmd{},
+		options:       []*opt{},
+		optionsIdx:    map[string]*opt{},
+		args:          []*arg{},
+		argsIdx:       map[string]*arg{},
+	})
+}
+
+func (c *Cmd) CommandLong(name, desc, long string, init CmdInitializer) {
+	c.Commands = append(c.Commands, &Cmd{
+		LongDesc:      long,
+		ErrorHandling: c.ErrorHandling,
+		Name:          name,
+		desc:          desc,
+		init:          init,
+		Commands:      []*Cmd{},
 		options:       []*opt{},
 		optionsIdx:    map[string]*opt{},
 		args:          []*arg{},
@@ -105,14 +139,19 @@ It accepts either a BoolOpt or a BoolArg struct.
 The result should be stored in a variable (a pointer to a bool) which will be populated when the app is run and the call arguments get parsed
 */
 func (c *Cmd) Bool(p BoolParam) *bool {
+	into := new(bool)
+	value := newBoolValue(into, p.value())
+
 	switch x := p.(type) {
 	case BoolOpt:
-		return c.mkOpt(opt{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue}, x.Value).(*bool)
+		c.mkOpt(opt{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue, value: value, valueSetByUser: x.SetByUser})
 	case BoolArg:
-		return c.mkArg(arg{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue}, x.Value).(*bool)
+		c.mkArg(arg{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue, value: value, valueSetByUser: x.SetByUser})
 	default:
 		panic(fmt.Sprintf("Unhandled param %v", p))
 	}
+
+	return into
 }
 
 /*
@@ -122,14 +161,19 @@ It accepts either a StringOpt or a StringArg struct.
 The result should be stored in a variable (a pointer to a string) which will be populated when the app is run and the call arguments get parsed
 */
 func (c *Cmd) String(p StringParam) *string {
+	into := new(string)
+	value := newStringValue(into, p.value())
+
 	switch x := p.(type) {
 	case StringOpt:
-		return c.mkOpt(opt{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue}, x.Value).(*string)
+		c.mkOpt(opt{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue, value: value, valueSetByUser: x.SetByUser})
 	case StringArg:
-		return c.mkArg(arg{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue}, x.Value).(*string)
+		c.mkArg(arg{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue, value: value, valueSetByUser: x.SetByUser})
 	default:
 		panic(fmt.Sprintf("Unhandled param %v", p))
 	}
+
+	return into
 }
 
 /*
@@ -139,14 +183,19 @@ It accepts either a IntOpt or a IntArg struct.
 The result should be stored in a variable (a pointer to an int) which will be populated when the app is run and the call arguments get parsed
 */
 func (c *Cmd) Int(p IntParam) *int {
+	into := new(int)
+	value := newIntValue(into, p.value())
+
 	switch x := p.(type) {
 	case IntOpt:
-		return c.mkOpt(opt{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue}, x.Value).(*int)
+		c.mkOpt(opt{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue, value: value, valueSetByUser: x.SetByUser})
 	case IntArg:
-		return c.mkArg(arg{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue}, x.Value).(*int)
+		c.mkArg(arg{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue, value: value, valueSetByUser: x.SetByUser})
 	default:
 		panic(fmt.Sprintf("Unhandled param %v", p))
 	}
+
+	return into
 }
 
 /*
@@ -156,14 +205,19 @@ It accepts either a StringsOpt or a StringsArg struct.
 The result should be stored in a variable (a pointer to a string slice) which will be populated when the app is run and the call arguments get parsed
 */
 func (c *Cmd) Strings(p StringsParam) *[]string {
+	into := new([]string)
+	value := newStringsValue(into, p.value())
+
 	switch x := p.(type) {
 	case StringsOpt:
-		return c.mkOpt(opt{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue}, x.Value).(*[]string)
+		c.mkOpt(opt{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue, value: value, valueSetByUser: x.SetByUser})
 	case StringsArg:
-		return c.mkArg(arg{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue}, x.Value).(*[]string)
+		c.mkArg(arg{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue, value: value, valueSetByUser: x.SetByUser})
 	default:
 		panic(fmt.Sprintf("Unhandled param %v", p))
 	}
+
+	return into
 }
 
 /*
@@ -173,24 +227,47 @@ It accepts either a IntsOpt or a IntsArg struct.
 The result should be stored in a variable (a pointer to an int slice) which will be populated when the app is run and the call arguments get parsed
 */
 func (c *Cmd) Ints(p IntsParam) *[]int {
+	into := new([]int)
+	value := newIntsValue(into, p.value())
+
 	switch x := p.(type) {
 	case IntsOpt:
-		return c.mkOpt(opt{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue}, x.Value).(*[]int)
+		c.mkOpt(opt{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue, value: value, valueSetByUser: x.SetByUser})
 	case IntsArg:
-		return c.mkArg(arg{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue}, x.Value).(*[]int)
+		c.mkArg(arg{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue, value: value, valueSetByUser: x.SetByUser})
+	default:
+		panic(fmt.Sprintf("Unhandled param %v", p))
+	}
+
+	return into
+}
+
+/*
+Var can be used to add a custom option or argument to a command.
+It accepts either a VarOpt or a VarArg struct.
+
+As opposed to the other built-in types, this function does not return a pointer the the value.
+Instead, the VarOpt or VarOptArg structs hold the said value.
+*/
+func (c *Cmd) Var(p VarParam) {
+	switch x := p.(type) {
+	case VarOpt:
+		c.mkOpt(opt{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue, value: p.value(), valueSetByUser: x.SetByUser})
+	case VarArg:
+		c.mkArg(arg{name: x.Name, desc: x.Desc, envVar: x.EnvVar, hideValue: x.HideValue, value: p.value(), valueSetByUser: x.SetByUser})
 	default:
 		panic(fmt.Sprintf("Unhandled param %v", p))
 	}
 }
 
-func (c *Cmd) doInit() error {
+func (c *Cmd) DoInit() error {
 	if c.init != nil {
 		c.init(c)
 	}
 
-	parents := append(c.parents, c.name)
+	parents := append(c.parents, c.Name)
 
-	for _, sub := range c.commands {
+	for _, sub := range c.Commands {
 		sub.parents = parents
 	}
 
@@ -231,30 +308,49 @@ In most cases the library users won't need to call this method, unless
 a more complex validation is needed
 */
 func (c *Cmd) PrintHelp() {
-	out := os.Stderr
+	c.printHelp(false)
+}
 
-	full := append(c.parents, c.name)
+/*
+PrintLongHelp prints the command's help message using the command long description if specified.
+In most cases the library users won't need to call this method, unless
+a more complex validation is needed
+*/
+func (c *Cmd) PrintLongHelp() {
+	c.printHelp(true)
+}
+
+func (c *Cmd) printHelp(longDesc bool) {
+	c.PrintLongHelpTo(longDesc, stdErr)
+}
+
+func (c *Cmd) PrintLongHelpTo(longDesc bool, writer io.Writer) {
+	full := append(c.parents, c.Name)
 	path := strings.Join(full, " ")
-	fmt.Fprintf(out, "\nUsage: %s", path)
+	fmt.Fprintf(writer, "\nUsage: %s", path)
 
 	spec := strings.TrimSpace(c.Spec)
 	if len(spec) > 0 {
-		fmt.Fprintf(out, " %s", spec)
+		fmt.Fprintf(writer, " %s", spec)
 	}
 
-	if len(c.commands) > 0 {
-		fmt.Fprint(out, " COMMAND [arg...]")
+	if len(c.Commands) > 0 {
+		fmt.Fprint(writer, " COMMAND [arg...]")
 	}
-	fmt.Fprint(out, "\n\n")
+	fmt.Fprint(writer, "\n\n")
 
-	if len(c.desc) > 0 {
-		fmt.Fprintf(out, "%s\n", c.desc)
+	desc := c.desc
+	if longDesc && len(c.LongDesc) > 0 {
+		desc = c.LongDesc
+	}
+	if len(desc) > 0 {
+		fmt.Fprintf(writer, "%s\n", desc)
 	}
 
-	w := tabwriter.NewWriter(out, 15, 1, 3, ' ', 0)
+	w := tabwriter.NewWriter(writer, 15, 1, 3, ' ', 0)
 
 	if len(c.args) > 0 {
-		fmt.Fprintf(out, "\nArguments:\n")
+		fmt.Fprintf(writer, "\nArguments:\n")
 
 		for _, arg := range c.args {
 			desc := c.formatDescription(arg.desc, arg.envVar)
@@ -266,7 +362,7 @@ func (c *Cmd) PrintHelp() {
 	}
 
 	if len(c.options) > 0 {
-		fmt.Fprintf(out, "\nOptions:\n")
+		fmt.Fprintf(writer, "\nOptions:\n")
 
 		for _, opt := range c.options {
 			desc := c.formatDescription(opt.desc, opt.envVar)
@@ -276,38 +372,32 @@ func (c *Cmd) PrintHelp() {
 		w.Flush()
 	}
 
-	if len(c.commands) > 0 {
-		fmt.Fprintf(out, "\nCommands:\n")
+	if len(c.Commands) > 0 {
+		fmt.Fprintf(writer, "\nCommands:\n")
 
-		for _, c := range c.commands {
-			fmt.Fprintf(w, "  %s\t%s\n", c.name, c.desc)
+		for _, c := range c.Commands {
+			fmt.Fprintf(writer, "  %s\t%s\n", c.Name, c.desc)
 		}
 		w.Flush()
 	}
 
-	if len(c.commands) > 0 {
-		fmt.Fprintf(out, "\nRun '%s COMMAND --help' for more information on a command.\n", path)
+	if len(c.Commands) > 0 {
+		fmt.Fprintf(writer, "\nRun '%s COMMAND --help' for more information on a command.\n", path)
 	}
 }
 
 func (c *Cmd) formatArgValue(arg *arg) string {
-	var value string
 	if arg.hideValue {
-		value = " "
-	} else {
-		value = fmt.Sprintf("=%#v", arg.get())
+		return " "
 	}
-	return value
+	return "=" + arg.value.String()
 }
 
 func (c *Cmd) formatOptValue(opt *opt) string {
-	var value string
 	if opt.hideValue {
-		value = " "
-	} else {
-		value = fmt.Sprintf("=%#v", opt.get())
+		return " "
 	}
-	return value
+	return "=" + opt.value.String()
 }
 
 func (c *Cmd) formatDescription(desc, envVar string) string {
@@ -327,7 +417,7 @@ func (c *Cmd) formatDescription(desc, envVar string) string {
 
 func (c *Cmd) parse(args []string, entry, inFlow, outFlow *step) error {
 	if c.helpRequested(args) {
-		c.PrintHelp()
+		c.PrintLongHelp()
 		c.onError(nil)
 		return nil
 	}
@@ -335,7 +425,7 @@ func (c *Cmd) parse(args []string, entry, inFlow, outFlow *step) error {
 	nargsLen := c.getOptsAndArgs(args)
 
 	if err := c.fsm.parse(args[:nargsLen]); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
+		fmt.Fprintf(stdErr, "Error: %s\n", err.Error())
 		c.PrintHelp()
 		c.onError(err)
 		return err
@@ -344,7 +434,7 @@ func (c *Cmd) parse(args []string, entry, inFlow, outFlow *step) error {
 	newInFlow := &step{
 		do:    c.Before,
 		error: outFlow,
-		desc:  fmt.Sprintf("%s.Before", c.name),
+		desc:  fmt.Sprintf("%s.Before", c.Name),
 	}
 	inFlow.success = newInFlow
 
@@ -352,7 +442,7 @@ func (c *Cmd) parse(args []string, entry, inFlow, outFlow *step) error {
 		do:      c.After,
 		success: outFlow,
 		error:   outFlow,
-		desc:    fmt.Sprintf("%s.After", c.name),
+		desc:    fmt.Sprintf("%s.After", c.Name),
 	}
 
 	args = args[nargsLen:]
@@ -362,7 +452,7 @@ func (c *Cmd) parse(args []string, entry, inFlow, outFlow *step) error {
 				do:      c.Action,
 				success: newOutFlow,
 				error:   newOutFlow,
-				desc:    fmt.Sprintf("%s.Action", c.name),
+				desc:    fmt.Sprintf("%s.Action", c.Name),
 			}
 
 			entry.run(nil)
@@ -374,9 +464,9 @@ func (c *Cmd) parse(args []string, entry, inFlow, outFlow *step) error {
 	}
 
 	arg := args[0]
-	for _, sub := range c.commands {
-		if arg == sub.name {
-			if err := sub.doInit(); err != nil {
+	for _, sub := range c.Commands {
+		if arg == sub.Name {
+			if err := sub.DoInit(); err != nil {
 				panic(err)
 			}
 			return sub.parse(args[1:], entry, newInFlow, newOutFlow)
@@ -387,10 +477,10 @@ func (c *Cmd) parse(args []string, entry, inFlow, outFlow *step) error {
 	switch {
 	case strings.HasPrefix(arg, "-"):
 		err = fmt.Errorf("Error: illegal option %s", arg)
-		fmt.Fprintln(os.Stderr, err.Error())
+		fmt.Fprintln(stdErr, err.Error())
 	default:
 		err = fmt.Errorf("Error: illegal input %s", arg)
-		fmt.Fprintln(os.Stderr, err.Error())
+		fmt.Fprintln(stdErr, err.Error())
 	}
 	c.PrintHelp()
 	c.onError(err)
@@ -400,8 +490,8 @@ func (c *Cmd) parse(args []string, entry, inFlow, outFlow *step) error {
 
 func (c *Cmd) isArgSet(args []string, searchArgs []string) bool {
 	for _, arg := range args {
-		for _, sub := range c.commands {
-			if arg == sub.name {
+		for _, sub := range c.Commands {
+			if arg == sub.Name {
 				return false
 			}
 		}
@@ -422,8 +512,8 @@ func (c *Cmd) getOptsAndArgs(args []string) int {
 	consumed := 0
 
 	for _, arg := range args {
-		for _, sub := range c.commands {
-			if arg == sub.name {
+		for _, sub := range c.Commands {
+			if arg == sub.Name {
 				return consumed
 			}
 		}

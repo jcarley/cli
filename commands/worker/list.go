@@ -44,7 +44,9 @@ func CmdList(svcName string, iw IWorker, is services.IServices, ij jobs.IJobs) e
 		if _, ok := workerJobs[j.Target]; !ok {
 			workerJobs[j.Target] = &workerJob{0, 0}
 		}
-		workerJobs[j.Target].running = 1
+		if j.Status == "running" {
+			workerJobs[j.Target].running = 1
+		}
 	}
 
 	data := [][]string{{"TARGET", "SCALE", "RUNNING JOBS"}}
