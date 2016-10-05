@@ -33,7 +33,7 @@ var CreateSubCmd = models.Command{
 	ShortHelp: "Create a new site linking it to an existing cert instance",
 	LongHelp: "`sites create` allows you to create a site configuration that is tied to a single service. " +
 		"To create a site, you must first [create a cert](#certs-create). " +
-		"A site has three pieces of information, a name, the service it's tied to, and the cert instance it will use. " +
+		"A site has three pieces of information: a name, the service it's tied to, and the cert instance it will use. " +
 		"The name is the `server_name` that will be injected into this site's Nginx configuration file. " +
 		"It is important that this site name match what URL your site will respond to. " +
 		"If this is a bare domain, using `mysite.com` is sufficient. " +
