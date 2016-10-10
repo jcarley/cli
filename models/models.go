@@ -1,6 +1,6 @@
 package models
 
-import "github.com/jawher/mow.cli"
+import "github.com/jault3/mow.cli"
 
 type Role struct {
 	ID   int    `json:"id"`
@@ -113,6 +113,7 @@ type Job struct {
 	CreatedAt   string           `json:"created_at"`
 	MetricsData *[]MetricsData   `json:"metrics"`
 	Spec        *Spec            `json:"spec"`
+	Target      string           `json:"target,omitempty"`
 }
 
 // Spec is a job specification
@@ -129,6 +130,7 @@ type Payload struct {
 type Service struct {
 	ID             string            `json:"id,omitempty"`
 	Identifier     string            `json:"identifier,omitempty"`
+	DNS            string            `json:"internal_domain,omitempty"`
 	Type           string            `json:"type,omitempty"`
 	Label          string            `json:"label"`
 	Size           ServiceSize       `json:"size"`
@@ -218,12 +220,18 @@ type Metrics struct {
 
 // MetricsData is a container for each type of metrics: network, memory, etc.
 type MetricsData struct {
-	CPUUsage     *[]MetricUsage  `json:"cpu.usage"`
-	MemoryUsage  *[]MetricUsage  `json:"memory.usage"`
+	CPUUsage     *[]CPUUsage     `json:"cpu.usage"`
+	MemoryUsage  *[]MemoryUsage  `json:"memory.usage"`
 	NetworkUsage *[]NetworkUsage `json:"network.usage"`
 }
 
-type MetricUsage struct {
+type CPUUsage struct {
+	JobID       string  `json:"job"`
+	CorePercent float64 `json:"core_percent"`
+	TS          int     `json:"ts"`
+}
+
+type MemoryUsage struct {
 	JobID string  `json:"job"`
 	Total float64 `json:"total"`
 	AVG   float64 `json:"ave"`
@@ -315,4 +323,9 @@ type Release struct {
 	Name      string `json:"release,omitempty"`
 	CreatedAt string `json:"created_at,omitempty"`
 	Notes     string `json:"metadata,omitempty"`
+}
+
+type Workers struct {
+	Limit   int            `json:"worker_limit,omitempty"`
+	Workers map[string]int `json:"workers"`
 }

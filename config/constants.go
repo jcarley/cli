@@ -47,6 +47,8 @@ const (
 	CatalyzeEnvironmentEnvVar = "CATALYZE_ENV"
 	// LogLevelEnvVar is the env variable used to override the logging level used
 	LogLevelEnvVar = "CATALYZE_LOG_LEVEL"
+	// SkipVerifyEnvVar is the env variable used to accept invalid SSL certificates
+	SkipVerifyEnvVar = "SKIP_VERIFY"
 
 	// InvalidChars is a string containing all invalid characters for naming
 	InvalidChars = "/?%"

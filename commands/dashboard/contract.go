@@ -3,7 +3,7 @@ package dashboard
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd is the contract between the user and the CLI. This specifies the command
@@ -11,7 +11,8 @@ import (
 var Cmd = models.Command{
 	Name:      "dashboard",
 	ShortHelp: "Open the Catalyze Dashboard in your default browser",
-	LongHelp:  "Open the Catalyze Dashboard in your default browser",
+	LongHelp: "`dashboard` opens up the Catalyze Dashboard homepage in your default web browser. Here is a sample command\n\n" +
+		"```\ncatalyze dashboard\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

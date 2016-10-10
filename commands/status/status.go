@@ -56,8 +56,10 @@ func (s *SStatus) Status(env *models.Environment, services *[]models.Service) er
 							}
 						}
 					}
-				} else {
+				} else if len(service.ReleaseVersion) > 0 {
 					displayType = fmt.Sprintf("%s (%s)", service.Label, service.ReleaseVersion)
+				} else {
+					displayType = fmt.Sprintf("%s", service.Label)
 				}
 
 				const dateForm = "2006-01-02T15:04:05"

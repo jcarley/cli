@@ -1,7 +1,10 @@
 {
 	"ImportPath": "github.com/catalyzeio/cli",
-	"GoVersion": "go1.6",
-	"GodepVersion": "v62",
+	"GoVersion": "go1.7",
+	"GodepVersion": "v74",
+	"Packages": [
+		"./..."
+	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/Azure/go-ansiterm",
@@ -163,8 +166,13 @@
 			"Rev": "776aa739ce9373377cd16f526cdf06cb4c89b40f"
 		},
 		{
-			"ImportPath": "github.com/jawher/mow.cli",
-			"Rev": "ec353aa1195a385f193bd2e681d26f739b584b6e"
+			"ImportPath": "github.com/gorilla/websocket",
+			"Comment": "v1.0.0-20-ga69d25b",
+			"Rev": "a69d25be2fe2923a97c2af6849b2f52426f68fc0"
+		},
+		{
+			"ImportPath": "github.com/jault3/mow.cli",
+			"Rev": "eb0e577f24386013ea82d08d6239f1f3fac1097e"
 		},
 		{
 			"ImportPath": "github.com/jmespath/go-jmespath",

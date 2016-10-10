@@ -53,6 +53,13 @@ func CmdLogs(queryString string, follow bool, hours, minutes, seconds int, envID
 	if domain == "" {
 		return errors.New("Could not determine the fully qualified domain name of your environment. Please contact Catalyze Support at support@catalyze.io with this error message to resolve this issue.")
 	}
+	if follow {
+		if err := il.Watch(queryString, domain, settings.SessionToken); err != nil {
+			logrus.Debugf("Error attempting to stream logs from logwatch: %s", err)
+		} else {
+			return nil
+		}
+	}
 	from := 0
 	offset := time.Duration(hours)*time.Hour + time.Duration(minutes)*time.Minute + time.Duration(seconds)*time.Second
 	timestamp := time.Now().In(time.UTC).Add(-1 * offset)

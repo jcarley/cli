@@ -68,21 +68,25 @@ func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPr
 // data to the local machine. The export is accomplished by first creating a
 // backup. Once finished, the CLI asks where the file can be downloaded from.
 // The file is downloaded, decrypted, and saved locally.
-func (d *SDb) Export(filePath string, job *models.Job, service *models.Service) error {
+func (d *SDb) Export(filePath, downloadId string, isBackup bool, job *models.Job, service *models.Service) error {
 	spinner := spin.New()
 	done := make(chan struct{}, 1)
 	defer func() { done <- struct{}{} }()
 	go func() {
+		downloadType := "export"
+		if isBackup {
+			downloadType = "backup"
+		}
 		for {
 			select {
 			case <-time.After(100 * time.Millisecond):
-				fmt.Printf("\r\033[mDownloading export %s. This may take awhile %s\033[m ", job.ID, spinner.Next())
+				fmt.Printf("\r\033[mDownloading %s %s. This may take awhile %s\033[m ", downloadType, downloadId, spinner.Next())
 			case <-done:
 				return
 			}
 		}
 	}()
-	tempURL, err := d.TempDownloadURL(job.ID, service)
+	tempURL, err := d.TempDownloadURL(downloadId, service)
 	if err != nil {
 		done <- struct{}{}
 		return err

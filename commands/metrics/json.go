@@ -14,10 +14,7 @@ type JSONTransformer struct{}
 type cpu struct {
 	ServiceName string  `json:"service_name,omitempty"`
 	TS          int     `json:"ts"`
-	Min         float64 `json:"min"`
-	Max         float64 `json:"max"`
-	AVG         float64 `json:"avg"`
-	Total       float64 `json:"total"`
+	Percentage  float64 `json:"percentage"`
 }
 
 type mem struct {
@@ -50,7 +47,7 @@ func (j *JSONTransformer) TransformGroupCPU(metrics *[]models.Metrics) {
 	for _, m := range *metrics {
 		if _, ok := blacklist[m.ServiceLabel]; !ok && m.Data != nil && m.Data.CPUUsage != nil {
 			for _, d := range *m.Data.CPUUsage {
-				data = append(data, cpu{m.ServiceLabel, d.TS, d.Min / 1000.0, d.Max / 1000.0, d.AVG / 1000.0, d.Total / 1000.0})
+				data = append(data, cpu{m.ServiceLabel, d.TS, d.CorePercent})
 			}
 		}
 	}
@@ -111,7 +108,7 @@ func (j *JSONTransformer) TransformSingleCPU(metric *models.Metrics) {
 	var data []cpu
 	if metric.Data != nil && metric.Data.CPUUsage != nil {
 		for _, d := range *metric.Data.CPUUsage {
-			data = append(data, cpu{TS: d.TS, Min: d.Min / 1000.0, Max: d.Max / 1000.0, AVG: d.AVG / 1000.0, Total: d.Total / 1000.0})
+			data = append(data, cpu{TS: d.TS, Percentage: d.CorePercent})
 		}
 	}
 	b, _ := json.MarshalIndent(data, "", "    ")

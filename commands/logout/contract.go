@@ -5,7 +5,7 @@ import (
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd is the contract between the user and the CLI. This specifies the command
@@ -13,7 +13,10 @@ import (
 var Cmd = models.Command{
 	Name:      "logout",
 	ShortHelp: "Clear the stored user information from your local machine",
-	LongHelp:  "Clear the stored user information from your local machine",
+	LongHelp: "When using the CLI, your username and password are **never** stored in any file on your filesystem. " +
+		"However, in order to not type in your username and password each and every command, a session token is stored in the CLI's configuration file and used until it expires. " +
+		"`logout` removes this session token from the configuration file. Here is a sample command\n\n" +
+		"```\ncatalyze logout\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

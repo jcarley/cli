@@ -7,7 +7,7 @@ import (
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd is the contract between the user and the CLI. This specifies the command
@@ -15,12 +15,12 @@ import (
 var Cmd = models.Command{
 	Name:      "vars",
 	ShortHelp: "Interaction with environment variables for the associated environment",
-	LongHelp:  "Interaction with environment variables for the associated environment",
+	LongHelp:  "The `vars` command allows you to manage environment variables for your code services. The vars command can not be run directly but has sub commands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			cmd.Command(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.CmdFunc(settings))
-			cmd.Command(SetSubCmd.Name, SetSubCmd.ShortHelp, SetSubCmd.CmdFunc(settings))
-			cmd.Command(UnsetSubCmd.Name, UnsetSubCmd.ShortHelp, UnsetSubCmd.CmdFunc(settings))
+			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))
+			cmd.CommandLong(SetSubCmd.Name, SetSubCmd.ShortHelp, SetSubCmd.LongHelp, SetSubCmd.CmdFunc(settings))
+			cmd.CommandLong(UnsetSubCmd.Name, UnsetSubCmd.ShortHelp, UnsetSubCmd.LongHelp, UnsetSubCmd.CmdFunc(settings))
 		}
 	},
 }
@@ -28,7 +28,11 @@ var Cmd = models.Command{
 var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List all environment variables",
-	LongHelp:  "List all environment variables",
+	LongHelp: "`vars list` prints out all known environment variables for the given code service. " +
+		"You can print out environment variables in JSON or YAML format through the `--json` or `--yaml` flags. " +
+		"Here are some sample commands\n\n" +
+		"```\ncatalyze vars list code-1\n" +
+		"catalyze vars list code-1 --json\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service containing the environment variables. Defaults to the associated service.")
@@ -62,7 +66,11 @@ var ListSubCmd = models.Command{
 var SetSubCmd = models.Command{
 	Name:      "set",
 	ShortHelp: "Set one or more new environment variables or update the values of existing ones",
-	LongHelp:  "Set one or more new environment variables or update the values of existing ones",
+	LongHelp: "`vars set` allows you to add new environment variables or update the value of an existing environment variable on the given code service. " +
+		"You can set/update 1 or more environment variables at a time with this command by repeating the `-v` option multiple times. " +
+		"Once new environment variables are added or values updated, a [redeploy](#redeploy) is required for the given code service to have access to the new values. " +
+		"The environment variables must be of the form `<key>=<value>`. Here is a sample command\n\n" +
+		"```\ncatalyze vars set code-1 -v AWS_ACCESS_KEY_ID=1234 -v AWS_SECRET_ACCESS_KEY=5678\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service on which the environment variables will be set. Defaults to the associated service.")
@@ -92,7 +100,11 @@ var SetSubCmd = models.Command{
 var UnsetSubCmd = models.Command{
 	Name:      "unset",
 	ShortHelp: "Unset (delete) an existing environment variable",
-	LongHelp:  "Unset (delete) an existing environment variable",
+	LongHelp: "`vars unset` removes an environment variables from the given code service. " +
+		"Only the environment variable name is required to unset. " +
+		"Once environment variables are unset, a [redeploy](#redeploy) is required for the given code service to realize the variable was removed. " +
+		"Here is a sample command\n\n" +
+		"```\ncatalyze vars unset code-1 AWS_ACCESS_KEY_ID\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service on which the environment variables will be unset. Defaults to the associated service.")

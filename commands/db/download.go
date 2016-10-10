@@ -59,51 +59,7 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 	if job.Type != "backup" || (job.Status != "finished" && job.Status != "disappeared") {
 		return errors.New("Only 'finished' 'backup' jobs may be downloaded")
 	}
-	spinner := spin.New()
-	done := make(chan struct{}, 1)
-	defer func() { done <- struct{}{} }()
-	go func() {
-		for {
-			select {
-			case <-time.After(100 * time.Millisecond):
-				fmt.Printf("\r\033[mDownloading backup %s. This may take awhile %s\033[m ", backupID, spinner.Next())
-			case <-done:
-				return
-			}
-		}
-	}()
-	tempURL, err := d.TempDownloadURL(backupID, service)
-	if err != nil {
-		done <- struct{}{}
-		return err
-	}
-
-	u, _ := url.Parse(tempURL.URL)
-	svc := s3.New(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.AnonymousCredentials}))
-	req, resp := svc.GetObjectRequest(&s3.GetObjectInput{
-		Bucket: aws.String(strings.Split(u.Host, ".")[0]),
-		Key:    aws.String(strings.TrimLeft(u.Path, "/")),
-	})
-	req.HTTPRequest.URL.RawQuery = u.RawQuery
-	err = req.Send()
-	if err != nil {
-		done <- struct{}{}
-		return err
-	}
-	defer resp.Body.Close()
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
-	if err != nil {
-		return err
-	}
-	dfw, err := d.Crypto.NewDecryptWriteCloser(file, job.Backup.Key, job.Backup.IV)
-	if err != nil {
-		return err
-	}
-	_, err = io.Copy(dfw, resp.Body)
-	if err != nil {
-		return err
-	}
-	return dfw.Close()
+	return d.Export(filePath, backupID, true, job, service)
 }
 
 func (d *SDb) TempDownloadURL(jobID string, service *models.Service) (*models.TempURL, error) {

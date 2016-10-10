@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -28,9 +29,11 @@ var client *http.Client
 func init() {
 	var tr = &http.Transport{
 		TLSClientConfig: &tls.Config{
-			MinVersion:         tls.VersionTLS12,
-			InsecureSkipVerify: true,
+			MinVersion: tls.VersionTLS12,
 		},
+	}
+	if skip, err := strconv.ParseBool(os.Getenv(config.SkipVerifyEnvVar)); err == nil && skip {
+		tr.TLSClientConfig.InsecureSkipVerify = true
 	}
 
 	client = &http.Client{

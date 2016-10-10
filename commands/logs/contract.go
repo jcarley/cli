@@ -11,7 +11,7 @@ import (
 	"github.com/catalyzeio/cli/lib/auth"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
-	"github.com/jawher/mow.cli"
+	"github.com/jault3/mow.cli"
 )
 
 // Cmd is the contract between the user and the CLI. This specifies the command
@@ -19,7 +19,13 @@ import (
 var Cmd = models.Command{
 	Name:      "logs",
 	ShortHelp: "Show the logs in your terminal streamed from your logging dashboard",
-	LongHelp:  "Show the logs in your terminal streamed from your logging dashboard",
+	LongHelp: "`logs` prints out your application logs directly from your logging Dashboard. " +
+		"If you do not see your logs, try adjusting the number of hours, minutes, or seconds of logs that are retrieved with the `--hours`, `--minutes`, and `--seconds` options respectively. " +
+		"You can also follow the logs with the `-f` option. " +
+		"When using `-f` all logs will be printed to the console within the given time frame as well as any new logs that are sent to the logging Dashboard for the duration of the command. " +
+		"When using the `-f` option, hit ctrl-c to stop. Here are some sample commands\n\n" +
+		"```\ncatalyze logs --hours=6 --minutes=30\n" +
+		"catalyze logs -f\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			query := cmd.StringArg("QUERY", "*", "The query to send to your logging dashboard's elastic search (regex is supported)")
@@ -49,6 +55,7 @@ var Cmd = models.Command{
 type ILogs interface {
 	Output(queryString, sessionToken, domain string, follow bool, hours, minutes, seconds, from int, startTimestamp time.Time, endTimestamp time.Time, env *models.Environment) (int, time.Time, error)
 	Stream(queryString, sessionToken, domain string, follow bool, hours, minutes, seconds, from int, timestamp time.Time, env *models.Environment) error
+	Watch(queryString, domain, sessionToken string) error
 }
 
 // SLogs is a concrete implementation of ILogs
