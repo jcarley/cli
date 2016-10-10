@@ -5,14 +5,16 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/lib/prompts"
+	"github.com/catalyzeio/cli/lib/transfer"
 	"github.com/catalyzeio/cli/models"
-	"github.com/tj/go-spin"
 )
 
 func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPrompts, is services.IServices, ij jobs.IJobs) error {
@@ -52,7 +54,7 @@ func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPr
 		return fmt.Errorf("Job finished with invalid status %s", job.Status)
 	}
 
-	err = id.Export(filePath, job, service)
+	err = id.Export(filePath, job.ID, false, job, service)
 	if err != nil {
 		return err
 	}
@@ -68,48 +70,74 @@ func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPr
 // data to the local machine. The export is accomplished by first creating a
 // backup. Once finished, the CLI asks where the file can be downloaded from.
 // The file is downloaded, decrypted, and saved locally.
-func (d *SDb) Export(filePath, downloadId string, isBackup bool, job *models.Job, service *models.Service) error {
-	spinner := spin.New()
-	done := make(chan struct{}, 1)
-	defer func() { done <- struct{}{} }()
-	go func() {
-		downloadType := "export"
-		if isBackup {
-			downloadType = "backup"
-		}
-		for {
-			select {
-			case <-time.After(100 * time.Millisecond):
-				fmt.Printf("\r\033[mDownloading %s %s. This may take awhile %s\033[m ", downloadType, downloadId, spinner.Next())
-			case <-done:
-				return
-			}
-		}
-	}()
-	tempURL, err := d.TempDownloadURL(downloadId, service)
+func (d *SDb) Export(filePath, downloadID string, isBackup bool, job *models.Job, service *models.Service) error {
+	tempURL, err := d.TempDownloadURL(downloadID, service)
 	if err != nil {
-		done <- struct{}{}
 		return err
 	}
 	resp, err := http.Get(tempURL.URL)
 	if err != nil {
-		done <- struct{}{}
 		return err
 	}
 	defer resp.Body.Close()
+	size, err := strconv.Atoi(resp.Header.Get("Content-Length"))
+	if err != nil {
+		return err
+	}
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 	if err != nil {
-		done <- struct{}{}
 		return err
 	}
 	dfw, err := d.Crypto.NewDecryptWriteCloser(file, job.Backup.Key, job.Backup.IV)
 	if err != nil {
-		done <- struct{}{}
 		return err
 	}
-	_, err = io.Copy(dfw, resp.Body)
+
+	wct := transfer.NewWriteCloserTransfer(dfw, size)
+	done := make(chan bool)
+	go printTransferStatus(true, wct, done)
+
+	_, err = io.Copy(wct, resp.Body)
 	if err != nil {
+		done <- false
 		return err
 	}
+	done <- true
 	return dfw.Close()
+}
+
+func printTransferStatus(isDownload bool, tr transfer.Transfer, done chan bool) {
+	action := "downloaded"
+	final := "Download"
+	status := "Finished"
+	if isDownload {
+		logrus.Println("Decrypting and Downloading...")
+	} else {
+		logrus.Println("Encrypting and Uploading...")
+		action = "uploaded"
+		final = "Upload"
+	}
+	lastLen := 0
+loop:
+	for i, l := tr.Transferred(), tr.Length(); i < l; i = tr.Transferred() {
+		select {
+		case d := <-done:
+			if !d {
+				status = "Failed"
+			}
+			break loop
+		case <-time.After(time.Millisecond * 100):
+			percent := uint64(i / l * 100)
+			s := fmt.Sprintf("\r\033[m\t%s of %s (%d%%) %s", i, l, percent, action)
+			fmt.Print(s)
+			sLen := len(s)
+			// this clears any dangling characters at the end with empty space
+			if sLen < lastLen {
+				fmt.Print(strings.Repeat(" ", lastLen-sLen))
+			} else {
+				lastLen = sLen
+			}
+		}
+	}
+	logrus.Printf("\n%s %s!\n", final, status)
 }
