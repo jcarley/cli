@@ -2,6 +2,7 @@ package redeploy
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/catalyzeio/cli/commands/environments"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/lib/auth"
@@ -31,7 +32,7 @@ var Cmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdRedeploy(*serviceName, jobs.New(settings), services.New(settings))
+				err := CmdRedeploy(settings.EnvironmentID, *serviceName, jobs.New(settings), services.New(settings), environments.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
