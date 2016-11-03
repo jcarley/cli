@@ -8,7 +8,7 @@ import (
 )
 
 func (j *SJobs) DeployRelease(releaseName, svcID string) error {
-	return j.Deploy(false, releaseName, "", svcID)
+	return j.Deploy(true, releaseName, "", svcID)
 }
 
 func (j *SJobs) DeployTarget(target, svcID string) error {
