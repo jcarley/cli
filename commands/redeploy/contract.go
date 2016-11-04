@@ -16,12 +16,15 @@ import (
 // name, arguments, and required/optional arguments and flags for the command.
 var Cmd = models.Command{
 	Name:      "redeploy",
-	ShortHelp: "Redeploy a service without having to do a git push",
+	ShortHelp: "Redeploy a service without having to do a git push. This will cause downtime for all redeploys (see the resources page for  more details).",
 	LongHelp: "`redeploy` deploys an identical copy of the given service. " +
 		"For code services, this avoids having to perform a code push. You skip the git push and the build. " +
-		"For service proxies, new instances simply replace the old ones. " +
-		"All other service types cannot be redeployed with this command. Here is a sample command\n\n" +
-		"```\ncatalyze redeploy app01\n```",
+		"For service proxies, new instances replace the old ones. " +
+		"All other service types cannot be redeployed with this command. " +
+		"For service proxy redeploys, there will be approximately 5 minutes of downtime. " +
+		"For code service redeploys, there will be approximately 30 seconds of downtime. " +
+		"Here is a sample command\n\n" +
+		"```\ncatalyze -E \"<your_env_alias>\" redeploy app01\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to redeploy (i.e. 'app01')")

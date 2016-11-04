@@ -41,7 +41,6 @@ func CmdDownload(svcName, fileName, output string, force bool, ifiles IFiles, is
 }
 
 func (f *SFiles) Retrieve(fileName string, svcID string) (*models.ServiceFile, error) {
-	var file models.ServiceFile
 	files, err := f.List(svcID)
 	if err != nil {
 		return nil, err
@@ -53,14 +52,15 @@ func (f *SFiles) Retrieve(fileName string, svcID string) (*models.ServiceFile, e
 			if err != nil {
 				return nil, err
 			}
+			var file models.ServiceFile
 			err = httpclient.ConvertResp(resp, statusCode, &file)
 			if err != nil {
 				return nil, err
 			}
-			break
+			return &file, nil
 		}
 	}
-	return &file, nil
+	return nil, nil
 }
 
 func (f *SFiles) Save(output string, force bool, file *models.ServiceFile) error {

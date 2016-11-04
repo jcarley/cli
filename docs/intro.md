@@ -34,7 +34,7 @@ If you don't set the `-E` flag, then the CLI takes the first environment you ass
 When you associate an environment from within a local git repo, you typically run the following command:
 
 ```
-catalyze associate "My Health Tech Company Production" app01
+catalyze -E "<your_env_alias>" associate "My Health Tech Company Production" app01
 ```
 
 Where `My Health Tech Company Production` is the name of your environment. However with the concept of [scope](#global-scope) and being able to specify which environment to use on a command by command basis with the `-E` global option, that is a lot to type! This is where environment aliases come in handy.
@@ -42,7 +42,7 @@ Where `My Health Tech Company Production` is the name of your environment. Howev
 When you associate an environment and you want to pick a shorter name to reference the environment by, simply add a `-a` flag to the command. Let's try the command again calling it `prod` this time:
 
 ```
-catalyze associate "My Health Tech Company Production" app01 -a prod
+catalyze -E "<your_env_alias>" associate "My Health Tech Company Production" app01 -a prod
 ```
 
 Now when you run the [associated](#associated) command, you will see the alias as well as the actual environment name.
