@@ -41,7 +41,7 @@ var CreateSubCmd = models.Command{
 		"```\ncatalyze certs create wildcard_mysitecom ~/path/to/cert.pem ~/path/to/priv.key\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
-			name := subCmd.StringArg("HOSTNAME", "", "The hostname of this domain and SSL certificate plus private key pair")
+			name := subCmd.StringArg("NAME", "", "The name of this SSL certificate plus private key pair")
 			pubKeyPath := subCmd.StringArg("PUBLIC_KEY_PATH", "", "The path to a public key file in PEM format")
 			privKeyPath := subCmd.StringArg("PRIVATE_KEY_PATH", "", "The path to an unencrypted private key file in PEM format")
 			selfSigned := subCmd.BoolOpt("s self-signed", false, "Whether or not the given SSL certificate and private key are self signed")
@@ -58,7 +58,7 @@ var CreateSubCmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "HOSTNAME PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r]"
+			subCmd.Spec = "NAME PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r]"
 		}
 	},
 }
@@ -121,7 +121,7 @@ var UpdateSubCmd = models.Command{
 		"```\ncatalyze certs update mywebsite.com ~/path/to/new/cert.pem ~/path/to/new/priv.key\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
-			name := subCmd.StringArg("HOSTNAME", "", "The hostname of this domain and SSL certificate and private key pair")
+			name := subCmd.StringArg("NAME", "", "The name of this SSL certificate and private key pair")
 			pubKeyPath := subCmd.StringArg("PUBLIC_KEY_PATH", "", "The path to a public key file in PEM format")
 			privKeyPath := subCmd.StringArg("PRIVATE_KEY_PATH", "", "The path to an unencrypted private key file in PEM format")
 			selfSigned := subCmd.BoolOpt("s self-signed", false, "Whether or not the given SSL certificate and private key are self signed")
@@ -138,7 +138,7 @@ var UpdateSubCmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "HOSTNAME PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r]"
+			subCmd.Spec = "NAME PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r]"
 		}
 	},
 }
