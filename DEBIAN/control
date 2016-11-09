@@ -1,0 +1,8 @@
+Package: catalyze
+Priority: extra
+Maintainer: Catalyze <support@catalyze.io>
+Section: devel
+Version: {{version}}
+Architecture: {{arch}}
+Description: Catalyze CLI
+Installed-Size: {{size}}
