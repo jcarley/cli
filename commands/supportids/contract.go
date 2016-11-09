@@ -14,7 +14,7 @@ var Cmd = models.Command{
 	LongHelp: "`support-ids` is helpful when contacting Catalyze support by sending an email to support@catalyze.io. " +
 		"If you are having an issue with a CLI command or anything with your environment, it is helpful to run this command and copy the output into the initial correspondence with a Catalyze engineer. " +
 		"This will help Catalyze identify the environment faster and help come to resolution faster. Here is a sample command\n\n" +
-		"```\ncatalyze support-ids\n```",
+		"```\ncatalyze -E \"<your_env_alias>\" support-ids\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

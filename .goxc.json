@@ -11,7 +11,7 @@
 	],
 	"BuildConstraints": "linux windows darwin",
 	"ResourcesExclude": "README*,LICENSE*",
-	"PackageVersion": "3.3.1",
+	"PackageVersion": "3.3.2",
 	"TaskSettings": {
 		"deb": {
 			"metadata": {

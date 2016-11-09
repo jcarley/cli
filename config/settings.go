@@ -60,10 +60,9 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authH
 		}
 	}
 
-	// if no default, fetch the first associated env and print warning
+	// if not given, try default. this is deprecated and will be removed soon
 	if settings.EnvironmentID == "" || settings.ServiceID == "" {
-		// warn and ask
-		setFirstAssociatedEnv(&settings)
+		setGivenEnv(settings.Default, &settings)
 	}
 
 	settings.AccountsHost = accountsHost
@@ -142,21 +141,6 @@ func setGivenEnv(envName string, settings *models.Settings) {
 			settings.OrgID = e.OrgID
 			break
 		}
-	}
-}
-
-// setFirstAssociatedEnv is the last line of defense. If no other environments
-// were found locally or from the default flag, then the first one in the list
-// of environments in the given settings object is used to populate
-// EnvironmentID and ServiceID with appropriate values.
-func setFirstAssociatedEnv(settings *models.Settings) {
-	for _, e := range settings.Environments {
-		settings.EnvironmentID = e.EnvironmentID
-		settings.ServiceID = e.ServiceID
-		settings.Pod = e.Pod
-		settings.EnvironmentName = e.Name
-		settings.OrgID = e.OrgID
-		break
 	}
 }
 

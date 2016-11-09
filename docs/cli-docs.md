@@ -34,7 +34,7 @@ If you don't set the `-E` flag, then the CLI takes the first environment you ass
 When you associate an environment from within a local git repo, you typically run the following command:
 
 ```
-catalyze associate "My Health Tech Company Production" app01
+catalyze -E "<your_env_alias>" associate "My Health Tech Company Production" app01
 ```
 
 Where `My Health Tech Company Production` is the name of your environment. However with the concept of [scope](#global-scope) and being able to specify which environment to use on a command by command basis with the `-E` global option, that is a lot to type! This is where environment aliases come in handy.
@@ -42,7 +42,7 @@ Where `My Health Tech Company Production` is the name of your environment. Howev
 When you associate an environment and you want to pick a shorter name to reference the environment by, simply add a `-a` flag to the command. Let's try the command again calling it `prod` this time:
 
 ```
-catalyze associate "My Health Tech Company Production" app01 -a prod
+catalyze -E "<your_env_alias>" associate "My Health Tech Company Production" app01 -a prod
 ```
 
 Now when you run the [associated](#associated) command, you will see the alias as well as the actual environment name.
@@ -101,7 +101,7 @@ Commands:
   logs	Show the logs in your terminal streamed from your logging dashboard
   metrics	Print service and environment metrics in your local time zone
   rake	Execute a rake task
-  redeploy	Redeploy a service without having to do a git push
+  redeploy	Redeploy a service without having to do a git push. This will cause downtime for all redeploys (see the resources page for  more details).
   releases	Manage releases for code services
   rollback	Rollback a code service to a specific release
   services	Perform operations on an environment's services
@@ -169,12 +169,12 @@ The `certs` command gives access to certificate and private key management for p
 
 ```
 
-Usage: catalyze certs create HOSTNAME PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r]
+Usage: catalyze certs create NAME PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r]
 
 Create a new domain with an SSL certificate and private key
 
 Arguments:
-  HOSTNAME=""           The hostname of this domain and SSL certificate plus private key pair
+  NAME=""               The name of this SSL certificate plus private key pair
   PUBLIC_KEY_PATH=""    The path to a public key file in PEM format
   PRIVATE_KEY_PATH=""   The path to an unencrypted private key file in PEM format
 
@@ -189,7 +189,7 @@ Options:
 The `HOSTNAME` for a certificate does not need to match the valid Subject of the actual SSL certificate nor does it need to match the `site` name used in the `sites create` command. The `HOSTNAME` is used for organizational purposes only and can be named anything with the exclusion of the following characters: `/`, `&`, `%`. Here is a sample command
 
 ```
-catalyze certs create wildcard_mysitecom ~/path/to/cert.pem ~/path/to/priv.key
+catalyze -E "<your_env_alias>" certs create wildcard_mysitecom ~/path/to/cert.pem ~/path/to/priv.key
 ```
 
 ## Certs List
@@ -205,7 +205,7 @@ List all existing domains that have SSL certificate and private key pairs
 `certs list` lists all of the available certs you have created on your environment. The displayed names are the names that should be used as the `DOMAIN` parameter in the [sites create](#sites-create) command. Here is a sample command
 
 ```
-catalyze certs list
+catalyze -E "<your_env_alias>" certs list
 ```
 
 ## Certs Rm
@@ -224,19 +224,19 @@ Arguments:
 `certs rm` allows you to delete old certificate and private key pairs. Only certs that are not in use by a site can be deleted. Here is a sample command
 
 ```
-catalyze certs rm mywebsite.com
+catalyze -E "<your_env_alias>" certs rm mywebsite.com
 ```
 
 ## Certs Update
 
 ```
 
-Usage: catalyze certs update HOSTNAME PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r]
+Usage: catalyze certs update NAME PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r]
 
 Update the SSL certificate and private key pair for an existing domain
 
 Arguments:
-  HOSTNAME=""           The hostname of this domain and SSL certificate and private key pair
+  NAME=""               The name of this SSL certificate and private key pair
   PUBLIC_KEY_PATH=""    The path to a public key file in PEM format
   PRIVATE_KEY_PATH=""   The path to an unencrypted private key file in PEM format
 
@@ -249,7 +249,7 @@ Options:
 `certs update` works nearly identical to the [certs create](#certs-create) command. All rules regarding self signed certs and certificate resolution from the `certs create` command apply to the `certs update` command. This is useful for when your certificates have expired and you need to upload new ones. Update your certs and then redeploy your service_proxy. Here is a sample command
 
 ```
-catalyze certs update mywebsite.com ~/path/to/new/cert.pem ~/path/to/new/priv.key
+catalyze -E "<your_env_alias>" certs update mywebsite.com ~/path/to/new/cert.pem ~/path/to/new/priv.key
 ```
 
 # Clear
@@ -295,8 +295,8 @@ Arguments:
 `console` gives you direct access to your database service or application shell. For example, if you open up a console to a postgres database, you will be given access to a psql prompt. You can also open up a mysql prompt, mongo cli prompt, rails console, django shell, and much more. When accessing a database service, the `COMMAND` argument is not needed because the appropriate prompt will be given to you. If you are connecting to an application service the `COMMAND` argument is required. Here are some sample commands
 
 ```
-catalyze console db01
-catalyze console app01 "bundle exec rails console"
+catalyze -E "<your_env_alias>" console db01
+catalyze -E "<your_env_alias>" console app01 "bundle exec rails console"
 ```
 
 # Dashboard
@@ -338,7 +338,7 @@ Options:
 `db backup` creates a new backup for the given database service. The backup is started and unless `-s` is specified, the CLI will poll every few seconds until it finishes. Regardless of a successful backup or not, the logs for the backup will be printed to the console when the backup is finished. If an error occurs and the logs are not printed, you can use the [db logs](#db-logs) command to print out historical backup job logs. Here is a sample command
 
 ```
-catalyze db backup db01
+catalyze -E "<your_env_alias>" db backup db01
 ```
 
 ## Db Download
@@ -362,13 +362,13 @@ Options:
 `db download` downloads a previously created backup to your local hard drive. Be careful using this command as it could download PHI. Be sure that all hard drive encryption and necessary precautions have been taken before performing a download. The ID of the backup is found by first running the [db list](#db-list) command. Here is a sample command
 
 ```
-catalyze db download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.sql
+catalyze -E "<your_env_alias>" db download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.sql
 ```
 
 This assumes you are downloading a MySQL or PostgreSQL backup which takes the `.sql` file format. If you are downloading a mongo backup, the command might look like this
 
 ```
-catalyze db download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.tar.gz
+catalyze -E "<your_env_alias>" db download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.tar.gz
 ```
 
 ## Db Export
@@ -391,13 +391,13 @@ Options:
 `db export` is a simple wrapper around the `db backup` and `db download` commands. When you request an export, a backup is created that will be added to the list of backups shown when you perform the [db list](#db-list) command. Then that backup is immediately downloaded. Regardless of a successful export or not, the logs for the backup will be printed to the console when the export is finished. If an error occurs and the logs are not printed, you can use the [db logs](#db-logs) command to print out historical backup job logs. Here is a sample command
 
 ```
-catalyze db export db01 ./dbexport.sql
+catalyze -E "<your_env_alias>" db export db01 ./dbexport.sql
 ```
 
 This assumes you are exporting a MySQL or PostgreSQL database which takes the `.sql` file format. If you are exporting a mongo database, the command might look like this
 
 ```
-catalyze db export db01 ./dbexport.tar.gz
+catalyze -E "<your_env_alias>" db export db01 ./dbexport.tar.gz
 ```
 
 ## Db Import
@@ -432,7 +432,7 @@ INSERT INTO mytable (id, val) values ('1', 'test');
 and stored it at `./db.sql` you could import this into your database service. When importing data into mongo, you may specify the database and collection to import into using the `-d` and `-c` flags respectively. Regardless of a successful import or not, the logs for the import will be printed to the console when the import is finished. Before an import takes place, your database is backed up automatically in case any issues arise. Here is a sample command
 
 ```
-catalyze db import db01 ./db.sql
+catalyze -E "<your_env_alias>" db import db01 ./db.sql
 ```
 
 ## Db List
@@ -455,7 +455,7 @@ Options:
 `db list` lists all previously created backups. After listing backups you can copy the backup ID and use it to [download](#db-download) that backup or [view the logs](#db-logs) from that backup. Here is a sample command
 
 ```
-catalyze db list db01
+catalyze -E "<your_env_alias>" db list db01
 ```
 
 ## Db Logs
@@ -475,7 +475,7 @@ Arguments:
 `db logs` allows you to view backup logs from historical backup jobs. You can find the backup ID from using the `db list` command. Here is a sample command
 
 ```
-catalyze db logs db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203
+catalyze -E "<your_env_alias>" db logs db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203
 ```
 
 # Default
@@ -521,7 +521,7 @@ Arguments:
 `deploy-keys add` allows you to upload an SSH public key in OpenSSH format. These keys are used for pushing code to your code services but are not required. You should be using personal SSH keys with the [keys](#keys) command unless you are pushing code from Continuous Integration or Continuous Deployment scenarios. Deploy keys are intended to be shared among an organization. Here are some sample commands
 
 ```
-catalyze deploy-keys add app01_public ~/.ssh/app01_rsa.pub app01
+catalyze -E "<your_env_alias>" deploy-keys add app01_public ~/.ssh/app01_rsa.pub app01
 ```
 
 ## Deploy-keys List
@@ -540,7 +540,7 @@ Arguments:
 `deploy-keys list` will list all of your previously uploaded deploy keys by name including the key's fingerprint in SHA256 format. Here is a sample command
 
 ```
-catalyze deploy-keys list app01
+catalyze -E "<your_env_alias>" deploy-keys list app01
 ```
 
 ## Deploy-keys Rm
@@ -560,7 +560,7 @@ Arguments:
 `deploy-keys rm` will remove a previously created deploy key by name. It is a good idea to rotate deploy keys on a set schedule as they are intended to be shared among an organization. Here are some sample commands
 
 ```
-catalyze deploy-keys rm app01_public app01
+catalyze -E "<your_env_alias>" deploy-keys rm app01_public app01
 ```
 
 # Disassociate
@@ -595,7 +595,7 @@ Print out the temporary domain name of the environment
 `domain` prints out the temporary domain name setup by Catalyze for an environment. This domain name typically takes the form podXXXXX.catalyzeapps.com but may vary based on the environment. Here is a sample command
 
 ```
-catalyze domain
+catalyze -E "<your_env_alias>" domain
 ```
 
 # Environments
@@ -636,7 +636,7 @@ Arguments:
 `environments rename` allows you to rename your environment. Here is a sample command
 
 ```
-catalyze environments rename MyNewEnvName
+catalyze -E "<your_env_alias>" environments rename MyNewEnvName
 ```
 
 # Files
@@ -664,7 +664,7 @@ Options:
 `files download` allows you to view the contents of a service file and save it to your local machine. Most service files are stored on your service_proxy and therefore you should not have to specify the `SERVICE_NAME` argument. Simply supply the `FILE_NAME` found from the [files list](#files-list) command and the contents of the file, as well as the permissions string, will be printed to your console. You can always store the file locally, applying the same permissions as those on the remote server, by specifying an output file with the `-o` flag. Here is a sample command
 
 ```
-catalyze files download /etc/nginx/sites-enabled/mywebsite.com
+catalyze -E "<your_env_alias>" files download /etc/nginx/sites-enabled/mywebsite.com
 ```
 
 ## Files List
@@ -683,7 +683,7 @@ Arguments:
 `files list` prints out a listing of all service files available for download. Nearly all service files are stored on the service_proxy and therefore you should not have to specify the `SERVICE_NAME` argument. Here is a sample command
 
 ```
-catalyze files list
+catalyze -E "<your_env_alias>" files list
 ```
 
 # Git-remote
@@ -709,7 +709,7 @@ Options:
 `git-remote add` adds the proper git remote to a local git repository with the given remote name and service. Here is a sample command
 
 ```
-catalyze git-remote add code-1 -r catalyze-code-1
+catalyze -E "<your_env_alias>" git-remote add code-1 -r catalyze-code-1
 ```
 
 ## Git-remote Show
@@ -728,7 +728,7 @@ Arguments:
 `git-remote show` prints out the git remote URL for the given service. This can be used to do a manual push or use the git remote for another purpose such as a CI integration. Here is a sample command
 
 ```
-catalyze git-remote show code-1
+catalyze -E "<your_env_alias>" git-remote show code-1
 ```
 
 # Invites
@@ -751,7 +751,7 @@ Arguments:
 `invites accept` is an alternative form of accepting an invitation sent by email. The invitation email you receive will have instructions as well as the invite code to use with this command. Here is a sample command
 
 ```
-catalyze invites accept 5a206aa8-04f4-4bc1-a017-ede7e6c7dbe2
+catalyze -E "<your_env_alias>" invites accept 5a206aa8-04f4-4bc1-a017-ede7e6c7dbe2
 ```
 
 ## Invites List
@@ -767,7 +767,7 @@ List all pending organization invitations
 `invites list` lists all pending invites for the associated environment's organization. Any invites that have already been accepted will not appear in this list. To manage users who have already accepted invitations or are already granted access to your environment, use the [users](#users) group of commands. Here is a sample command
 
 ```
-catalyze invites list
+catalyze -E "<your_env_alias>" invites list
 ```
 
 ## Invites Rm
@@ -786,7 +786,7 @@ Arguments:
 `invites rm` removes a pending invitation found by using the [invites list](#invites-list) command. Once an invite has already been accepted, it cannot be removed. Removing an invitation is helpful if an email was misspelled or an invitation was sent to an incorrect email address. If you want to revoke access to a user who already has been given access to your environment, use the [users rm](#users-rm) command. Here is a sample command
 
 ```
-catalyze invites rm 78b5d0ed-f71c-47f7-a4c8-6c8c58c29db1
+catalyze -E "<your_env_alias>" invites rm 78b5d0ed-f71c-47f7-a4c8-6c8c58c29db1
 ```
 
 ## Invites Send
@@ -809,7 +809,7 @@ Options:
 `invites send` invites a new user to your environment's organization. The only piece of information required is the email address to send the invitation to. The invited user will join the organization as a basic member, unless otherwise specified with the `-a` flag. The recipient does **not** need to have a Dashboard account in order to send them an invitation. However, they will need to have a Dashboard account to accept the invitation. Here is a sample command
 
 ```
-catalyze invites send coworker@catalyze.io -a
+catalyze -E "<your_env_alias>" invites send coworker@catalyze.io -a
 ```
 
 # Keys
@@ -929,8 +929,8 @@ Options:
 `logs` prints out your application logs directly from your logging Dashboard. If you do not see your logs, try adjusting the number of hours, minutes, or seconds of logs that are retrieved with the `--hours`, `--minutes`, and `--seconds` options respectively. You can also follow the logs with the `-f` option. When using `-f` all logs will be printed to the console within the given time frame as well as any new logs that are sent to the logging Dashboard for the duration of the command. When using the `-f` option, hit ctrl-c to stop. Here are some sample commands
 
 ```
-catalyze logs --hours=6 --minutes=30
-catalyze logs -f
+catalyze -E "<your_env_alias>" logs --hours=6 --minutes=30
+catalyze -E "<your_env_alias>" logs -f
 ```
 
 # Metrics
@@ -961,10 +961,10 @@ Options:
 `metrics cpu` prints out CPU metrics for your environment or individual services. You can print out metrics in csv, json, plain text, or spark lines format. If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. You can only stream metrics using plain text or spark lines formats. To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands
 
 ```
-catalyze metrics cpu
-catalyze metrics cpu app01 --stream
-catalyze metrics cpu --json
-catalyze metrics cpu db01 --csv -m 60
+catalyze -E "<your_env_alias>" metrics cpu
+catalyze -E "<your_env_alias>" metrics cpu app01 --stream
+catalyze -E "<your_env_alias>" metrics cpu --json
+catalyze -E "<your_env_alias>" metrics cpu db01 --csv -m 60
 ```
 
 ## Metrics Memory
@@ -991,10 +991,10 @@ Options:
 `metrics memory` prints out memory metrics for your environment or individual services. You can print out metrics in csv, json, plain text, or spark lines format. If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. You can only stream metrics using plain text or spark lines formats. To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands
 
 ```
-catalyze metrics memory
-catalyze metrics memory app01 --stream
-catalyze metrics memory --json
-catalyze metrics memory db01 --csv -m 60
+catalyze -E "<your_env_alias>" metrics memory
+catalyze -E "<your_env_alias>" metrics memory app01 --stream
+catalyze -E "<your_env_alias>" metrics memory --json
+catalyze -E "<your_env_alias>" metrics memory db01 --csv -m 60
 ```
 
 ## Metrics Network-in
@@ -1021,10 +1021,10 @@ Options:
 `metrics network-in` prints out received network metrics for your environment or individual services. You can print out metrics in csv, json, plain text, or spark lines format. If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. You can only stream metrics using plain text or spark lines formats. To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands
 
 ```
-catalyze metrics network-in
-catalyze metrics network-in app01 --stream
-catalyze metrics network-in --json
-catalyze metrics network-in db01 --csv -m 60
+catalyze -E "<your_env_alias>" metrics network-in
+catalyze -E "<your_env_alias>" metrics network-in app01 --stream
+catalyze -E "<your_env_alias>" metrics network-in --json
+catalyze -E "<your_env_alias>" metrics network-in db01 --csv -m 60
 ```
 
 ## Metrics Network-out
@@ -1051,10 +1051,10 @@ Options:
 `metrics network-out` prints out transmitted network metrics for your environment or individual services. You can print out metrics in csv, json, plain text, or spark lines format. If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. You can only stream metrics using plain text or spark lines formats. To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands
 
 ```
-catalyze metrics network-out
-catalyze metrics network-out app01 --stream
-catalyze metrics network-out --json
-catalyze metrics network-out db01 --csv -m 60
+catalyze -E "<your_env_alias>" metrics network-out
+catalyze -E "<your_env_alias>" metrics network-out app01 --stream
+catalyze -E "<your_env_alias>" metrics network-out --json
+catalyze -E "<your_env_alias>" metrics network-out db01 --csv -m 60
 ```
 
 # Rake
@@ -1074,7 +1074,7 @@ Arguments:
 `rake` executes a rake task by its name asynchronously. Once executed, the output of the task can be seen through your logging Dashboard. Here is a sample command
 
 ```
-catalyze rake code-1 db:migrate
+catalyze -E "<your_env_alias>" rake code-1 db:migrate
 ```
 
 # Redeploy
@@ -1083,17 +1083,17 @@ catalyze rake code-1 db:migrate
 
 Usage: catalyze redeploy SERVICE_NAME
 
-Redeploy a service without having to do a git push
+Redeploy a service without having to do a git push. This will cause downtime for all redeploys (see the resources page for  more details).
 
 Arguments:
   SERVICE_NAME=""   The name of the service to redeploy (i.e. 'app01')
 
 ```
 
-`redeploy` deploys an identical copy of the given service. For code services, this avoids having to perform a code push. You skip the git push and the build. For service proxies, new instances simply replace the old ones. All other service types cannot be redeployed with this command. Here is a sample command
+`redeploy` deploys an identical copy of the given service. For code services, this avoids having to perform a code push. You skip the git push and the build. For service proxies, new instances replace the old ones. All other service types cannot be redeployed with this command. For service proxy redeploys, there will be approximately 5 minutes of downtime. For code service redeploys, there will be approximately 30 seconds of downtime. Here is a sample command
 
 ```
-catalyze redeploy app01
+catalyze -E "<your_env_alias>" redeploy app01
 ```
 
 # Releases
@@ -1116,7 +1116,7 @@ Arguments:
 `releases list` lists all of the releases for a given service. A release is automatically created each time a git push is performed. Here is a sample command
 
 ```
-catalyze releases list code-1
+catalyze -E "<your_env_alias>" releases list code-1
 ```
 
 ## Releases Rm
@@ -1136,7 +1136,7 @@ Arguments:
 `releases rm` removes an existing release. This is useful in the case of a misbehaving code service. Removing the release avoids the risk of rolling back to a "bad" build. Here is a sample command
 
 ```
-catalyze releases rm code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883
+catalyze -E "<your_env_alias>" releases rm code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883
 ```
 
 ## Releases Update
@@ -1160,7 +1160,7 @@ Options:
 `releases update` allows you to rename or add notes to an existing release. By default, releases are named with the git SHA of the commit used to create the release. Renaming them allows you to organize your releases. Here is a sample command
 
 ```
-catalyze releases update code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883 --notes "This is a stable build" --release v1
+catalyze -E "<your_env_alias>" releases update code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883 --notes "This is a stable build" --release v1
 ```
 
 # Rollback
@@ -1180,7 +1180,7 @@ Arguments:
 `rollback` is a way to redeploy older versions of your code service. You must specify the name of the service to rollback and the name of an existing release to rollback to. Releases can be found with the [releases list](#releases-list) command. Here are some sample commands
 
 ```
-catalyze rollback code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883
+catalyze -E "<your_env_alias>" rollback code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883
 ```
 
 # Services
@@ -1200,7 +1200,7 @@ List all services for your environment
 `services list` prints out a list of all services in your environment and their sizes. The services will be printed regardless of their currently running state. To see which services are currently running and which are not, use the [status](#status) command. Here is a sample command
 
 ```
-catalyze services list
+catalyze -E "<your_env_alias>" services list
 ```
 
 ## Services Stop
@@ -1219,7 +1219,7 @@ Arguments:
 `services stop` shuts down all running instances of a given service. This is useful when performing maintenance and a service must be shutdown to perform that maintenance. Take caution when running this command as all instances of the service, all workers, all rake tasks, and all open console sessions will be stopped. Here is a sample command
 
 ```
-catalyze services stop code-1
+catalyze -E "<your_env_alias>" services stop code-1
 ```
 
 ## Services Rename
@@ -1239,7 +1239,7 @@ Arguments:
 `services rename` allows you to rename any service in your environment. Here is a sample command
 
 ```
-catalyze services rename code-1 api-svc
+catalyze -E "<your_env_alias>" services rename code-1 api-svc
 ```
 
 # Sites
@@ -1294,8 +1294,8 @@ proxy_set_header Connection "upgrade";
 Here are some sample commands
 
 ```
-catalyze sites create .mysite.com app01 wildcard_mysitecom
-catalyze sites create .mysite.com app01 wildcard_mysitecom --client-max-body-size 50 --enable-cors
+catalyze -E "<your_env_alias>" sites create .mysite.com app01 wildcard_mysitecom
+catalyze -E "<your_env_alias>" sites create .mysite.com app01 wildcard_mysitecom --client-max-body-size 50 --enable-cors
 ```
 
 ## Sites List
@@ -1311,7 +1311,7 @@ List details for all site configurations
 `sites list` lists all sites for the given environment. The names printed out can be used in the other sites commands. Here is a sample command
 
 ```
-catalyze sites list
+catalyze -E "<your_env_alias>" sites list
 ```
 
 ## Sites Rm
@@ -1330,7 +1330,7 @@ Arguments:
 `sites rm` allows you to remove a site by name. Since sites cannot be updated, if you want to change the name of a site, you must `rm` the site and then [create](#sites-create) it again. If you simply need to update your SSL certificates, you can use the [certs update](#certs-update) command on the cert instance used by the site in question. Here is a sample command
 
 ```
-catalyze sites rm mywebsite.com
+catalyze -E "<your_env_alias>" sites rm mywebsite.com
 ```
 
 ## Sites Show
@@ -1349,7 +1349,7 @@ Arguments:
 `sites show` will print out detailed information for a single site. The name of the site can be found from the [sites list](#sites-list) command. Here is a sample command
 
 ```
-catalyze sites show mywebsite.com
+catalyze -E "<your_env_alias>" sites show mywebsite.com
 ```
 
 # Ssl
@@ -1460,7 +1460,7 @@ Get quick readout of the current status of your associated environment and all o
 `status` will give a quick readout of your environment's health. This includes your environment name, environment ID, and for each service the name, size, build status, deploy status, and service ID. Here is a sample command
 
 ```
-catalyze status
+catalyze -E "<your_env_alias>" status
 ```
 
 # Support-ids
@@ -1476,7 +1476,7 @@ Print out various IDs related to your associated environment to be used when con
 `support-ids` is helpful when contacting Catalyze support by sending an email to support@catalyze.io. If you are having an issue with a CLI command or anything with your environment, it is helpful to run this command and copy the output into the initial correspondence with a Catalyze engineer. This will help Catalyze identify the environment faster and help come to resolution faster. Here is a sample command
 
 ```
-catalyze support-ids
+catalyze -E "<your_env_alias>" support-ids
 ```
 
 # Update
@@ -1512,7 +1512,7 @@ List all users who have access to the given organization
 `users list` shows every user that belongs to your environment's organization. Users who belong to your environment's organization may access to your environment's services and data depending on their role in the organization. Here is a sample command
 
 ```
-catalyze users list
+catalyze -E "<your_env_alias>" users list
 ```
 
 ## Users Rm
@@ -1531,7 +1531,7 @@ Arguments:
 `users rm` revokes a users access to your environment's organization. Revoking a user's access to your environment's organization will revoke their access to your organization's environments. Here is a sample command
 
 ```
-catalyze users rm user@example.com
+catalyze -E "<your_env_alias>" users rm user@example.com
 ```
 
 # Vars
@@ -1558,8 +1558,8 @@ Options:
 `vars list` prints out all known environment variables for the given code service. You can print out environment variables in JSON or YAML format through the `--json` or `--yaml` flags. Here are some sample commands
 
 ```
-catalyze vars list code-1
-catalyze vars list code-1 --json
+catalyze -E "<your_env_alias>" vars list code-1
+catalyze -E "<your_env_alias>" vars list code-1 --json
 ```
 
 ## Vars Set
@@ -1581,7 +1581,7 @@ Options:
 `vars set` allows you to add new environment variables or update the value of an existing environment variable on the given code service. You can set/update 1 or more environment variables at a time with this command by repeating the `-v` option multiple times. Once new environment variables are added or values updated, a [redeploy](#redeploy) is required for the given code service to have access to the new values. The environment variables must be of the form `<key>=<value>`. Here is a sample command
 
 ```
-catalyze vars set code-1 -v AWS_ACCESS_KEY_ID=1234 -v AWS_SECRET_ACCESS_KEY=5678
+catalyze -E "<your_env_alias>" vars set code-1 -v AWS_ACCESS_KEY_ID=1234 -v AWS_SECRET_ACCESS_KEY=5678
 ```
 
 ## Vars Unset
@@ -1601,7 +1601,7 @@ Arguments:
 `vars unset` removes an environment variables from the given code service. Only the environment variable name is required to unset. Once environment variables are unset, a [redeploy](#redeploy) is required for the given code service to realize the variable was removed. Here is a sample command
 
 ```
-catalyze vars unset code-1 AWS_ACCESS_KEY_ID
+catalyze -E "<your_env_alias>" vars unset code-1 AWS_ACCESS_KEY_ID
 ```
 
 # Version
@@ -1659,7 +1659,7 @@ Arguments:
 `worker deploy` allows you to start a background process asynchronously. The TARGET must be specified in your Procfile. Once the worker is started, any output can be found in your logging Dashboard or using the [logs](#logs) command. Here is a sample command
 
 ```
-catalyze worker deploy code-1 mailer
+catalyze -E "<your_env_alias>" worker deploy code-1 mailer
 ```
 
 ## Worker List
@@ -1678,7 +1678,7 @@ Arguments:
 `worker list` lists all workers and their scale for a given code service along with the number of currently running instances of each worker target. Here is a sample command
 
 ```
-catalyze worker list code-1
+catalyze -E "<your_env_alias>" worker list code-1
 ```
 
 ## Worker Rm
@@ -1698,7 +1698,7 @@ Arguments:
 `worker rm` removes a worker by the given TARGET and stops all currently running instances of that TARGET. Here is a sample command
 
 ```
-catalyze worker rm code-1 mailer
+catalyze -E "<your_env_alias>" worker rm code-1 mailer
 ```
 
 ## Worker Scale
@@ -1719,7 +1719,7 @@ Arguments:
 `worker scale` allows you to scale up or down a given worker TARGET. Scaling up will launch new instances of the worker TARGET while scaling down will immediately stop running instances of the worker TARGET if applicable. Here are some sample commands
 
 ```
-catalyze worker scale code-1 mailer 1
-catalyze worker scale code-1 mailer -- -2
+catalyze -E "<your_env_alias>" worker scale code-1 mailer 1
+catalyze -E "<your_env_alias>" worker scale code-1 mailer -- -2
 ```
 

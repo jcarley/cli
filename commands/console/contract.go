@@ -21,8 +21,8 @@ var Cmd = models.Command{
 		"You can also open up a mysql prompt, mongo cli prompt, rails console, django shell, and much more. " +
 		"When accessing a database service, the `COMMAND` argument is not needed because the appropriate prompt will be given to you. " +
 		"If you are connecting to an application service the `COMMAND` argument is required. Here are some sample commands\n\n" +
-		"```\ncatalyze console db01\n" +
-		"catalyze console app01 \"bundle exec rails console\"\n```",
+		"```\ncatalyze -E \"<your_env_alias>\" console db01\n" +
+		"catalyze -E \"<your_env_alias>\" console app01 \"bundle exec rails console\"\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to open up a console for")
