@@ -16,7 +16,7 @@ import (
 // name, arguments, and required/optional arguments and flags for the command.
 var Cmd = models.Command{
 	Name:      "redeploy",
-	ShortHelp: "Redeploy a service without having to do a git push. This will cause downtime for all redeploys (see the resources page for  more details).",
+	ShortHelp: "Redeploy a service without having to do a git push. This will cause downtime for all redeploys (see the resources page for more details).",
 	LongHelp: "`redeploy` deploys an identical copy of the given service. " +
 		"For code services, this avoids having to perform a code push. You skip the git push and the build. " +
 		"For service proxies, new instances replace the old ones. " +

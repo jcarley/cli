@@ -101,7 +101,7 @@ Commands:
   logs	Show the logs in your terminal streamed from your logging dashboard
   metrics	Print service and environment metrics in your local time zone
   rake	Execute a rake task
-  redeploy	Redeploy a service without having to do a git push. This will cause downtime for all redeploys (see the resources page for  more details).
+  redeploy	Redeploy a service without having to do a git push. This will cause downtime for all redeploys (see the resources page for more details).
   releases	Manage releases for code services
   rollback	Rollback a code service to a specific release
   services	Perform operations on an environment's services
@@ -1083,7 +1083,7 @@ catalyze -E "<your_env_alias>" rake code-1 db:migrate
 
 Usage: catalyze redeploy SERVICE_NAME
 
-Redeploy a service without having to do a git push. This will cause downtime for all redeploys (see the resources page for  more details).
+Redeploy a service without having to do a git push. This will cause downtime for all redeploys (see the resources page for more details).
 
 Arguments:
   SERVICE_NAME=""   The name of the service to redeploy (i.e. 'app01')
