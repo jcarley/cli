@@ -94,10 +94,6 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authH
 	logrus.Debugf("Service ID: %s", settings.ServiceID)
 	logrus.Debugf("Org ID: %s", settings.OrgID)
 
-	if len(settings.Environments) > 0 && (settings.Pod == "" || settings.OrgID == "") {
-		logrus.Warnln("Your Stratum CLI is incorrectly configured. Please logout and then reassociate to all of your environments by running 'catalyze logout' and 'catalyze associate ENV_NAME SVC_NAME'")
-	}
-
 	settings.Version = VERSION
 	return &settings
 }
@@ -176,6 +172,9 @@ func CheckRequiredAssociation(required, prompt bool, settings *models.Settings) 
 		if prompt {
 			for _, e := range settings.Environments {
 				err = defaultEnvPrompt(e.Name)
+				if err != nil {
+					setGivenEnv(e.Name, settings)
+				}
 				break
 			}
 		}
