@@ -15,8 +15,9 @@ import (
 )
 
 func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia IAssociate, ig git.IGit, ie environments.IEnvironments, is services.IServices) error {
-	logrus.Warnln("The \"--default\" flag has been deprecated! It will be removed in a future version.")
-	logrus.Warnln("Please specify \"-E\" on all commands instead of using the default.")
+	if defaultEnv {
+		logrus.Warnln("The \"--default\" flag has been deprecated! It will be removed in a future version.")
+	}
 	if !ig.Exists() {
 		return errors.New("No git repo found in the current directory")
 	}
