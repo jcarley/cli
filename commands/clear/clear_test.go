@@ -15,7 +15,7 @@ const (
 
 var settings = models.Settings{
 	OrgID:          "org1234",
-	PrivateKeyPath: "~/key",
+	PrivateKeyPath: "",
 	SessionToken:   "1234",
 	UsersID:        "user1234",
 	Environments: map[string]models.AssociatedEnv{
