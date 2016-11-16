@@ -172,7 +172,7 @@ func CheckRequiredAssociation(required, prompt bool, settings *models.Settings) 
 		if prompt {
 			for _, e := range settings.Environments {
 				err = defaultEnvPrompt(e.Name)
-				if err != nil {
+				if err == nil {
 					setGivenEnv(e.Name, settings)
 				}
 				break
