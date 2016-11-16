@@ -130,14 +130,12 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	c := make(chan os.Signal, 1)
 	// "done" is used below to cancel printing the download status
 	done := make(chan bool)
-	signal.Notify(c, os.Interrupt, os.Interrupt)
+	signal.Notify(c, os.Interrupt)
 	go func() {
 		<-c
 		done <- false
 		rt.KillTransfer()
-		go logrus.Println("\nRevoking temporary upload credentials for your data's protection...")
 		d.revokeAuth(service, tmpAuth)
-		os.Exit(1)
 	}()
 
 	uploader := s3manager.NewUploader(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.NewStaticCredentials(tmpAuth.AccessKeyID, tmpAuth.SecretAccessKey, tmpAuth.SessionToken)}))
@@ -182,13 +180,10 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	return &job, nil
 }
 
-func (d *SDb) revokeAuth(service *models.Service, tmpAuth *models.TempAuth) error {
+func (d *SDb) revokeAuth(service *models.Service, tmpAuth *models.TempAuth) {
 	if err := d.RevokeTempUploadAuth(service, tmpAuth.UserID); err != nil {
-		logrus.Printf("Revocation of user id, %s, failed: %v\n", tmpAuth.UserID, err)
-		logrus.Println("Please report the above error to Catalyze Support.")
-		return err
+		logrus.Printf("Failed to cleanup after uploading your encrypted file: %s", err)
 	}
-	return nil
 }
 
 func (d *SDb) TempUploadAuth(service *models.Service) (*models.TempAuth, error) {
@@ -207,12 +202,12 @@ func (d *SDb) TempUploadAuth(service *models.Service) (*models.TempAuth, error) 
 
 func (d *SDb) RevokeTempUploadAuth(service *models.Service, userID string) error {
 	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
-	_, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/revoke-temp-auth?user_id=%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID, url.QueryEscape(userID)), headers)
+	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/revoke-temp-auth?user_id=%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID, url.QueryEscape(userID)), headers)
 	if err != nil {
 		return err
 	}
 	if statusCode < 200 || statusCode >= 300 {
-		return fmt.Errorf("revoke route failed with status code: %d", statusCode)
+		return httpclient.ConvertResp(resp, statusCode, nil)
 	}
 	return nil
 }

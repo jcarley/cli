@@ -54,7 +54,7 @@ func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPr
 		return fmt.Errorf("Job finished with invalid status %s", job.Status)
 	}
 
-	err = id.Export(filePath, job.ID, false, job, service)
+	err = id.Export(filePath, job.ID, job, service)
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPr
 // data to the local machine. The export is accomplished by first creating a
 // backup. Once finished, the CLI asks where the file can be downloaded from.
 // The file is downloaded, decrypted, and saved locally.
-func (d *SDb) Export(filePath, downloadID string, isBackup bool, job *models.Job, service *models.Service) error {
+func (d *SDb) Export(filePath, downloadID string, job *models.Job, service *models.Service) error {
 	tempURL, err := d.TempDownloadURL(downloadID, service)
 	if err != nil {
 		return err

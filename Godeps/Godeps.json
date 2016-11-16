@@ -129,18 +129,13 @@
 			"Comment": "v1.1.6-3-g0bd49bf",
 			"Rev": "0bd49bf38f0396818638e27de5c73eee6e66012d"
 		},
-	    	{
-			"ImportPath": "github.com/aws/aws-sdk-go/service/s3/s3manager",
-			"Comment": "v1.1.6-3-g0bd49bf",
-			"Rev": "0bd49bf38f0396818638e27de5c73eee6e66012d"
-		},
 		{
-			"ImportPath": "github.com/bugsnag/osext",
+			"ImportPath": "github.com/aws/aws-sdk-go/service/s3/s3manager",
 			"Rev": "0dd3f918b21bec95ace9dc86c7e70266cfc5c702"
 		},
 		{
 			"ImportPath": "github.com/catalyzeio/gcm/gcm",
-			"Rev": "b7b1901777a2eb87afdedb8858ad30e1abd63200"
+			"Rev": "380bb1925bb96de540e745dfeba12fd6c3fd21f8"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/term",
@@ -211,11 +206,6 @@
 		{
 			"ImportPath": "github.com/skratchdot/open-golang/open",
 			"Rev": "c8748311a7528d0ba7330d302adbc5a677ef9c9e"
-		},
-		{
-			"ImportPath": "github.com/tj/go-spin",
-			"Comment": "1.0.0-14-g8667629",
-			"Rev": "866762925be273d8db6a8b816f359ca41d61bcdb"
 		},
 		{
 			"ImportPath": "github.com/zakjan/cert-chain-resolver/certUtil",
