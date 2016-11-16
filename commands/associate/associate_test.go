@@ -1,170 +1,77 @@
 package associate
 
-/*const validEnvName = "env"
-const invalidEnvName = "badEnv"
+import (
+	"strings"
+	"testing"
 
-const validAppName = "app01"
-const invalidAppName = "badApp"
+	"github.com/catalyzeio/cli/test"
+)
 
-type MEnvironments models.Environment
-
-func (m *MEnvironments) List() (*[]models.Environment, error) {
-	return &[]models.Environment{
-		models.Environment{
-			ID:        m.ID,
-			Name:      m.Name,
-			Pod:       m.Pod,
-			Namespace: m.Namespace,
-			OrgID:     m.OrgID,
-		},
-	}, nil
-}
-
-func (m *MEnvironments) Retrieve(envID string) (*models.Environment, error) {
-	envs, _ := m.List()
-	return &(*envs)[0], nil
-}
-
-type MServices models.Service
-
-func (m *MServices) List() (*[]models.Service, error) {
-	return &[]models.Service{
-		models.Service{
-			ID:      m.ID,
-			Type:    m.Type,
-			Label:   m.Label,
-			Size:    m.Size,
-			Name:    m.Name,
-			EnvVars: m.EnvVars,
-			Source:  m.Source,
-			LBIP:    m.LBIP,
-		},
-	}, nil
-}
-
-func (m *MServices) ListByEnvID(envID, podID string) (*[]models.Service, error) {
-	return m.List()
-}
-
-func (m *MServices) Retrieve(svcID string) (*models.Service, error) {
-	svcs, _ := m.List()
-	svc := (*svcs)[0]
-	svc.ID = svcID
-	return &svc, nil
-}
-
-func (m *MServices) RetrieveByLabel(label string) (*models.Service, error) {
-	svcs, _ := m.List()
-	svc := (*svcs)[0]
-	svc.Label = label
-	return &svc, nil
-}
+const (
+	commandName    = "associate"
+	standardOutput = `Existing git remotes named "catalyze" will be overwritten
+"catalyze" remote added.
+Your git repository "catalyze" has been associated with code service "code-1" and environment "ctest"
+After associating to an environment, you need to add a cert with the "catalyze certs create" command, if you have not done so already
+`
+)
 
 var associateTests = []struct {
-	envLabel      string
-	svcLabel      string
-	alias         string
-	remote        string
-	defaultEnv    bool
-	createGitRepo bool
-	expectErr     bool
+	envLabel       string
+	svcLabel       string
+	alias          string
+	remote         string
+	defaultEnv     bool
+	expectErr      bool
+	expectedOutput string
 }{
-	{validEnvName, validAppName, "e", "", false, true, false},
-	{validEnvName, validAppName, "e", "", true, true, false},
-	{validEnvName, validAppName, "e", "ctlyz", false, true, false},
-	{validEnvName, validAppName, "", "", false, true, false},
-	{validEnvName, invalidAppName, "e", "", false, true, true},
-	{invalidEnvName, validAppName, "e", "", false, true, true},
-	{validEnvName, validAppName, "e", "", false, false, true},
+	{test.EnvLabel, test.SvcLabel, test.Alias, "", false, false, standardOutput},
+	{"bad-env", test.SvcLabel, test.Alias, "", false, true, "Existing git remotes named \"catalyze\" will be overwritten\n\033[31m\033[1m[fatal] \033[0mNo environment with name \"bad-env\" found\n"},
+	{test.EnvLabel, "bad-svc", test.Alias, "", false, true, "Existing git remotes named \"catalyze\" will be overwritten\n\033[31m\033[1m[fatal] \033[0mNo code service found with label \"bad-svc\". Code services found: code-1\n"},
+	{test.EnvLabel, test.SvcLabel, "", "", false, false, "Existing git remotes named \"catalyze\" will be overwritten\n\"catalyze\" remote added.\nYour git repository \"catalyze\" has been associated with code service \"code-1\" and environment \"cli-integration-tests\"\nAfter associating to an environment, you need to add a cert with the \"catalyze certs create\" command, if you have not done so already\n"},
+	{test.EnvLabel, test.SvcLabel, test.Alias, "cz", false, false, "Existing git remotes named \"cz\" will be overwritten\n\"cz\" remote added.\nYour git repository \"cz\" has been associated with code service \"code-1\" and environment \"ctest\"\nAfter associating to an environment, you need to add a cert with the \"catalyze certs create\" command, if you have not done so already\n"},
+	{test.EnvLabel, test.SvcLabel, test.Alias, "", true, false, "\033[33m\033[1m[warning] \033[0mThe \"--default\" flag has been deprecated! It will be removed in a future version.\n" + standardOutput},
+	{"", test.SvcLabel, test.Alias, "", false, true, "Existing git remotes named \"catalyze\" will be overwritten\n\033[31m\033[1m[fatal] \033[0mNo environment with name \"\" found\n"},
+	{test.EnvLabel, "", test.Alias, "", false, true, "Existing git remotes named \"catalyze\" will be overwritten\n\033[31m\033[1m[fatal] \033[0mNo code service found with label \"\". Code services found: code-1\n"},
 }
 
 func TestAssociate(t *testing.T) {
+	if err := test.SetUpGitRepo(); err != nil {
+		t.Error(err)
+		t.Fail()
+	}
 	for _, data := range associateTests {
-		t.Logf("%+v\n", data)
-		createGitRepo(data.envLabel, data.createGitRepo)
+		t.Logf("Data: %+v", data)
+		args := []string{commandName, data.envLabel, data.svcLabel}
+		if len(data.alias) != 0 {
+			args = append(args, "-a", data.alias)
+		}
+		expectedRemote := "catalyze"
+		if len(data.remote) != 0 {
+			expectedRemote = data.remote
+			args = append(args, "-r", data.remote)
+		}
+		if data.defaultEnv {
+			args = append(args, "-d")
+		}
 
-		settings := getSettings()
-		mockEnvs := MEnvironments{
-			Name:  data.envLabel,
-			Pod:   settings.Pod,
-			OrgID: settings.OrgID,
-		}
-		mockSvcs := MServices{
-			Type:  "code",
-			Label: data.svcLabel,
-			Name:  "code",
-		}
-		err := CmdAssociate(data.envLabel, data.svcLabel, data.alias, data.remote, data.defaultEnv, New(settings), git.New(), &mockEnvs, &mockSvcs)
+		output, err := test.RunCommand(test.BinaryName, args)
 		if err != nil != data.expectErr {
-			t.Errorf("Unexpected error: %s\n", err.Error())
+			t.Errorf("Unexpected error: %s", output)
+			continue
 		}
-		name := data.alias
-		if name == "" {
-			name = data.envLabel
+		if output != data.expectedOutput {
+			t.Errorf("Expected: %v. Found: %v", data.expectedOutput, output)
+			continue
 		}
-
-		found := false
-		for _, env := range settings.Environments {
-			if env.Name == name {
-				found = true
-				break
-			}
-		}
-		if !found {
-			t.Error("Environment not added to the settings list of environments or the alias was not used")
-		}
-		if data.defaultEnv && settings.Default != name {
-			t.Error("Default environment specified but was not stored in the settings")
-		}
-
-		expectedRemote := data.remote
-		if expectedRemote == "" {
-			expectedRemote = "catalyze"
-		}
-		remotes, err := git.New().List()
+		output, err = test.RunCommand("git", []string{"remote", "-v"})
 		if err != nil {
-			t.Errorf("Error listing git remotes: %s\n", err.Error())
+			t.Errorf("Unexpected error running 'git remote -v': %s", output)
+			continue
 		}
-		found = false
-		for _, r := range remotes {
-			if r == expectedRemote {
-				found = true
-			}
+		if !strings.Contains(output, expectedRemote) {
+			t.Errorf("Git remote not added. Expected: %s. Found %s", expectedRemote, output)
+			continue
 		}
-		if !found {
-			t.Errorf("Proper git remote not listed. Found '%+v' instead\n", remotes)
-		}
-
-		destroyGitRepo(data.envLabel)
 	}
 }
-
-func getSettings() *models.Settings {
-	return &models.Settings{
-		AuthHost:        config.AuthHost,
-		PaasHost:        config.PaasHost,
-		AuthHostVersion: "",
-		PaasHostVersion: "",
-		Version:         "dev",
-		Username:        "test",
-		Password:        "test",
-		EnvironmentID:   "1234",
-		ServiceID:       "5678",
-		Pod:             "pod01",
-		EnvironmentName: validEnvName,
-		OrgID:           "192837465",
-		SessionToken:    "1234567890",
-		UsersID:         "0987654321",
-		Environments:    make(map[string]models.AssociatedEnv, 0),
-		Default:         "",
-		Pods:            &[]models.Pod{},
-	}
-}
-
-func createGitRepo(name string, create bool) {
-
-}
-
-func destroyGitRepo(name string) {
-
-}*/

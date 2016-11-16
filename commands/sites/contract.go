@@ -55,8 +55,8 @@ var CreateSubCmd = models.Command{
 		"proxy_set_header Upgrade $http_upgrade;\n" +
 		"proxy_set_header Connection \"upgrade\";\n```\n\n" +
 		"Here are some sample commands\n\n" +
-		"```\ncatalyze sites create .mysite.com app01 wildcard_mysitecom\n" +
-		"catalyze sites create .mysite.com app01 wildcard_mysitecom --client-max-body-size 50 --enable-cors\n```",
+		"```\ncatalyze -E \"<your_env_alias>\" sites create .mysite.com app01 wildcard_mysitecom\n" +
+		"catalyze -E \"<your_env_alias>\" sites create .mysite.com app01 wildcard_mysitecom --client-max-body-size 50 --enable-cors\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("SITE_NAME", "", "The name of the site to be created. This will be used in this site's nginx configuration file (i.e. \".example.com\")")
@@ -91,7 +91,7 @@ var ListSubCmd = models.Command{
 	ShortHelp: "List details for all site configurations",
 	LongHelp: "`sites list` lists all sites for the given environment. " +
 		"The names printed out can be used in the other sites commands. Here is a sample command\n\n" +
-		"```\ncatalyze sites list\n```",
+		"```\ncatalyze -E \"<your_env_alias>\" sites list\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
@@ -117,7 +117,7 @@ var RmSubCmd = models.Command{
 		"Since sites cannot be updated, if you want to change the name of a site, you must `rm` the site and then [create](#sites-create) it again. " +
 		"If you simply need to update your SSL certificates, you can use the [certs update](#certs-update) command on the cert instance used by the site in question. " +
 		"Here is a sample command\n\n" +
-		"```\ncatalyze sites rm mywebsite.com\n```",
+		"```\ncatalyze -E \"<your_env_alias>\" sites rm mywebsite.com\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of the site configuration to delete")
@@ -143,7 +143,7 @@ var ShowSubCmd = models.Command{
 	ShortHelp: "Shows the details for a given site",
 	LongHelp: "`sites show` will print out detailed information for a single site. " +
 		"The name of the site can be found from the [sites list](#sites-list) command. Here is a sample command\n\n" +
-		"```\ncatalyze sites show mywebsite.com\n```",
+		"```\ncatalyze -E \"<your_env_alias>\" sites show mywebsite.com\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of the site configuration to show")

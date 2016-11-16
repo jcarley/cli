@@ -28,7 +28,7 @@ func CmdCreate(hostname, pubKeyPath, privKeyPath string, selfSigned, resolve boo
 	err := issl.Verify(pubKeyPath, privKeyPath, hostname, selfSigned)
 	var pubKeyBytes []byte
 	var privKeyBytes []byte
-	if err != nil {
+	if err != nil && !ssl.IsHostnameMismatchErr(err) {
 		if ssl.IsIncompleteChainErr(err) && resolve {
 			pubKeyBytes, err = issl.Resolve(pubKeyPath)
 			if err != nil {

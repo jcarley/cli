@@ -20,7 +20,7 @@ var Cmd = models.Command{
 	LongHelp: "`status` will give a quick readout of your environment's health. " +
 		"This includes your environment name, environment ID, and for each service the name, size, build status, deploy status, and service ID. " +
 		"Here is a sample command\n\n" +
-		"```\ncatalyze status\n```",
+		"```\ncatalyze -E \"<your_env_alias>\" status\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

@@ -9,7 +9,7 @@ import (
 
 const (
 	// VERSION is the current cli version
-	VERSION = "3.3.0"
+	VERSION = "3.3.3"
 	// Beta determines whether or not this is a beta build of the CLI
 	Beta = false
 	// AccountsHost is the production accounts URL
