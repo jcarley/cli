@@ -9,7 +9,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/models"
 )
@@ -92,13 +91,13 @@ func (d *SDb) DumpLogs(taskType string, job *models.Job, service *models.Service
 }
 
 func (d *SDb) TempLogsURL(jobID string, serviceID string) (*models.TempURL, error) {
-	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/backup-restore-logs-url/%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, serviceID, jobID), headers)
+	headers := d.Settings.HTTPManager.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
+	resp, statusCode, err := d.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/backup-restore-logs-url/%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, serviceID, jobID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var tempURL models.TempURL
-	err = httpclient.ConvertResp(resp, statusCode, &tempURL)
+	err = d.Settings.HTTPManager.ConvertResp(resp, statusCode, &tempURL)
 	if err != nil {
 		return nil, err
 	}

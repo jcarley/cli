@@ -8,7 +8,6 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
 
@@ -43,10 +42,10 @@ func (r *SReleases) Update(releaseName, svcID, notes, newReleaseName string) err
 	if err != nil {
 		return err
 	}
-	headers := httpclient.GetHeaders(r.Settings.SessionToken, r.Settings.Version, r.Settings.Pod, r.Settings.UsersID)
-	resp, statusCode, err := httpclient.Put(b, fmt.Sprintf("%s%s/environments/%s/services/%s/releases/%s", r.Settings.PaasHost, r.Settings.PaasHostVersion, r.Settings.EnvironmentID, svcID, releaseName), headers)
+	headers := r.Settings.HTTPManager.GetHeaders(r.Settings.SessionToken, r.Settings.Version, r.Settings.Pod, r.Settings.UsersID)
+	resp, statusCode, err := r.Settings.HTTPManager.Put(b, fmt.Sprintf("%s%s/environments/%s/services/%s/releases/%s", r.Settings.PaasHost, r.Settings.PaasHostVersion, r.Settings.EnvironmentID, svcID, releaseName), headers)
 	if err != nil {
 		return err
 	}
-	return httpclient.ConvertResp(resp, statusCode, nil)
+	return r.Settings.HTTPManager.ConvertResp(resp, statusCode, nil)
 }

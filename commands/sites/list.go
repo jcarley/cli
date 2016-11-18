@@ -5,7 +5,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/olekukonko/tablewriter"
 )
@@ -46,13 +45,13 @@ func CmdList(is ISites, iservices services.IServices) error {
 }
 
 func (s *SSites) List(svcID string) (*[]models.Site, error) {
-	headers := httpclient.GetHeaders(s.Settings.SessionToken, s.Settings.Version, s.Settings.Pod, s.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/sites", s.Settings.PaasHost, s.Settings.PaasHostVersion, s.Settings.EnvironmentID, svcID), headers)
+	headers := s.Settings.HTTPManager.GetHeaders(s.Settings.SessionToken, s.Settings.Version, s.Settings.Pod, s.Settings.UsersID)
+	resp, statusCode, err := s.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/sites", s.Settings.PaasHost, s.Settings.PaasHostVersion, s.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var sites []models.Site
-	err = httpclient.ConvertResp(resp, statusCode, &sites)
+	err = s.Settings.HTTPManager.ConvertResp(resp, statusCode, &sites)
 	if err != nil {
 		return nil, err
 	}

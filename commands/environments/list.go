@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
 
@@ -31,14 +30,14 @@ func (e *SEnvironments) List() (*[]models.Environment, map[string]error) {
 	allEnvs := []models.Environment{}
 	errs := map[string]error{}
 	for _, pod := range *e.Settings.Pods {
-		headers := httpclient.GetHeaders(e.Settings.SessionToken, e.Settings.Version, pod.Name, e.Settings.UsersID)
-		resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments", e.Settings.PaasHost, e.Settings.PaasHostVersion), headers)
+		headers := e.Settings.HTTPManager.GetHeaders(e.Settings.SessionToken, e.Settings.Version, pod.Name, e.Settings.UsersID)
+		resp, statusCode, err := e.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments", e.Settings.PaasHost, e.Settings.PaasHostVersion), headers)
 		if err != nil {
 			errs[pod.Name] = err
 			continue
 		}
 		var envs []models.Environment
-		err = httpclient.ConvertResp(resp, statusCode, &envs)
+		err = e.Settings.HTTPManager.ConvertResp(resp, statusCode, &envs)
 		if err != nil {
 			errs[pod.Name] = err
 			continue
@@ -52,13 +51,13 @@ func (e *SEnvironments) List() (*[]models.Environment, map[string]error) {
 }
 
 func (e *SEnvironments) Retrieve(envID string) (*models.Environment, error) {
-	headers := httpclient.GetHeaders(e.Settings.SessionToken, e.Settings.Version, e.Settings.Pod, e.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s", e.Settings.PaasHost, e.Settings.PaasHostVersion, envID), headers)
+	headers := e.Settings.HTTPManager.GetHeaders(e.Settings.SessionToken, e.Settings.Version, e.Settings.Pod, e.Settings.UsersID)
+	resp, statusCode, err := e.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s", e.Settings.PaasHost, e.Settings.PaasHostVersion, envID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var env models.Environment
-	err = httpclient.ConvertResp(resp, statusCode, &env)
+	err = e.Settings.HTTPManager.ConvertResp(resp, statusCode, &env)
 	if err != nil {
 		return nil, err
 	}

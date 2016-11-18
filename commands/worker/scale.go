@@ -8,7 +8,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
@@ -82,12 +81,12 @@ func (w *SWorker) Update(svcID string, workers *models.Workers) error {
 	if err != nil {
 		return err
 	}
-	headers := httpclient.GetHeaders(w.Settings.SessionToken, w.Settings.Version, w.Settings.Pod, w.Settings.UsersID)
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/workers", w.Settings.PaasHost, w.Settings.PaasHostVersion, w.Settings.EnvironmentID, svcID), headers)
+	headers := w.Settings.HTTPManager.GetHeaders(w.Settings.SessionToken, w.Settings.Version, w.Settings.Pod, w.Settings.UsersID)
+	resp, statusCode, err := w.Settings.HTTPManager.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/workers", w.Settings.PaasHost, w.Settings.PaasHostVersion, w.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return err
 	}
-	return httpclient.ConvertResp(resp, statusCode, nil)
+	return w.Settings.HTTPManager.ConvertResp(resp, statusCode, nil)
 }
 
 func (w *SWorker) ParseScale(scaleString string) (func(scale, change int) int, int, error) {

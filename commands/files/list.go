@@ -6,7 +6,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
 
@@ -61,13 +60,13 @@ func fileModeToRWXString(perms uint64) string {
 }
 
 func (f *SFiles) List(svcID string) (*[]models.ServiceFile, error) {
-	headers := httpclient.GetHeaders(f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod, f.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/files", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.EnvironmentID, svcID), headers)
+	headers := f.Settings.HTTPManager.GetHeaders(f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod, f.Settings.UsersID)
+	resp, statusCode, err := f.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/files", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var svcFiles []models.ServiceFile
-	err = httpclient.ConvertResp(resp, statusCode, &svcFiles)
+	err = f.Settings.HTTPManager.ConvertResp(resp, statusCode, &svcFiles)
 	if err != nil {
 		return nil, err
 	}

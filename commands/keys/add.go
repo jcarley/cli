@@ -11,7 +11,6 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/deploykeys"
 	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/mitchellh/go-homedir"
 )
@@ -54,13 +53,10 @@ func (k *SKeys) Add(name, publicKey string) error {
 	if err != nil {
 		return err
 	}
-	headers := httpclient.GetHeaders(k.Settings.SessionToken, k.Settings.Version, k.Settings.Pod, k.Settings.UsersID)
-	resp, status, err := httpclient.Post(body, fmt.Sprintf("%s%s/keys", k.Settings.AuthHost, k.Settings.AuthHostVersion), headers)
+	headers := k.Settings.HTTPManager.GetHeaders(k.Settings.SessionToken, k.Settings.Version, k.Settings.Pod, k.Settings.UsersID)
+	resp, status, err := k.Settings.HTTPManager.Post(body, fmt.Sprintf("%s%s/keys", k.Settings.AuthHost, k.Settings.AuthHostVersion), headers)
 	if err != nil {
 		return err
 	}
-	if httpclient.IsError(status) {
-		return httpclient.ConvertError(resp, status)
-	}
-	return nil
+	return k.Settings.HTTPManager.ConvertResp(resp, status, nil)
 }

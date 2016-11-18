@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/lib/httpclient"
 )
 
 func CmdRename(svcName, label string, is IServices) error {
@@ -31,10 +30,10 @@ func (s *SServices) Update(svcID string, updates map[string]string) error {
 	if err != nil {
 		return err
 	}
-	headers := httpclient.GetHeaders(s.Settings.SessionToken, s.Settings.Version, s.Settings.Pod, s.Settings.UsersID)
-	resp, statusCode, err := httpclient.Put(b, fmt.Sprintf("%s%s/environments/%s/services/%s", s.Settings.PaasHost, s.Settings.PaasHostVersion, s.Settings.EnvironmentID, svcID), headers)
+	headers := s.Settings.HTTPManager.GetHeaders(s.Settings.SessionToken, s.Settings.Version, s.Settings.Pod, s.Settings.UsersID)
+	resp, statusCode, err := s.Settings.HTTPManager.Put(b, fmt.Sprintf("%s%s/environments/%s/services/%s", s.Settings.PaasHost, s.Settings.PaasHostVersion, s.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return err
 	}
-	return httpclient.ConvertResp(resp, statusCode, nil)
+	return s.Settings.HTTPManager.ConvertResp(resp, statusCode, nil)
 }

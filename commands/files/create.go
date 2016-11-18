@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
 
@@ -26,13 +25,13 @@ func (f *SFiles) Create(svcID, filePath, name, mode string) (*models.ServiceFile
 	if err != nil {
 		return nil, err
 	}
-	headers := httpclient.GetHeaders(f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod, f.Settings.UsersID)
-	resp, statusCode, err := httpclient.Post(body, fmt.Sprintf("%s%s/environments/%s/services/%s/files", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.EnvironmentID, svcID), headers)
+	headers := f.Settings.HTTPManager.GetHeaders(f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod, f.Settings.UsersID)
+	resp, statusCode, err := f.Settings.HTTPManager.Post(body, fmt.Sprintf("%s%s/environments/%s/services/%s/files", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var svcFile models.ServiceFile
-	err = httpclient.ConvertResp(resp, statusCode, &svcFile)
+	err = f.Settings.HTTPManager.ConvertResp(resp, statusCode, &svcFile)
 	if err != nil {
 		return nil, err
 	}

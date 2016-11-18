@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/catalyzeio/cli/commands/associate"
@@ -44,6 +45,7 @@ import (
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/models"
 
+	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/pods"
 	"github.com/catalyzeio/cli/lib/updater"
 
@@ -134,6 +136,8 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 	app.Before = func() {
 		r := config.FileSettingsRetriever{}
 		*settings = *r.GetSettings(*givenEnvName, "", accountsHost, authHost, "", paasHost, "", *username, *password)
+		skip, _ := strconv.ParseBool(os.Getenv(config.SkipVerifyEnvVar))
+		settings.HTTPManager = httpclient.NewTLSHTTPManager(skip)
 		logrus.Debugf("%+v", settings)
 
 		if settings.Pods == nil || len(*settings.Pods) == 0 || settings.PodCheck < time.Now().Unix() {

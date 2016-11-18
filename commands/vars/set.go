@@ -8,7 +8,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/httpclient"
 )
 
 func CmdSet(svcName, defaultSvcID string, variables []string, iv IVars, is services.IServices) error {
@@ -55,10 +54,10 @@ func (v *SVars) Set(svcID string, envVarsMap map[string]string) error {
 	if err != nil {
 		return err
 	}
-	headers := httpclient.GetHeaders(v.Settings.SessionToken, v.Settings.Version, v.Settings.Pod, v.Settings.UsersID)
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/env", v.Settings.PaasHost, v.Settings.PaasHostVersion, v.Settings.EnvironmentID, svcID), headers)
+	headers := v.Settings.HTTPManager.GetHeaders(v.Settings.SessionToken, v.Settings.Version, v.Settings.Pod, v.Settings.UsersID)
+	resp, statusCode, err := v.Settings.HTTPManager.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/env", v.Settings.PaasHost, v.Settings.PaasHostVersion, v.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return err
 	}
-	return httpclient.ConvertResp(resp, statusCode, nil)
+	return v.Settings.HTTPManager.ConvertResp(resp, statusCode, nil)
 }

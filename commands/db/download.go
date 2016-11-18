@@ -16,7 +16,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
 	"github.com/tj/go-spin"
@@ -122,13 +121,13 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 }
 
 func (d *SDb) TempDownloadURL(jobID string, service *models.Service) (*models.TempURL, error) {
-	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/backup-url/%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID, jobID), headers)
+	headers := d.Settings.HTTPManager.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
+	resp, statusCode, err := d.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/backup-url/%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID, jobID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var tempURL models.TempURL
-	err = httpclient.ConvertResp(resp, statusCode, &tempURL)
+	err = d.Settings.HTTPManager.ConvertResp(resp, statusCode, &tempURL)
 	if err != nil {
 		return nil, err
 	}

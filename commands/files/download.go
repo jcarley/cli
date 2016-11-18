@@ -8,7 +8,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
 
@@ -47,13 +46,13 @@ func (f *SFiles) Retrieve(fileName string, svcID string) (*models.ServiceFile, e
 	}
 	for _, ff := range *files {
 		if ff.Name == fileName {
-			headers := httpclient.GetHeaders(f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod, f.Settings.UsersID)
-			resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/files/%d", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.EnvironmentID, svcID, ff.ID), headers)
+			headers := f.Settings.HTTPManager.GetHeaders(f.Settings.SessionToken, f.Settings.Version, f.Settings.Pod, f.Settings.UsersID)
+			resp, statusCode, err := f.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/files/%d", f.Settings.PaasHost, f.Settings.PaasHostVersion, f.Settings.EnvironmentID, svcID, ff.ID), headers)
 			if err != nil {
 				return nil, err
 			}
 			var file models.ServiceFile
-			err = httpclient.ConvertResp(resp, statusCode, &file)
+			err = f.Settings.HTTPManager.ConvertResp(resp, statusCode, &file)
 			if err != nil {
 				return nil, err
 			}

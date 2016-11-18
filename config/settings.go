@@ -47,7 +47,6 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authH
 	}
 	var settings models.Settings
 	json.NewDecoder(file).Decode(&settings)
-	// would be best to default this to an initialized map rather than nil
 	if settings.Environments == nil {
 		settings.Environments = make(map[string]models.AssociatedEnv)
 	}
