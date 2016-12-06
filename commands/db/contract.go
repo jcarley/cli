@@ -221,7 +221,7 @@ var LogsSubCmd = models.Command{
 type IDb interface {
 	Backup(service *models.Service) (*models.Job, error)
 	Download(backupID, filePath string, service *models.Service) error
-	Export(filePath, downloadID string, isBackup bool, job *models.Job, service *models.Service) error
+	Export(filePath, downloadID string, job *models.Job, service *models.Service) error
 	Import(filePath, mongoCollection, mongoDatabase string, service *models.Service) (*models.Job, error)
 	List(page, pageSize int, service *models.Service) (*[]models.Job, error)
 	TempUploadAuth(service *models.Service) (*models.TempAuth, error)

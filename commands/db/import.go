@@ -137,8 +137,12 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 		rt.KillTransfer()
 		d.revokeAuth(service, tmpAuth)
 	}()
-
-	uploader := s3manager.NewUploader(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.NewStaticCredentials(tmpAuth.AccessKeyID, tmpAuth.SecretAccessKey, tmpAuth.SessionToken)}))
+	sesh, err := session.NewSession(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.NewStaticCredentials(tmpAuth.AccessKeyID, tmpAuth.SecretAccessKey, tmpAuth.SessionToken)})
+	if err != nil {
+		done <- false
+		return nil, err
+	}
+	uploader := s3manager.NewUploader(sesh)
 
 	go printTransferStatus(false, rt, done)
 
