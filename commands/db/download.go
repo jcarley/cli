@@ -50,7 +50,7 @@ func (d *SDb) Download(backupID, filePath string, service *models.Service) error
 	if job.Type != "backup" || (job.Status != "finished" && job.Status != "disappeared") {
 		return errors.New("Only 'finished' 'backup' jobs may be downloaded")
 	}
-	return d.Export(filePath, backupID, job, service)
+	return d.Export(filePath, job, service)
 }
 
 func (d *SDb) TempDownloadURL(jobID string, service *models.Service) (*models.TempURL, error) {

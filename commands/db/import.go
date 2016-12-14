@@ -125,7 +125,7 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	if err != nil {
 		return nil, err
 	}
-
+	defer d.revokeAuth(service, tmpAuth)
 	// Make sure to revoke temp auth even with an interrupt.
 	c := make(chan os.Signal, 1)
 	// "done" is used below to cancel printing the download status
@@ -136,6 +136,7 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 		done <- false
 		rt.KillTransfer()
 		d.revokeAuth(service, tmpAuth)
+		os.Exit(1)
 	}()
 	sesh, err := session.NewSession(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.NewStaticCredentials(tmpAuth.AccessKeyID, tmpAuth.SecretAccessKey, tmpAuth.SessionToken)})
 	if err != nil {
@@ -157,7 +158,6 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 		return nil, err
 	}
 	done <- true
-	d.revokeAuth(service, tmpAuth)
 	importParams := map[string]interface{}{}
 	for key, value := range options {
 		importParams[key] = value
@@ -210,8 +210,5 @@ func (d *SDb) RevokeTempUploadAuth(service *models.Service, userID string) error
 	if err != nil {
 		return err
 	}
-	if statusCode < 200 || statusCode >= 300 {
-		return httpclient.ConvertResp(resp, statusCode, nil)
-	}
-	return nil
+	return httpclient.ConvertResp(resp, statusCode, nil)
 }
