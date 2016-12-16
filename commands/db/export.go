@@ -125,6 +125,8 @@ loop:
 		case d := <-done:
 			if !d {
 				status = "Failed"
+			} else {
+				fmt.Print(fmt.Sprintf("\r\033[m\t%s of %s (%d%%) %s", l, l, 100, action))
 			}
 			break loop
 		case <-time.After(time.Millisecond * 100):
