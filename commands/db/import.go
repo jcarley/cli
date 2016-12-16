@@ -138,12 +138,12 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 		d.revokeAuth(service, tmpAuth)
 		os.Exit(1)
 	}()
-	sesh, err := session.NewSession(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.NewStaticCredentials(tmpAuth.AccessKeyID, tmpAuth.SecretAccessKey, tmpAuth.SessionToken)})
+	sess, err := session.NewSession(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.NewStaticCredentials(tmpAuth.AccessKeyID, tmpAuth.SecretAccessKey, tmpAuth.SessionToken)})
 	if err != nil {
 		done <- false
 		return nil, err
 	}
-	uploader := s3manager.NewUploader(sesh)
+	uploader := s3manager.NewUploader(sess)
 
 	go printTransferStatus(false, rt, done)
 
@@ -206,7 +206,7 @@ func (d *SDb) TempUploadAuth(service *models.Service) (*models.TempAuth, error) 
 
 func (d *SDb) RevokeTempUploadAuth(service *models.Service, userID string) error {
 	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/revoke-temp-auth?user_id=%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID, url.QueryEscape(userID)), headers)
+	resp, statusCode, err := httpclient.Delete(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/revoke-temp-auth?user_id=%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID, url.QueryEscape(userID)), headers)
 	if err != nil {
 		return err
 	}

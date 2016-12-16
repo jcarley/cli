@@ -107,7 +107,7 @@ func (d *SDb) Export(filePath string, job *models.Job, service *models.Service) 
 	return dfw.Close()
 }
 
-func printTransferStatus(isDownload bool, tr transfer.Transfer, done chan bool) {
+func printTransferStatus(isDownload bool, tr transfer.Transfer, done <-chan bool) {
 	action := "downloaded"
 	final := "Download"
 	status := "Finished"
@@ -119,16 +119,11 @@ func printTransferStatus(isDownload bool, tr transfer.Transfer, done chan bool) 
 		final = "Upload"
 	}
 	lastLen := 0
-loop:
+	success := true
 	for i, l := tr.Transferred(), tr.Length(); i < l; i = tr.Transferred() {
 		select {
-		case d := <-done:
-			if !d {
-				status = "Failed"
-			} else {
-				fmt.Print(fmt.Sprintf("\r\033[m\t%s of %s (%d%%) %s", l, l, 100, action))
-			}
-			break loop
+		case success = <-done:
+			goto finish
 		case <-time.After(time.Millisecond * 100):
 			percent := uint64(i / l * 100)
 			s := fmt.Sprintf("\r\033[m\t%s of %s (%d%%) %s", i, l, percent, action)
@@ -140,6 +135,23 @@ loop:
 			} else {
 				lastLen = sLen
 			}
+		}
+	}
+	success = <-done
+
+finish:
+	if !success {
+		status = "Failed"
+	} else {
+		total := tr.Transferred()
+		s := fmt.Sprintf("\r\033[m\t%s of %s (%d%%) %s", total, total, 100, action)
+		fmt.Print(s)
+		sLen := len(s)
+		// this clears any dangling characters at the end with empty space
+		if sLen < lastLen {
+			fmt.Print(strings.Repeat(" ", lastLen-sLen))
+		} else {
+			lastLen = sLen
 		}
 	}
 	logrus.Printf("\n%s %s!\n", final, status)
