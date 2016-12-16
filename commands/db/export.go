@@ -140,19 +140,18 @@ func printTransferStatus(isDownload bool, tr transfer.Transfer, done <-chan bool
 	success = <-done
 
 finish:
+	total := tr.Transferred()
+	l := tr.Length()
+	s := fmt.Sprintf("\r\033[m\t%s of %s (%d%%) %s", total, l, uint64(total/l*100), action)
+	fmt.Print(s)
+	sLen := len(s)
+	// this clears any dangling characters at the end with empty space
+	if sLen < lastLen {
+		fmt.Print(strings.Repeat(" ", lastLen-sLen))
+	}
+
 	if !success {
 		status = "Failed"
-	} else {
-		total := tr.Transferred()
-		s := fmt.Sprintf("\r\033[m\t%s of %s (%d%%) %s", total, total, 100, action)
-		fmt.Print(s)
-		sLen := len(s)
-		// this clears any dangling characters at the end with empty space
-		if sLen < lastLen {
-			fmt.Print(strings.Repeat(" ", lastLen-sLen))
-		} else {
-			lastLen = sLen
-		}
 	}
 	logrus.Printf("\n%s %s!\n", final, status)
 }
