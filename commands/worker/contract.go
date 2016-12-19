@@ -16,36 +16,13 @@ import (
 var Cmd = models.Command{
 	Name:      "worker",
 	ShortHelp: "Manage a service's workers",
-	LongHelp: "This command has been moved! Please use [worker deploy](#worker-deploy) instead. This alias will be removed in the next CLI update.\n\n" +
-		"The `worker` commands allow you to manage your environment variables per service. " +
-		"The `worker` command cannot be run directly, but has subcommands.",
+	LongHelp:  "The `worker` command allows to deploy, list, remove, and scale the workers in a code service.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.CommandLong(DeploySubCmd.Name, DeploySubCmd.ShortHelp, DeploySubCmd.LongHelp, DeploySubCmd.CmdFunc(settings))
 			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))
 			cmd.CommandLong(RmSubCmd.Name, RmSubCmd.ShortHelp, RmSubCmd.LongHelp, RmSubCmd.CmdFunc(settings))
 			cmd.CommandLong(ScaleSubCmd.Name, ScaleSubCmd.ShortHelp, ScaleSubCmd.LongHelp, ScaleSubCmd.CmdFunc(settings))
-
-			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to use to start a worker. Defaults to the associated service.")
-			target := cmd.StringArg("TARGET", "", "The name of the Procfile target to invoke as a worker")
-			cmd.Action = func() {
-				logrus.Warnln("This command has been moved! Please use \"catalyze worker deploy\" instead. This alias will be removed in the next CLI update.")
-				logrus.Warnln("You can list all available worker subcommands by running \"catalyze worker --help\".")
-				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
-					logrus.Fatal(err.Error())
-				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Fatal(err.Error())
-				}
-				if *target == "" {
-					logrus.Fatal("TARGET is a required argument")
-				}
-				err := CmdWorker(*serviceName, settings.ServiceID, *target, New(settings), services.New(settings), jobs.New(settings))
-				if err != nil {
-					logrus.Fatal(err.Error())
-				}
-			}
-			cmd.Spec = "[SERVICE_NAME] [TARGET]"
 		}
 	},
 }
