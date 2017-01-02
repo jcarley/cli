@@ -49,15 +49,15 @@ func (j *SJobs) RetrieveByType(svcID, jobType string, page, pageSize int) (*[]mo
 }
 
 func (j *SJobs) RetrieveByTarget(svcID, target string, page, pageSize int) (*[]models.Job, error) {
-	headers := j.Settings.HTTPManager.GetHeaders(j.Settings.SessionToken, j.Settings.Version, j.Settings.Pod, j.Settings.UsersID)
-	resp, statusCode, err := j.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs?type=worker&target=%s&pageNumber=%d&pageSize=%d", j.Settings.PaasHost, j.Settings.PaasHostVersion, j.Settings.EnvironmentID, svcID, target, page, pageSize), headers)
+	var res []models.Job
+	jobs, err := j.RetrieveByType(svcID, "worker", page, pageSize)
 	if err != nil {
 		return nil, err
 	}
-	var jobs []models.Job
-	err = j.Settings.HTTPManager.ConvertResp(resp, statusCode, &jobs)
-	if err != nil {
-		return nil, err
+	for _, j := range *jobs {
+		if j.Target == target {
+			res = append(res, j)
+		}
 	}
-	return &jobs, nil
+	return &res, nil
 }
