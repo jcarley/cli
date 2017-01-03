@@ -96,15 +96,16 @@ type Environment struct {
 
 // Job job
 type Job struct {
-	ID          string           `json:"id"`
-	Type        string           `json:"type"`
-	Status      string           `json:"status,omitempty"`
-	Backup      *EncryptionStore `json:"backup,omitempty"`
-	Restore     *EncryptionStore `json:"restore,omitempty"`
-	CreatedAt   string           `json:"created_at"`
-	MetricsData *[]MetricsData   `json:"metrics"`
-	Spec        *Spec            `json:"spec"`
-	Target      string           `json:"target,omitempty"`
+	ID               string           `json:"id"`
+	Type             string           `json:"type"`
+	Status           string           `json:"status,omitempty"`
+	Backup           *EncryptionStore `json:"backup,omitempty"`
+	Restore          *EncryptionStore `json:"restore,omitempty"`
+	CreatedAt        string           `json:"created_at"`
+	MetricsData      *[]MetricsData   `json:"metrics"`
+	Spec             *Spec            `json:"spec"`
+	Target           string           `json:"target,omitempty"`
+	IsSnapshotBackup *bool            `json:"isSnapshotBackup,omitempty"`
 }
 
 // Spec is a job specification
