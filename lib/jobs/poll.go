@@ -33,6 +33,7 @@ func (j *SJobs) WaitToAppear(jobID, svcID string) error {
 		if statusCode >= 200 && statusCode < 300 {
 			return nil
 		}
+		time.Sleep(time.Second * 2)
 	}
 }
 
