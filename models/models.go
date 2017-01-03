@@ -102,19 +102,6 @@ type Invite struct {
 	Revoked  bool   `json:"revoked"`
 }
 
-// Job job
-type Job struct {
-	ID          string           `json:"id"`
-	Type        string           `json:"type"`
-	Status      string           `json:"status,omitempty"`
-	Backup      *EncryptionStore `json:"backup,omitempty"`
-	Restore     *EncryptionStore `json:"restore,omitempty"`
-	CreatedAt   string           `json:"created_at"`
-	MetricsData *[]MetricsData   `json:"metrics"`
-	Spec        *Spec            `json:"spec"`
-	Target      string           `json:"target,omitempty"`
-}
-
 // LogHits contain ordering data for logs
 type LogHits struct {
 	Index  string              `json:"_index"`
@@ -198,6 +185,20 @@ type Pod struct {
 	Name                 string `json:"name"`
 	PHISafe              bool   `json:"phiSafe"`
 	ImportRequiresLength bool   `json:"importRequiresLength"`
+}
+
+// Job job
+type Job struct {
+	ID               string           `json:"id"`
+	Type             string           `json:"type"`
+	Status           string           `json:"status,omitempty"`
+	Backup           *EncryptionStore `json:"backup,omitempty"`
+	Restore          *EncryptionStore `json:"restore,omitempty"`
+	CreatedAt        string           `json:"created_at"`
+	MetricsData      *[]MetricsData   `json:"metrics"`
+	Spec             *Spec            `json:"spec"`
+	Target           string           `json:"target,omitempty"`
+	IsSnapshotBackup *bool            `json:"isSnapshotBackup,omitempty"`
 }
 
 // PodWrapper pod wrapper

@@ -36,7 +36,8 @@ func CmdList(svcName string, iw IWorker, is services.IServices, ij jobs.IJobs) e
 		workerJobs[target] = &workerJob{scale, 0}
 	}
 	if len(workerJobs) == 0 {
-		logrus.Printf("No workers found for service %s", svcName)
+		logrus.Printf("No running workers found for %s", svcName)
+		logrus.Printf("\nYou are using 0 out of your available %d workers for %s", service.WorkerScale, svcName)
 		return nil
 	}
 	for _, j := range *jobs {
@@ -49,7 +50,9 @@ func CmdList(svcName string, iw IWorker, is services.IServices, ij jobs.IJobs) e
 	}
 
 	data := [][]string{{"TARGET", "SCALE", "RUNNING JOBS"}}
+	total := 0
 	for target, wj := range workerJobs {
+		total += wj.scale
 		data = append(data, []string{target, fmt.Sprintf("%d", wj.scale), fmt.Sprintf("%d", wj.running)})
 	}
 
@@ -61,6 +64,7 @@ func CmdList(svcName string, iw IWorker, is services.IServices, ij jobs.IJobs) e
 	table.SetRowSeparator("")
 	table.AppendBulk(data)
 	table.Render()
+	logrus.Printf("\nYou are using %d out of your available %d workers for %s", total, service.WorkerScale, svcName)
 	return nil
 }
 

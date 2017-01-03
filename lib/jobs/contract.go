@@ -16,6 +16,7 @@ type IJobs interface {
 	PollForStatus(statuses []string, jobID, svcID string) (string, error)
 	PollTillFinished(jobID, svcID string) (string, error)
 	List(svcID string, page, pageSize int) (*[]models.Job, error)
+	WaitToAppear(jobID, svcID string) error
 }
 
 // SJobs is a concrete implementation of IJobs
