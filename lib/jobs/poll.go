@@ -23,6 +23,19 @@ func (j *SJobs) PollTillFinished(jobID, svcID string) (string, error) {
 	return j.PollForStatus([]string{"finished"}, jobID, svcID)
 }
 
+func (j *SJobs) WaitToAppear(jobID, svcID string) error {
+	for {
+		headers := httpclient.GetHeaders(j.Settings.SessionToken, j.Settings.Version, j.Settings.Pod, j.Settings.UsersID)
+		_, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs/%s", j.Settings.PaasHost, j.Settings.PaasHostVersion, j.Settings.EnvironmentID, svcID, jobID), headers)
+		if err != nil {
+			return err
+		}
+		if statusCode >= 200 && statusCode < 300 {
+			return nil
+		}
+	}
+}
+
 func (j *SJobs) PollForStatus(statuses []string, jobID, svcID string) (string, error) {
 	var job models.Job
 	failedAttempts := 0

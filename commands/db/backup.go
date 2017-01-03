@@ -26,6 +26,12 @@ func CmdBackup(databaseName string, skipPoll bool, id IDb, is services.IServices
 	if !skipPoll {
 		// all because logrus treats print, println, and printf the same
 		logrus.StandardLogger().Out.Write([]byte("Polling until backup finishes."))
+		if job.IsSnapshotBackup != nil && *job.IsSnapshotBackup {
+			err = ij.WaitToAppear(job.ID, service.ID)
+			if err != nil {
+				return err
+			}
+		}
 		status, err := ij.PollTillFinished(job.ID, service.ID)
 		if err != nil {
 			return err
