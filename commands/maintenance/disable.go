@@ -5,7 +5,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/httpclient"
 )
 
 func CmdDisable(svcName string, im IMaintenance, is services.IServices) error {
@@ -48,10 +47,10 @@ func CmdDisable(svcName string, im IMaintenance, is services.IServices) error {
 }
 
 func (m *SMaintenance) Disable(svcProxyID, upstreamID string) error {
-	headers := httpclient.GetHeaders(m.Settings.SessionToken, m.Settings.Version, m.Settings.Pod, m.Settings.UsersID)
-	resp, statusCode, err := httpclient.Delete(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/maintenance?upstream=%s", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, svcProxyID, upstreamID), headers)
+	headers := m.Settings.HTTPManager.GetHeaders(m.Settings.SessionToken, m.Settings.Version, m.Settings.Pod, m.Settings.UsersID)
+	resp, statusCode, err := m.Settings.HTTPManager.Delete(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/maintenance?upstream=%s", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, svcProxyID, upstreamID), headers)
 	if err != nil {
 		return err
 	}
-	return httpclient.ConvertResp(resp, statusCode, nil)
+	return m.Settings.HTTPManager.ConvertResp(resp, statusCode, nil)
 }
