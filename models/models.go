@@ -321,3 +321,8 @@ type Workers struct {
 	Limit   int            `json:"worker_limit,omitempty"`
 	Workers map[string]int `json:"workers"`
 }
+
+type Maintenance struct {
+	UpstreamID string `json:"upstream"`
+	CreatedAt  string `json:"createdAt"`
+}
