@@ -20,7 +20,7 @@ func CmdRm(name, svcName string, id IDeployKeys, is services.IServices) error {
 		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
 	}
 	if service.Type != "code" {
-		return fmt.Errorf("You can only remove a deploy keys from code services, not %s services", service.Type)
+		return fmt.Errorf("You can only remove deploy keys from code services, not %s services", service.Type)
 	}
 	return id.Rm(name, "ssh", service.ID)
 }

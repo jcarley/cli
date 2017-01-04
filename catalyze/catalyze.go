@@ -25,6 +25,7 @@ import (
 	"github.com/catalyzeio/cli/commands/keys"
 	"github.com/catalyzeio/cli/commands/logout"
 	"github.com/catalyzeio/cli/commands/logs"
+	"github.com/catalyzeio/cli/commands/maintenance"
 	"github.com/catalyzeio/cli/commands/metrics"
 	"github.com/catalyzeio/cli/commands/rake"
 	"github.com/catalyzeio/cli/commands/redeploy"
@@ -189,6 +190,7 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.CommandLong(keys.Cmd.Name, keys.Cmd.ShortHelp, keys.Cmd.LongHelp, keys.Cmd.CmdFunc(settings))
 	app.CommandLong(logout.Cmd.Name, logout.Cmd.ShortHelp, logout.Cmd.LongHelp, logout.Cmd.CmdFunc(settings))
 	app.CommandLong(logs.Cmd.Name, logs.Cmd.ShortHelp, logs.Cmd.LongHelp, logs.Cmd.CmdFunc(settings))
+	app.CommandLong(maintenance.Cmd.Name, maintenance.Cmd.ShortHelp, maintenance.Cmd.LongHelp, maintenance.Cmd.CmdFunc(settings))
 	app.CommandLong(metrics.Cmd.Name, metrics.Cmd.ShortHelp, metrics.Cmd.LongHelp, metrics.Cmd.CmdFunc(settings))
 	app.CommandLong(rake.Cmd.Name, rake.Cmd.ShortHelp, rake.Cmd.LongHelp, rake.Cmd.CmdFunc(settings))
 	app.CommandLong(redeploy.Cmd.Name, redeploy.Cmd.ShortHelp, redeploy.Cmd.LongHelp, redeploy.Cmd.CmdFunc(settings))
