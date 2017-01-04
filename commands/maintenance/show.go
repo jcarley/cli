@@ -30,7 +30,7 @@ func CmdShow(svcName, envID, podID string, im IMaintenance, is services.IService
 
 	data := [][]string{{"SERVICE", "MAINTENANCE MODE", "ENABLED AT"}}
 	for _, svc := range *svcs {
-		if (svcName == "" && svc.Name == "code") || svc.Label == svcName {
+		if svc.Type == "code" && (svcName == "" || svc.Label == svcName) {
 			createdAt := ""
 			status := "disabled"
 			for _, mm := range *svcMaintenance {

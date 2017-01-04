@@ -10,14 +10,15 @@ import (
 )
 
 func CmdEnable(svcName string, im IMaintenance, is services.IServices) error {
-	// TODO need a way to determine if maintenance mode is available for an environment
-	// preferrably without hardcoding
 	upstreamService, err := is.RetrieveByLabel(svcName)
 	if err != nil {
 		return err
 	}
 	if upstreamService == nil {
 		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
+	}
+	if upstreamService.Type != "code" {
+		return fmt.Errorf("Maintenance mode can only be enabled for code services, not %s services", upstreamService.Type)
 	}
 
 	serviceProxy, err := is.RetrieveByLabel("service_proxy")
