@@ -40,7 +40,7 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id
 	// all because logrus treats print, println, and printf the same
 	logrus.Println("Polling until backup finishes.")
 	if job.IsSnapshotBackup != nil && *job.IsSnapshotBackup {
-		logrus.Println("This is a snapshot backup, it may be a while before this backup shows up in the `catalyze db list` command.")
+		logrus.Printf("This is a snapshot backup, it may be a while before this backup shows up in the \"catalyze db list %s\" command.", databaseName)
 		err = ij.WaitToAppear(job.ID, service.ID)
 		if err != nil {
 			return err

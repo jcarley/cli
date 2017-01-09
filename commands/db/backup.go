@@ -28,7 +28,7 @@ func CmdBackup(databaseName string, skipPoll bool, id IDb, is services.IServices
 		// all because logrus treats print, println, and printf the same
 		logrus.Println("Polling until backup finishes.")
 		if isSnapshotBackup {
-			logrus.Println("This is a snapshot backup, it may be a while before this backup shows up in the `catalyze db list` command.")
+			logrus.Printf("This is a snapshot backup, it may be a while before this backup shows up in the \"catalyze db list %s\" command.", databaseName)
 			err = ij.WaitToAppear(job.ID, service.ID)
 			if err != nil {
 				return err
@@ -48,7 +48,7 @@ func CmdBackup(databaseName string, skipPoll bool, id IDb, is services.IServices
 			return fmt.Errorf("Job finished with invalid status %s", job.Status)
 		}
 	} else if isSnapshotBackup {
-		logrus.Println("This is a snapshot backup, it may be a while before this backup shows up in the `catalyze db list` command.")
+		logrus.Printf("This is a snapshot backup, it may be a while before this backup shows up in the \"catalyze db list %s\" command.", databaseName)
 	}
 	logrus.Printf("You can download your backup with the \"catalyze db download %s %s ./output_file_path\" command", databaseName, job.ID)
 	return nil
