@@ -11,7 +11,6 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/deploykeys"
 	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/httpclient"
 )
 
 func CmdRemove(name, privateKeyPath string, ik IKeys, id deploykeys.IDeployKeys) error {
@@ -52,13 +51,10 @@ func CmdRemove(name, privateKeyPath string, ik IKeys, id deploykeys.IDeployKeys)
 }
 
 func (k *SKeys) Remove(name string) error {
-	headers := httpclient.GetHeaders(k.Settings.SessionToken, k.Settings.Version, k.Settings.Pod, k.Settings.UsersID)
-	resp, status, err := httpclient.Delete(nil, fmt.Sprintf("%s%s/keys/%s", k.Settings.AuthHost, k.Settings.AuthHostVersion, name), headers)
+	headers := k.Settings.HTTPManager.GetHeaders(k.Settings.SessionToken, k.Settings.Version, k.Settings.Pod, k.Settings.UsersID)
+	resp, status, err := k.Settings.HTTPManager.Delete(nil, fmt.Sprintf("%s%s/keys/%s", k.Settings.AuthHost, k.Settings.AuthHostVersion, name), headers)
 	if err != nil {
 		return err
 	}
-	if httpclient.IsError(status) {
-		return httpclient.ConvertError(resp, status)
-	}
-	return nil
+	return k.Settings.HTTPManager.ConvertResp(resp, status, nil)
 }

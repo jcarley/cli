@@ -15,7 +15,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/crypto"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/models"
 )
@@ -150,13 +149,13 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	if err != nil {
 		return nil, err
 	}
-	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/import", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
+	headers := d.Settings.HTTPManager.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
+	resp, statusCode, err := d.Settings.HTTPManager.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/import", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var job models.Job
-	err = httpclient.ConvertResp(resp, statusCode, &job)
+	err = d.Settings.HTTPManager.ConvertResp(resp, statusCode, &job)
 	if err != nil {
 		return nil, err
 	}
@@ -164,13 +163,13 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 }
 
 func (d *SDb) TempUploadURL(service *models.Service) (*models.TempURL, error) {
-	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/restore-url", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
+	headers := d.Settings.HTTPManager.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
+	resp, statusCode, err := d.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/restore-url", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var tempURL models.TempURL
-	err = httpclient.ConvertResp(resp, statusCode, &tempURL)
+	err = d.Settings.HTTPManager.ConvertResp(resp, statusCode, &tempURL)
 	if err != nil {
 		return nil, err
 	}

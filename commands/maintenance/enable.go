@@ -6,7 +6,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/httpclient"
 )
 
 func CmdEnable(svcName string, im IMaintenance, is services.IServices) error {
@@ -42,10 +41,10 @@ func (m *SMaintenance) Enable(svcProxyID, upstreamID string) error {
 	if err != nil {
 		return err
 	}
-	headers := httpclient.GetHeaders(m.Settings.SessionToken, m.Settings.Version, m.Settings.Pod, m.Settings.UsersID)
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/maintenance", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, svcProxyID), headers)
+	headers := m.Settings.HTTPManager.GetHeaders(m.Settings.SessionToken, m.Settings.Version, m.Settings.Pod, m.Settings.UsersID)
+	resp, statusCode, err := m.Settings.HTTPManager.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/maintenance", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, svcProxyID), headers)
 	if err != nil {
 		return err
 	}
-	return httpclient.ConvertResp(resp, statusCode, nil)
+	return m.Settings.HTTPManager.ConvertResp(resp, statusCode, nil)
 }

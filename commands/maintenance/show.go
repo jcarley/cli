@@ -5,7 +5,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/olekukonko/tablewriter"
 )
@@ -62,13 +61,13 @@ func CmdShow(svcName, envID, podID string, im IMaintenance, is services.IService
 }
 
 func (m *SMaintenance) List(svcProxyID string) (*[]models.Maintenance, error) {
-	headers := httpclient.GetHeaders(m.Settings.SessionToken, m.Settings.Version, m.Settings.Pod, m.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/maintenance", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, svcProxyID), headers)
+	headers := m.Settings.HTTPManager.GetHeaders(m.Settings.SessionToken, m.Settings.Version, m.Settings.Pod, m.Settings.UsersID)
+	resp, statusCode, err := m.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/maintenance", m.Settings.PaasHost, m.Settings.PaasHostVersion, m.Settings.EnvironmentID, svcProxyID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var maintenance []models.Maintenance
-	err = httpclient.ConvertResp(resp, statusCode, &maintenance)
+	err = m.Settings.HTTPManager.ConvertResp(resp, statusCode, &maintenance)
 	if err != nil {
 		return nil, err
 	}

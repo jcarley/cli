@@ -5,7 +5,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/invites"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/olekukonko/tablewriter"
 	"github.com/pmylund/sortutil"
@@ -52,13 +51,13 @@ func CmdList(myUsersID string, iu IUsers, ii invites.IInvites) error {
 }
 
 func (u *SUsers) List() (*[]models.OrgUser, error) {
-	headers := httpclient.GetHeaders(u.Settings.SessionToken, u.Settings.Version, u.Settings.Pod, u.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/orgs/%s/users", u.Settings.AuthHost, u.Settings.AuthHostVersion, u.Settings.OrgID), headers)
+	headers := u.Settings.HTTPManager.GetHeaders(u.Settings.SessionToken, u.Settings.Version, u.Settings.Pod, u.Settings.UsersID)
+	resp, statusCode, err := u.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/orgs/%s/users", u.Settings.AuthHost, u.Settings.AuthHostVersion, u.Settings.OrgID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var users []models.OrgUser
-	err = httpclient.ConvertResp(resp, statusCode, &users)
+	err = u.Settings.HTTPManager.ConvertResp(resp, statusCode, &users)
 	if err != nil {
 		return nil, err
 	}

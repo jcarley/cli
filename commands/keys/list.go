@@ -8,7 +8,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/deploykeys"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/olekukonko/tablewriter"
 )
@@ -58,13 +57,13 @@ func CmdList(ik IKeys, id deploykeys.IDeployKeys) error {
 }
 
 func (k *SKeys) List() (*[]models.UserKey, error) {
-	headers := httpclient.GetHeaders(k.Settings.SessionToken, k.Settings.Version, k.Settings.Pod, k.Settings.UsersID)
-	resp, status, err := httpclient.Get(nil, fmt.Sprintf("%s%s/keys", k.Settings.AuthHost, k.Settings.AuthHostVersion), headers)
+	headers := k.Settings.HTTPManager.GetHeaders(k.Settings.SessionToken, k.Settings.Version, k.Settings.Pod, k.Settings.UsersID)
+	resp, status, err := k.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/keys", k.Settings.AuthHost, k.Settings.AuthHostVersion), headers)
 	if err != nil {
 		return nil, err
 	}
 
 	keys := []models.UserKey{}
-	err = httpclient.ConvertResp(resp, status, &keys)
+	err = k.Settings.HTTPManager.ConvertResp(resp, status, &keys)
 	return &keys, err
 }

@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
 
@@ -87,13 +86,13 @@ func (a *SAuth) signInWithCredentials() (*signinResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	headers := httpclient.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod, a.Settings.UsersID)
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/auth/signin", a.Settings.AuthHost, a.Settings.AuthHostVersion), headers)
+	headers := a.Settings.HTTPManager.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod, a.Settings.UsersID)
+	resp, statusCode, err := a.Settings.HTTPManager.Post(b, fmt.Sprintf("%s%s/auth/signin", a.Settings.AuthHost, a.Settings.AuthHostVersion), headers)
 	if err != nil {
 		return nil, err
 	}
 	signinResp := &signinResponse{}
-	return signinResp, httpclient.ConvertResp(resp, statusCode, signinResp)
+	return signinResp, a.Settings.HTTPManager.ConvertResp(resp, statusCode, signinResp)
 }
 
 func (a *SAuth) signInWithKey() (*signinResponse, error) {
@@ -128,7 +127,7 @@ func (a *SAuth) signInWithKey() (*signinResponse, error) {
 	}
 	body.PublicKey = string(publicKey)
 
-	headers := httpclient.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod, a.Settings.UsersID)
+	headers := a.Settings.HTTPManager.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod, a.Settings.UsersID)
 	message := fmt.Sprintf("%s&%s", headers["X-Request-Nonce"][0], headers["X-Request-Timestamp"][0])
 	hashedMessage := sha256.Sum256([]byte(message))
 	signature, err := privateKey.Sign(rand.Reader, hashedMessage[:], crypto.SHA256)
@@ -141,26 +140,26 @@ func (a *SAuth) signInWithKey() (*signinResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/auth/signin/key", a.Settings.AuthHost, a.Settings.AuthHostVersion), headers)
+	resp, statusCode, err := a.Settings.HTTPManager.Post(b, fmt.Sprintf("%s%s/auth/signin/key", a.Settings.AuthHost, a.Settings.AuthHostVersion), headers)
 	if err != nil {
 		return nil, err
 	}
 	signinResp := &signinResponse{}
-	return signinResp, httpclient.ConvertResp(resp, statusCode, signinResp)
+	return signinResp, a.Settings.HTTPManager.ConvertResp(resp, statusCode, signinResp)
 }
 
 func (a *SAuth) mfaSignin(mfaID string, preferredMode string) (*models.User, error) {
 	token := a.Prompts.OTP(preferredMode)
-	headers := httpclient.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod, a.Settings.UsersID)
+	headers := a.Settings.HTTPManager.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod, a.Settings.UsersID)
 	b, err := json.Marshal(struct {
 		OTP string `json:"otp"`
 	}{OTP: token})
 	if err != nil {
 		return nil, err
 	}
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/auth/signin/mfa/%s", a.Settings.AuthHost, a.Settings.AuthHostVersion, mfaID), headers)
+	resp, statusCode, err := a.Settings.HTTPManager.Post(b, fmt.Sprintf("%s%s/auth/signin/mfa/%s", a.Settings.AuthHost, a.Settings.AuthHostVersion, mfaID), headers)
 	user := &models.User{}
-	err = httpclient.ConvertResp(resp, statusCode, user)
+	err = a.Settings.HTTPManager.ConvertResp(resp, statusCode, user)
 	if err != nil {
 		return nil, err
 	}
@@ -169,24 +168,24 @@ func (a *SAuth) mfaSignin(mfaID string, preferredMode string) (*models.User, err
 
 // Signout signs out a user by their session token.
 func (a *SAuth) Signout() error {
-	headers := httpclient.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod, a.Settings.UsersID)
-	resp, statusCode, err := httpclient.Delete(nil, fmt.Sprintf("%s%s/auth/signout", a.Settings.AuthHost, a.Settings.AuthHostVersion), headers)
+	headers := a.Settings.HTTPManager.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod, a.Settings.UsersID)
+	resp, statusCode, err := a.Settings.HTTPManager.Delete(nil, fmt.Sprintf("%s%s/auth/signout", a.Settings.AuthHost, a.Settings.AuthHostVersion), headers)
 	if err != nil {
 		return err
 	}
-	return httpclient.ConvertResp(resp, statusCode, nil)
+	return a.Settings.HTTPManager.ConvertResp(resp, statusCode, nil)
 }
 
 // Verify verifies if a given session token is still valid or not. If it is
 // valid, the returned error will be nil.
 func (a *SAuth) Verify() (*models.User, error) {
-	headers := httpclient.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod, a.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/auth/verify", a.Settings.AuthHost, a.Settings.AuthHostVersion), headers)
+	headers := a.Settings.HTTPManager.GetHeaders(a.Settings.SessionToken, a.Settings.Version, a.Settings.Pod, a.Settings.UsersID)
+	resp, statusCode, err := a.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/auth/verify", a.Settings.AuthHost, a.Settings.AuthHostVersion), headers)
 	if err != nil {
 		return nil, err
 	}
 	var user models.User
-	err = httpclient.ConvertResp(resp, statusCode, &user)
+	err = a.Settings.HTTPManager.ConvertResp(resp, statusCode, &user)
 	if err != nil {
 		return nil, err
 	}
