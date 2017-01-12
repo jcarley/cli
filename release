@@ -1,18 +1,27 @@
 #!/bin/bash -e
+# only run on 64-bit linux
+if ! go env | grep GOHOSTOS | grep -q linux; then
+  echo 'This script must be run on 64-bit linux'
+  exit 1
+fi
+if ! go env | grep GOHOSTARCH | grep -q amd64; then
+  echo 'This script must be run on 64-bit linux'
+  exit 1
+fi
 
-if [ "x${VERSION}" == "x" ]; then
+if [ "${VERSION}" = "" ]; then
   echo 'You must specify the VERSION environment variable. This is the version you are releasing.'
   exit 1
 fi
-if [ "x${AWS_ACCESS_KEY_ID}" == "x" ]; then
+if [ "${AWS_ACCESS_KEY_ID}" = "" ]; then
   echo 'Missing required AWS_ACCESS_KEY_ID environment variable.'
   exit 1
 fi
-if [ "x${AWS_SECRET_ACCESS_KEY}" == "x" ]; then
+if [ "${AWS_SECRET_ACCESS_KEY}" = "" ]; then
   echo 'Missing required AWS_SECRET_ACCESS_KEY environment variable.'
   exit 1
 fi
-if [ "x${BUCKET}" == "x" ]; then
+if [ "${BUCKET}" = "" ]; then
   echo 'Missing required BUCKET environment variable.'
   exit 1
 fi
@@ -22,52 +31,137 @@ if ! grep -q 'VERSION = "'${VERSION}'"' config/constants.go ; then
   exit 1
 fi
 
-if ! grep -q '"PackageVersion": "'${VERSION}'",' .goxc.json ; then
-  echo 'Incorrect version found in .goxc.json, automatically setting to '${VERSION}''
-  goxc -wc -pv=${VERSION}
-fi
-
-rm -rf builds/
-
 echo 'Building version '${VERSION}' binaries'
-goxc validate compile
-
-mkdir -p builds/${VERSION}/binaries
-CURRENT_DIR=`pwd`
-cd builds/${VERSION}
-
-for d in * ; do
-  if [ "$d" != "binaries" ]; then
-    echo '{
-    "Version": "'${VERSION}'",
-    "Sha256": "'$(openssl dgst -sha256 -binary $d/catalyze* | openssl base64)'"
-}' > $d.json
-    mv $d/catalyze* binaries/$d
-    rm -rf $d
-    gzip binaries/$d
-  fi
-done
-
-cd ${CURRENT_DIR}
+go vet $(go list ./... | grep -v /vendor/)
+go test $(go list ./... | grep -v /vendor/)
+go install github.com/catalyzeio/cli
+GOOS=windows GOARCH=386 GOBIN="" go install github.com/catalyzeio/cli
+GOOS=windows GOARCH=amd64 GOBIN="" go install github.com/catalyzeio/cli
+GOOS=linux GOARCH=386 GOBIN="" go install github.com/catalyzeio/cli
+GOOS=linux GOARCH=amd64 GOBIN="" go install github.com/catalyzeio/cli
+GOOS=darwin GOARCH=386 GOBIN="" go install github.com/catalyzeio/cli
+GOOS=darwin GOARCH=amd64 GOBIN="" go install github.com/catalyzeio/cli
 
 echo 'Syncing S3 data to the public/ directory'
 rm -rf public/*
 aws s3 sync s3://${BUCKET}/catalyze public/
+mkdir public/${VERSION}
+
+echo 'Building version '${VERSION}' JSON configuration files'
+echo '{
+"Version": "'${VERSION}'",
+"Sha256": "'$(openssl dgst -sha256 -binary ${GOBIN}/windows_386/cli.exe | openssl base64)'"
+}' > public/windows-386.json
+echo '{
+"Version": "'${VERSION}'",
+"Sha256": "'$(openssl dgst -sha256 -binary ${GOBIN}/windows_amd64/cli.exe | openssl base64)'"
+}' > public/windows-amd64.json
+echo '{
+"Version": "'${VERSION}'",
+"Sha256": "'$(openssl dgst -sha256 -binary ${GOBIN}/linux_386/cli | openssl base64)'"
+}' > public/linux-386.json
+echo '{
+"Version": "'${VERSION}'",
+"Sha256": "'$(openssl dgst -sha256 -binary ${GOBIN}/cli | openssl base64)'"
+}' > public/linux-amd64.json
+echo '{
+"Version": "'${VERSION}'",
+"Sha256": "'$(openssl dgst -sha256 -binary ${GOBIN}/darwin_386/cli | openssl base64)'"
+}' > public/darwin-386.json
+echo '{
+"Version": "'${VERSION}'",
+"Sha256": "'$(openssl dgst -sha256 -binary ${GOBIN}/darwin_amd64/cli | openssl base64)'"
+}' > public/darwin-amd64.json
 
 echo 'Copying version '${VERSION}' binaries'
-mkdir public/${VERSION}
-mv builds/${VERSION}/binaries/* public/${VERSION}
-mv -f builds/${VERSION}/*.json public/
+cp ${GOBIN}/windows_386/cli.exe public/${VERSION}/windows-386
+cp ${GOBIN}/windows_amd64/cli.exe public/${VERSION}/windows-amd64
+cp ${GOBIN}/linux_386/cli public/${VERSION}/linux-386
+cp ${GOBIN}/cli public/${VERSION}/linux-amd64
+cp ${GOBIN}/darwin_386/cli public/${VERSION}/darwin-386
+cp ${GOBIN}/darwin_amd64/cli public/${VERSION}/darwin-amd64
 
-if [ "x${TEST}" == "xfalse" ]; then
+gzip public/${VERSION}/windows-386
+gzip public/${VERSION}/windows-amd64
+gzip public/${VERSION}/linux-386
+gzip public/${VERSION}/linux-amd64
+gzip public/${VERSION}/darwin-386
+gzip public/${VERSION}/darwin-amd64
+
+rm -rf builds
+mkdir -p builds/catalyze_${VERSION}_windows_386/
+mkdir -p builds/catalyze_${VERSION}_windows_amd64/
+mkdir -p builds/catalyze_${VERSION}_linux_386/
+mkdir -p builds/catalyze_${VERSION}_linux_amd64/
+mkdir -p builds/catalyze_${VERSION}_darwin_386/
+mkdir -p builds/catalyze_${VERSION}_darwin_amd64/
+
+cp ${GOBIN}/windows_386/cli.exe builds/catalyze_${VERSION}_windows_386/catalyze.exe
+cp ${GOBIN}/windows_amd64/cli.exe builds/catalyze_${VERSION}_windows_amd64/catalyze.exe
+cp ${GOBIN}/linux_386/cli builds/catalyze_${VERSION}_linux_386/catalyze
+cp ${GOBIN}/cli builds/catalyze_${VERSION}_linux_amd64/catalyze
+cp ${GOBIN}/darwin_386/cli builds/catalyze_${VERSION}_darwin_386/catalyze
+cp ${GOBIN}/darwin_amd64/cli builds/catalyze_${VERSION}_darwin_amd64/catalyze
+
+# generate zip files for windows and darwin
+cd builds/
+zip -r -X catalyze_${VERSION}_windows_386.zip catalyze_${VERSION}_windows_386
+zip -r -X catalyze_${VERSION}_windows_amd64.zip catalyze_${VERSION}_windows_amd64
+zip -r -X catalyze_${VERSION}_darwin_386.zip catalyze_${VERSION}_darwin_386
+zip -r -X catalyze_${VERSION}_darwin_amd64.zip catalyze_${VERSION}_darwin_amd64
+
+# generate tarballs for darwin and linux
+tar cvzf catalyze_${VERSION}_linux_386.tar.gz catalyze_${VERSION}_linux_386
+tar cvzf catalyze_${VERSION}_linux_amd64.tar.gz catalyze_${VERSION}_linux_amd64
+tar cvzf catalyze_${VERSION}_darwin_386.tar.gz catalyze_${VERSION}_darwin_386
+tar cvzf catalyze_${VERSION}_darwin_amd64.tar.gz catalyze_${VERSION}_darwin_amd64
+
+# generate debs for linux
+mkdir -p catalyze_${VERSION}_linux_386/usr/bin
+mv catalyze_${VERSION}_linux_386/catalyze catalyze_${VERSION}_linux_386/usr/bin/
+cp -r ../DEBIAN catalyze_${VERSION}_linux_386/
+sed -i "s/{{version}}/${VERSION}/g" catalyze_${VERSION}_linux_386/DEBIAN/control
+sed -i "s/{{arch}}/i386/g" catalyze_${VERSION}_linux_386/DEBIAN/control
+LINUX_386_SIZE="$(stat --printf='%s' catalyze_${VERSION}_linux_386/usr/bin/catalyze)"
+(( LINUX_386_SIZE = LINUX_386_SIZE /1024 ))
+sed -i "s/{{size}}/${LINUX_386_SIZE}/g" catalyze_${VERSION}_linux_386/DEBIAN/control
+dpkg-deb -b catalyze_${VERSION}_linux_386
+
+mkdir -p catalyze_${VERSION}_linux_amd64/usr/bin
+mv catalyze_${VERSION}_linux_amd64/catalyze catalyze_${VERSION}_linux_amd64/usr/bin/
+cp -r ../DEBIAN catalyze_${VERSION}_linux_amd64/
+sed -i "s/{{version}}/${VERSION}/g" catalyze_${VERSION}_linux_amd64/DEBIAN/control
+sed -i "s/{{arch}}/amd64/g" catalyze_${VERSION}_linux_amd64/DEBIAN/control
+LINUX_AMD64_SIZE="$(stat --printf='%s' catalyze_${VERSION}_linux_amd64/usr/bin/catalyze)"
+(( LINUX_AMD64_SIZE = LINUX_AMD64_SIZE /1024 ))
+sed -i "s/{{size}}/${LINUX_AMD64_SIZE}/g" catalyze_${VERSION}_linux_amd64/DEBIAN/control
+dpkg-deb -b catalyze_${VERSION}_linux_amd64
+
+cd ..
+
+if [ "${TEST}" = "false" ]; then
   echo 'Publishing to S3'
   aws s3 sync public/ s3://${BUCKET}/catalyze --delete --exclude "*.DS_Store"
 
   echo 'Releasing to Github'
-  goxc
+  cd builds/
+  GITHUB_RESP="$(curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST https://api.github.com/repos/catalyzeio/cli/releases -d '{\"tag_name\": \"'${VERSION}'\", \"target_commitish\": \"master\", \"name\": \"'${VERSION}'\", \"body\": \"Catalyze CLI Version '${VERSION}'\", \"draft\": false, \"prerelease\": false}')"
+  GITHUB_ID="$(echo ${GITHUB_RESP} | python -c 'import sys, json; print(json.load(sys.stdin)["id"])')"
+  GITHUB_UPLOAD_URL="$(echo ${GITHUB_RESP} | python -c 'import sys, json; print(json.load(sys.stdin)["upload_url"][:-13])')"
+  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/zip' ${GITHUB_UPLOAD_URL}?name=catalyze_${VERSION}_windows_386.zip --data-binary @catalyze_${VERSION}_windows_386.zip
+  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/zip' ${GITHUB_UPLOAD_URL}?name=catalyze_${VERSION}_windows_amd64.zip --data-binary @catalyze_${VERSION}_windows_amd64.zip
+  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/gzip' ${GITHUB_UPLOAD_URL}?name=catalyze_${VERSION}_linux_386.tar.gz --data-binary @catalyze_${VERSION}_linux_386.tar.gz
+  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/gzip' ${GITHUB_UPLOAD_URL}?name=catalyze_${VERSION}_linux_amd64.tar.gz --data-binary @catalyze_${VERSION}_linux_amd64.tar.gz
+  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/octet-stream' ${GITHUB_UPLOAD_URL}?name=catalyze_${VERSION}_linux_386.deb --data-binary @catalyze_${VERSION}_linux_386.deb
+  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/octet-stream' ${GITHUB_UPLOAD_URL}?name=catalyze_${VERSION}_linux_amd64.deb --data-binary @catalyze_${VERSION}_linux_amd64.deb
+  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/zip' ${GITHUB_UPLOAD_URL}?name=catalyze_${VERSION}_darwin_386.zip --data-binary @catalyze_${VERSION}_darwin_386.zip
+  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/zip' ${GITHUB_UPLOAD_URL}?name=catalyze_${VERSION}_darwin_amd64.zip --data-binary @catalyze_${VERSION}_darwin_amd64.zip
+  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/gzip' ${GITHUB_UPLOAD_URL}?name=catalyze_${VERSION}_darwin_386.tar.gz --data-binary @catalyze_${VERSION}_darwin_386.tar.gz
+  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/gzip' ${GITHUB_UPLOAD_URL}?name=catalyze_${VERSION}_darwin_amd64.tar.gz --data-binary @catalyze_${VERSION}_darwin_amd64.tar.gz
 else
   echo 'Test mode enabled, skipping S3 upload and Github release'
   ls -al
   ls -al public
+  cat public/*.json
   ls -al public/${VERSION}
 fi
