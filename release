@@ -25,6 +25,14 @@ if [ "${BUCKET}" = "" ]; then
   echo 'Missing required BUCKET environment variable.'
   exit 1
 fi
+if [ "${TEST}" = "false" ] && [ "${GITHUB_USERNAME}" = "" ]; then
+    echo 'Missing required GITHUB_USERNAME environment variable.'
+    exit 1
+fi
+if [ "${TEST}" = "false" ] && [ "${GITHUB_TOKEN}" = "" ]; then
+    echo 'Missing required GITHUB_TOKEN environment variable.'
+    exit 1
+fi
 
 if ! grep -q 'VERSION = "'${VERSION}'"' config/constants.go ; then
   echo ''${VERSION}' not found in config/constants. Please update the version in config/constants.go before proceeding'
