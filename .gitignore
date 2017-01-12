@@ -9,3 +9,4 @@ builds/
 build/
 public/
 Godeps/_workspace
+docs/cli-docs.md
