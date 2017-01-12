@@ -41,7 +41,6 @@ fi
 
 echo 'Building version '${VERSION}' binaries'
 go vet $(go list ./... | grep -v /vendor/)
-go test $(go list ./... | grep -v /vendor/)
 go install github.com/catalyzeio/cli
 GOOS=windows GOARCH=386 GOBIN="" go install github.com/catalyzeio/cli
 GOOS=windows GOARCH=amd64 GOBIN="" go install github.com/catalyzeio/cli
