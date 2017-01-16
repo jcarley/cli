@@ -30,6 +30,9 @@ func CmdScale(svcName, target, scaleString string, iw IWorker, is services.IServ
 		return err
 	}
 	scale := scaleFunc(workers.Workers[target], changeInScale)
+	if scale <= 0 {
+		return fmt.Errorf("Invalid scale specified: %d. You must set the scale to an integer greater than 0 or use the \"worker rm\" command to remove workers.", scale)
+	}
 	if existingScale, ok := workers.Workers[target]; !ok || scale > existingScale {
 		logrus.Printf("Deploying %d new workers with target %s for service %s", scale-existingScale, target, svcName)
 		workers.Workers[target] = scale
