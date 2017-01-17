@@ -135,6 +135,9 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 	}
 
 	app.Before = func() {
+		if config.Beta {
+			logrus.Println("This is a BETA release. Please contact Catalyze support at support@catalyze.io with any issues.")
+		}
 		r := config.FileSettingsRetriever{}
 		*settings = *r.GetSettings(*givenEnvName, "", accountsHost, authHost, "", paasHost, "", *username, *password)
 		skip, _ := strconv.ParseBool(os.Getenv(config.SkipVerifyEnvVar))
@@ -158,7 +161,11 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 		config.SaveSettings(settings)
 	}
 
-	versionString := fmt.Sprintf("version %s %s", config.VERSION, config.ArchString())
+	betaString := ""
+	if config.Beta {
+		betaString = "-BETA"
+	}
+	versionString := fmt.Sprintf("version %s%s %s", config.VERSION, betaString, config.ArchString())
 	logrus.Debugln(versionString)
 	app.Version("v version", versionString)
 }
