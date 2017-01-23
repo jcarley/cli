@@ -3,8 +3,6 @@ package environments
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/catalyzeio/cli/lib/httpclient"
 )
 
 func CmdRename(envID, name string, ie IEnvironments) error {
@@ -18,10 +16,10 @@ func (e *SEnvironments) Update(envID string, updates map[string]string) error {
 	if err != nil {
 		return err
 	}
-	headers := httpclient.GetHeaders(e.Settings.SessionToken, e.Settings.Version, e.Settings.Pod, e.Settings.UsersID)
-	resp, statusCode, err := httpclient.Put(b, fmt.Sprintf("%s%s/environments/%s", e.Settings.PaasHost, e.Settings.PaasHostVersion, envID), headers)
+	headers := e.Settings.HTTPManager.GetHeaders(e.Settings.SessionToken, e.Settings.Version, e.Settings.Pod, e.Settings.UsersID)
+	resp, statusCode, err := e.Settings.HTTPManager.Put(b, fmt.Sprintf("%s%s/environments/%s", e.Settings.PaasHost, e.Settings.PaasHostVersion, envID), headers)
 	if err != nil {
 		return err
 	}
-	return httpclient.ConvertResp(resp, statusCode, nil)
+	return e.Settings.HTTPManager.ConvertResp(resp, statusCode, nil)
 }

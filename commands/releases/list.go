@@ -7,7 +7,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/olekukonko/tablewriter"
 )
@@ -72,13 +71,13 @@ func CmdList(svcName string, ir IReleases, is services.IServices) error {
 }
 
 func (r *SReleases) List(svcID string) (*[]models.Release, error) {
-	headers := httpclient.GetHeaders(r.Settings.SessionToken, r.Settings.Version, r.Settings.Pod, r.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/releases", r.Settings.PaasHost, r.Settings.PaasHostVersion, r.Settings.EnvironmentID, svcID), headers)
+	headers := r.Settings.HTTPManager.GetHeaders(r.Settings.SessionToken, r.Settings.Version, r.Settings.Pod, r.Settings.UsersID)
+	resp, statusCode, err := r.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/releases", r.Settings.PaasHost, r.Settings.PaasHostVersion, r.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var rls []models.Release
-	err = httpclient.ConvertResp(resp, statusCode, &rls)
+	err = r.Settings.HTTPManager.ConvertResp(resp, statusCode, &rls)
 	if err != nil {
 		return nil, err
 	}
@@ -86,13 +85,13 @@ func (r *SReleases) List(svcID string) (*[]models.Release, error) {
 }
 
 func (r *SReleases) Retrieve(releaseName, svcID string) (*models.Release, error) {
-	headers := httpclient.GetHeaders(r.Settings.SessionToken, r.Settings.Version, r.Settings.Pod, r.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/releases/%s", r.Settings.PaasHost, r.Settings.PaasHostVersion, r.Settings.EnvironmentID, svcID, releaseName), headers)
+	headers := r.Settings.HTTPManager.GetHeaders(r.Settings.SessionToken, r.Settings.Version, r.Settings.Pod, r.Settings.UsersID)
+	resp, statusCode, err := r.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/releases/%s", r.Settings.PaasHost, r.Settings.PaasHostVersion, r.Settings.EnvironmentID, svcID, releaseName), headers)
 	if err != nil {
 		return nil, err
 	}
 	var rls models.Release
-	err = httpclient.ConvertResp(resp, statusCode, &rls)
+	err = r.Settings.HTTPManager.ConvertResp(resp, statusCode, &rls)
 	if err != nil {
 		return nil, err
 	}

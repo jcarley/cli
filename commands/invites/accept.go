@@ -5,7 +5,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/lib/auth"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/prompts"
 )
 
@@ -29,13 +28,13 @@ func CmdAccept(inviteCode string, ii IInvites, ia auth.IAuth, ip prompts.IPrompt
 }
 
 func (i *SInvites) Accept(inviteCode string) (string, error) {
-	headers := httpclient.GetHeaders(i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod, i.Settings.UsersID)
-	resp, statusCode, err := httpclient.Post(nil, fmt.Sprintf("%s%s/orgs/accept-invite/%s", i.Settings.AuthHost, i.Settings.AuthHostVersion, inviteCode), headers)
+	headers := i.Settings.HTTPManager.GetHeaders(i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod, i.Settings.UsersID)
+	resp, statusCode, err := i.Settings.HTTPManager.Post(nil, fmt.Sprintf("%s%s/orgs/accept-invite/%s", i.Settings.AuthHost, i.Settings.AuthHostVersion, inviteCode), headers)
 	if err != nil {
 		return "", err
 	}
 	var org map[string]string
-	err = httpclient.ConvertResp(resp, statusCode, &org)
+	err = i.Settings.HTTPManager.ConvertResp(resp, statusCode, &org)
 	if err != nil {
 		return "", err
 	}

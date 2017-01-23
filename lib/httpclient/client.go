@@ -13,7 +13,6 @@ import (
 	"net/http"
 	"os"
 	"runtime"
-	"strconv"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -24,26 +23,27 @@ import (
 
 const defaultRedirectLimit = 10
 
-var client *http.Client
+type TLSHTTPManager struct {
+	client *http.Client
+}
 
-func init() {
+// NewTLSHTTPManager constructs and returns a new instance of HTTPManager
+// with TLSv1.2 and redirect support.
+func NewTLSHTTPManager(skipVerify bool) models.HTTPManager {
 	var tr = &http.Transport{
 		TLSClientConfig: &tls.Config{
 			MinVersion: tls.VersionTLS12,
 		},
 	}
-	if skip, err := strconv.ParseBool(os.Getenv(config.SkipVerifyEnvVar)); err == nil && skip {
+	if skipVerify {
 		tr.TLSClientConfig.InsecureSkipVerify = true
 	}
-
-	client = &http.Client{
-		Transport:     tr,
-		CheckRedirect: redirectPolicyFunc,
+	return &TLSHTTPManager{
+		client: &http.Client{
+			Transport:     tr,
+			CheckRedirect: redirectPolicyFunc,
+		},
 	}
-}
-
-func getClient() *http.Client {
-	return client
 }
 
 func redirectPolicyFunc(req *http.Request, via []*http.Request) error {
@@ -64,7 +64,7 @@ func redirectPolicyFunc(req *http.Request, via []*http.Request) error {
 }
 
 // GetHeaders builds a map of headers for a new request.
-func GetHeaders(sessionToken, version, pod, userID string) map[string][]string {
+func (m *TLSHTTPManager) GetHeaders(sessionToken, version, pod, userID string) map[string][]string {
 	b := make([]byte, 32)
 	rand.Read(b)
 	nonce := base64.StdEncoding.EncodeToString(b)
@@ -86,10 +86,10 @@ func GetHeaders(sessionToken, version, pod, userID string) map[string][]string {
 // and returned as an error. Otherwise it will be marshalled into the requested
 // interface. ALWAYS PASS A POINTER INTO THIS METHOD. If you don't pass a struct
 // pointer your original object will be nil or an empty struct.
-func ConvertResp(b []byte, statusCode int, s interface{}) error {
+func (m *TLSHTTPManager) ConvertResp(b []byte, statusCode int, s interface{}) error {
 	logrus.Debugf("%d resp: %s", statusCode, string(b))
-	if IsError(statusCode) {
-		return ConvertError(b, statusCode)
+	if m.isError(statusCode) {
+		return m.convertError(b, statusCode)
 	}
 	if b == nil || len(b) == 0 || s == nil {
 		return nil
@@ -97,13 +97,13 @@ func ConvertResp(b []byte, statusCode int, s interface{}) error {
 	return json.Unmarshal(b, s)
 }
 
-// IsError checks if an HTTP response code is outside of the "OK" range.
-func IsError(statusCode int) bool {
+// isError checks if an HTTP response code is outside of the "OK" range.
+func (m *TLSHTTPManager) isError(statusCode int) bool {
 	return statusCode < 200 || statusCode >= 300
 }
 
-// ConvertError attempts to convert a response into a usable error object.
-func ConvertError(b []byte, statusCode int) error {
+// convertError attempts to convert a response into a usable error object.
+func (m *TLSHTTPManager) convertError(b []byte, statusCode int) error {
 	msg := fmt.Sprintf("(%d)", statusCode)
 	if b != nil && len(b) > 0 {
 		var errs models.Error
@@ -124,28 +124,28 @@ func ConvertError(b []byte, statusCode int) error {
 }
 
 // Get performs a GET request
-func Get(body []byte, url string, headers map[string][]string) ([]byte, int, error) {
+func (m *TLSHTTPManager) Get(body []byte, url string, headers map[string][]string) ([]byte, int, error) {
 	reader := bytes.NewReader(body)
-	return MakeRequest("GET", url, reader, headers)
+	return m.makeRequest("GET", url, reader, headers)
 }
 
 // Post performs a POST request
-func Post(body []byte, url string, headers map[string][]string) ([]byte, int, error) {
+func (m *TLSHTTPManager) Post(body []byte, url string, headers map[string][]string) ([]byte, int, error) {
 	reader := bytes.NewReader(body)
-	return MakeRequest("POST", url, reader, headers)
+	return m.makeRequest("POST", url, reader, headers)
 }
 
 // PostFile uploads a file with a POST
-func PostFile(filepath string, url string, headers map[string][]string) ([]byte, int, error) {
-	return uploadFile("POST", filepath, url, headers)
+func (m *TLSHTTPManager) PostFile(filepath string, url string, headers map[string][]string) ([]byte, int, error) {
+	return m.uploadFile("POST", filepath, url, headers)
 }
 
 // PutFile uploads a file with a PUT
-func PutFile(filepath string, url string, headers map[string][]string) ([]byte, int, error) {
-	return uploadFile("PUT", filepath, url, headers)
+func (m *TLSHTTPManager) PutFile(filepath string, url string, headers map[string][]string) ([]byte, int, error) {
+	return m.uploadFile("PUT", filepath, url, headers)
 }
 
-func uploadFile(method, filepath, url string, headers map[string][]string) ([]byte, int, error) {
+func (m *TLSHTTPManager) uploadFile(method, filepath, url string, headers map[string][]string) ([]byte, int, error) {
 	logrus.Debugf("%s %s", method, url)
 	logrus.Debugf("%+v", headers)
 	logrus.Debugf("%s", filepath)
@@ -155,11 +155,10 @@ func uploadFile(method, filepath, url string, headers map[string][]string) ([]by
 		return nil, 0, err
 	}
 	info, _ := file.Stat()
-	client := getClient()
 	req, _ := http.NewRequest(method, url, file)
 	req.ContentLength = info.Size()
 
-	resp, err := client.Do(req)
+	resp, err := m.client.Do(req)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -169,29 +168,28 @@ func uploadFile(method, filepath, url string, headers map[string][]string) ([]by
 }
 
 // Put performs a PUT request
-func Put(body []byte, url string, headers map[string][]string) ([]byte, int, error) {
+func (m *TLSHTTPManager) Put(body []byte, url string, headers map[string][]string) ([]byte, int, error) {
 	reader := bytes.NewReader(body)
-	return MakeRequest("PUT", url, reader, headers)
+	return m.makeRequest("PUT", url, reader, headers)
 }
 
 // Delete performs a DELETE request
-func Delete(body []byte, url string, headers map[string][]string) ([]byte, int, error) {
+func (m *TLSHTTPManager) Delete(body []byte, url string, headers map[string][]string) ([]byte, int, error) {
 	reader := bytes.NewReader(body)
-	return MakeRequest("DELETE", url, reader, headers)
+	return m.makeRequest("DELETE", url, reader, headers)
 }
 
 // MakeRequest is a generic HTTP runner that performs a request and returns
 // the result body as a byte array. It's up to the caller to transform them
 // into an object.
-func MakeRequest(method string, url string, body io.Reader, headers map[string][]string) ([]byte, int, error) {
+func (m *TLSHTTPManager) makeRequest(method string, url string, body io.Reader, headers map[string][]string) ([]byte, int, error) {
 	logrus.Debugf("%s %s", method, url)
 	logrus.Debugf("%+v", headers)
 	logrus.Debugf("%s", body)
-	client := getClient()
 	req, _ := http.NewRequest(method, url, body)
 	req.Header = headers
 
-	resp, err := client.Do(req)
+	resp, err := m.client.Do(req)
 	if err != nil {
 		return nil, 0, err
 	}

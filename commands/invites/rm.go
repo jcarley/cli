@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/lib/httpclient"
 )
 
 func CmdRm(inviteID string, ii IInvites) error {
@@ -19,10 +18,10 @@ func CmdRm(inviteID string, ii IInvites) error {
 // Rm deletes an invite sent to a user. This invite must not already be
 // accepted.
 func (i *SInvites) Rm(inviteID string) error {
-	headers := httpclient.GetHeaders(i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod, i.Settings.UsersID)
-	resp, statusCode, err := httpclient.Delete(nil, fmt.Sprintf("%s%s/orgs/%s/invites/%s", i.Settings.AuthHost, i.Settings.AuthHostVersion, i.Settings.OrgID, inviteID), headers)
+	headers := i.Settings.HTTPManager.GetHeaders(i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod, i.Settings.UsersID)
+	resp, statusCode, err := i.Settings.HTTPManager.Delete(nil, fmt.Sprintf("%s%s/orgs/%s/invites/%s", i.Settings.AuthHost, i.Settings.AuthHostVersion, i.Settings.OrgID, inviteID), headers)
 	if err != nil {
 		return err
 	}
-	return httpclient.ConvertResp(resp, statusCode, nil)
+	return i.Settings.HTTPManager.ConvertResp(resp, statusCode, nil)
 }

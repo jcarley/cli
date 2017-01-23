@@ -14,7 +14,6 @@ import (
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/commands/sites"
 	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/models"
 )
@@ -89,12 +88,12 @@ func (l *SLogs) Output(queryString, sessionToken, domain string, follow bool, ho
 	for {
 		queryBytes := generateQuery(queryString, appLogsIdentifier, appLogsValue, startTimestamp, from)
 
-		resp, statusCode, err := httpclient.Get(queryBytes, fmt.Sprintf("%s/_search", urlString), headers)
+		resp, statusCode, err := l.Settings.HTTPManager.Get(queryBytes, fmt.Sprintf("%s/_search", urlString), headers)
 		if err != nil {
 			return from, startTimestamp, err
 		}
 		var logs models.Logs
-		err = httpclient.ConvertResp(resp, statusCode, &logs)
+		err = l.Settings.HTTPManager.ConvertResp(resp, statusCode, &logs)
 		if err != nil {
 			return from, startTimestamp, err
 		}

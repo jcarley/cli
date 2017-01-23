@@ -6,7 +6,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
 
@@ -44,13 +43,13 @@ func (s *SSites) Create(name, cert, upstreamServiceID, svcID string, siteValues 
 	if err != nil {
 		return nil, err
 	}
-	headers := httpclient.GetHeaders(s.Settings.SessionToken, s.Settings.Version, s.Settings.Pod, s.Settings.UsersID)
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/sites", s.Settings.PaasHost, s.Settings.PaasHostVersion, s.Settings.EnvironmentID, svcID), headers)
+	headers := s.Settings.HTTPManager.GetHeaders(s.Settings.SessionToken, s.Settings.Version, s.Settings.Pod, s.Settings.UsersID)
+	resp, statusCode, err := s.Settings.HTTPManager.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/sites", s.Settings.PaasHost, s.Settings.PaasHostVersion, s.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var createdSite models.Site
-	err = httpclient.ConvertResp(resp, statusCode, &createdSite)
+	err = s.Settings.HTTPManager.ConvertResp(resp, statusCode, &createdSite)
 	if err != nil {
 		return nil, err
 	}

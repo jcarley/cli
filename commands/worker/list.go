@@ -5,7 +5,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/models"
 	"github.com/olekukonko/tablewriter"
@@ -37,7 +36,8 @@ func CmdList(svcName string, iw IWorker, is services.IServices, ij jobs.IJobs) e
 		workerJobs[target] = &workerJob{scale, 0}
 	}
 	if len(workerJobs) == 0 {
-		logrus.Printf("No workers found for service %s", svcName)
+		logrus.Printf("No running workers found for %s", svcName)
+		logrus.Printf("\nYou are using 0 out of your available %d workers for %s", service.WorkerScale, svcName)
 		return nil
 	}
 	for _, j := range *jobs {
@@ -50,7 +50,9 @@ func CmdList(svcName string, iw IWorker, is services.IServices, ij jobs.IJobs) e
 	}
 
 	data := [][]string{{"TARGET", "SCALE", "RUNNING JOBS"}}
+	total := 0
 	for target, wj := range workerJobs {
+		total += wj.scale
 		data = append(data, []string{target, fmt.Sprintf("%d", wj.scale), fmt.Sprintf("%d", wj.running)})
 	}
 
@@ -62,17 +64,18 @@ func CmdList(svcName string, iw IWorker, is services.IServices, ij jobs.IJobs) e
 	table.SetRowSeparator("")
 	table.AppendBulk(data)
 	table.Render()
+	logrus.Printf("\nYou are using %d out of your available %d workers for %s", total, service.WorkerScale, svcName)
 	return nil
 }
 
 func (w *SWorker) Retrieve(svcID string) (*models.Workers, error) {
-	headers := httpclient.GetHeaders(w.Settings.SessionToken, w.Settings.Version, w.Settings.Pod, w.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/workers", w.Settings.PaasHost, w.Settings.PaasHostVersion, w.Settings.EnvironmentID, svcID), headers)
+	headers := w.Settings.HTTPManager.GetHeaders(w.Settings.SessionToken, w.Settings.Version, w.Settings.Pod, w.Settings.UsersID)
+	resp, statusCode, err := w.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/workers", w.Settings.PaasHost, w.Settings.PaasHostVersion, w.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var workers models.Workers
-	err = httpclient.ConvertResp(resp, statusCode, &workers)
+	err = w.Settings.HTTPManager.ConvertResp(resp, statusCode, &workers)
 	if err != nil {
 		return nil, err
 	}

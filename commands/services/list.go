@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 	"github.com/olekukonko/tablewriter"
 )
@@ -19,9 +18,9 @@ func CmdServices(is IServices) error {
 		logrus.Println("No services found")
 		return nil
 	}
-	data := [][]string{{"NAME", "DNS", "RAM (GB)", "CPU", "STORAGE (GB)"}}
+	data := [][]string{{"NAME", "DNS", "RAM (GB)", "CPU", "STORAGE (GB)", "WORKER LIMIT"}}
 	for _, s := range *svcs {
-		data = append(data, []string{s.Label, s.DNS, fmt.Sprintf("%d", s.Size.RAM), fmt.Sprintf("%d", s.Size.CPU), fmt.Sprintf("%d", s.Size.Storage)})
+		data = append(data, []string{s.Label, s.DNS, fmt.Sprintf("%d", s.Size.RAM), fmt.Sprintf("%d", s.Size.CPU), fmt.Sprintf("%d", s.Size.Storage), fmt.Sprintf("%d", s.WorkerScale)})
 	}
 
 	table := tablewriter.NewWriter(logrus.StandardLogger().Out)
@@ -40,13 +39,13 @@ func (s *SServices) List() (*[]models.Service, error) {
 }
 
 func (s *SServices) ListByEnvID(envID, podID string) (*[]models.Service, error) {
-	headers := httpclient.GetHeaders(s.Settings.SessionToken, s.Settings.Version, podID, s.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services", s.Settings.PaasHost, s.Settings.PaasHostVersion, envID), headers)
+	headers := s.Settings.HTTPManager.GetHeaders(s.Settings.SessionToken, s.Settings.Version, podID, s.Settings.UsersID)
+	resp, statusCode, err := s.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services", s.Settings.PaasHost, s.Settings.PaasHostVersion, envID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var services []models.Service
-	err = httpclient.ConvertResp(resp, statusCode, &services)
+	err = s.Settings.HTTPManager.ConvertResp(resp, statusCode, &services)
 	if err != nil {
 		return nil, err
 	}
@@ -54,13 +53,13 @@ func (s *SServices) ListByEnvID(envID, podID string) (*[]models.Service, error) 
 }
 
 func (s *SServices) Retrieve(svcID string) (*models.Service, error) {
-	headers := httpclient.GetHeaders(s.Settings.SessionToken, s.Settings.Version, s.Settings.Pod, s.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s", s.Settings.PaasHost, s.Settings.PaasHostVersion, s.Settings.EnvironmentID, s.Settings.ServiceID), headers)
+	headers := s.Settings.HTTPManager.GetHeaders(s.Settings.SessionToken, s.Settings.Version, s.Settings.Pod, s.Settings.UsersID)
+	resp, statusCode, err := s.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s", s.Settings.PaasHost, s.Settings.PaasHostVersion, s.Settings.EnvironmentID, s.Settings.ServiceID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var service models.Service
-	err = httpclient.ConvertResp(resp, statusCode, &service)
+	err = s.Settings.HTTPManager.ConvertResp(resp, statusCode, &service)
 	if err != nil {
 		return nil, err
 	}

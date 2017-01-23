@@ -4,18 +4,15 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
-	"os/signal"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/crypto"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/lib/prompts"
 	"github.com/catalyzeio/cli/lib/transfer"
@@ -33,6 +30,29 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, sk
 	if service == nil {
 		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", databaseName)
 	}
+	key := make([]byte, crypto.KeySize)
+	iv := make([]byte, crypto.IVSize)
+	rand.Read(key)
+	rand.Read(iv)
+	file, err := os.Open(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	fi, err := file.Stat()
+	if err != nil {
+		return err
+	}
+	encryptFileReader, err := id.NewEncryptReader(file, key, iv)
+	if err != nil {
+		return err
+	}
+	uploadSize := encryptFileReader.CalculateTotalSize(int(fi.Size()))
+	fiveGB := transfer.GB * 5
+	if transfer.ByteSize(uploadSize) > fiveGB {
+		return fmt.Errorf("the encrypted size of %s exceeds the maximum upload size of %s", filePath, fiveGB)
+	}
+	rt := transfer.NewReaderTransfer(encryptFileReader, uploadSize)
 	if !skipBackup {
 		logrus.Printf("Backing up \"%s\" before performing the import", databaseName)
 		job, err := id.Backup(service)
@@ -42,13 +62,20 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, sk
 		logrus.Printf("Backup started (job ID = %s)", job.ID)
 
 		// all because logrus treats print, println, and printf the same
-		logrus.StandardLogger().Out.Write([]byte("Polling until backup finishes."))
+		logrus.Println("Polling until backup finishes.")
+		if job.IsSnapshotBackup != nil && *job.IsSnapshotBackup {
+			logrus.Printf("This is a snapshot backup, it may be a while before this backup shows up in the \"catalyze db list %s\" command.", databaseName)
+			err = ij.WaitToAppear(job.ID, service.ID)
+			if err != nil {
+				return err
+			}
+		}
 		status, err := ij.PollTillFinished(job.ID, service.ID)
 		if err != nil {
 			return err
 		}
 		job.Status = status
-		logrus.Printf("\nEnded in status '%s'", job.Status)
+		logrus.Printf("Ended in status '%s'", job.Status)
 		err = id.DumpLogs("backup", job, service)
 		if err != nil {
 			return err
@@ -63,7 +90,7 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, sk
 		}
 	}
 	logrus.Printf("Importing '%s' into %s (ID = %s)", filePath, databaseName, service.ID)
-	job, err := id.Import(filePath, mongoCollection, mongoDatabase, service)
+	job, err := id.Import(rt, key, iv, mongoCollection, mongoDatabase, service)
 	if err != nil {
 		return err
 	}
@@ -95,25 +122,7 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, sk
 // PostgreSQL and MySQL, this should be a single `.sql` file. For Mongo, this
 // should be a single tar'ed, gzipped archive (`.tar.gz`) of the database dump
 // that you want to import.
-func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *models.Service) (*models.Job, error) {
-	key := make([]byte, crypto.KeySize)
-	iv := make([]byte, crypto.IVSize)
-	rand.Read(key)
-	rand.Read(iv)
-	file, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-	fi, err := file.Stat()
-	if err != nil {
-		return nil, err
-	}
-	encryptFileReader, err := d.Crypto.NewEncryptReader(file, key, iv)
-	if err != nil {
-		return nil, err
-	}
-	rt := transfer.NewReaderTransfer(encryptFileReader, encryptFileReader.CalculateTotalSize(int(fi.Size())))
+func (d *SDb) Import(rt *transfer.ReaderTransfer, key, iv []byte, mongoCollection, mongoDatabase string, service *models.Service) (*models.Job, error) {
 	options := map[string]string{}
 	if mongoCollection != "" {
 		options["databaseCollection"] = mongoCollection
@@ -121,38 +130,20 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	if mongoDatabase != "" {
 		options["database"] = mongoDatabase
 	}
-	tmpAuth, err := d.TempUploadAuth(service)
+	tmpURL, err := d.TempUploadURL(service)
 	if err != nil {
 		return nil, err
 	}
-	defer d.revokeAuth(service, tmpAuth)
-	// Make sure to revoke temp auth even with an interrupt.
-	c := make(chan os.Signal, 1)
-	// "done" is used below to cancel printing the download status
+	u, err := url.Parse(tmpURL.URL)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("PUT", tmpURL.URL, rt)
+	//req.URL.Opaque = strings.Replace(req.URL.Path, ":", "%3A", -1)
+	//req.URL.Opaque = strings.Replace(req.URL.Opaque, "|", "%7C", -1)
 	done := make(chan bool)
-	signal.Notify(c, os.Interrupt)
-	go func() {
-		<-c
-		done <- false
-		rt.KillTransfer()
-		d.revokeAuth(service, tmpAuth)
-		os.Exit(1)
-	}()
-	sess, err := session.NewSession(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.NewStaticCredentials(tmpAuth.AccessKeyID, tmpAuth.SecretAccessKey, tmpAuth.SessionToken)})
-	if err != nil {
-		done <- false
-		return nil, err
-	}
-	uploader := s3manager.NewUploader(sess)
-
 	go printTransferStatus(false, rt, done)
-
-	_, err = uploader.Upload(&s3manager.UploadInput{
-		Bucket:               aws.String(tmpAuth.Bucket),
-		Key:                  aws.String(tmpAuth.FileName),
-		Body:                 rt,
-		ServerSideEncryption: aws.String("AES256"),
-	})
+	_, err = http.DefaultClient.Do(req)
 	if err != nil {
 		done <- false
 		return nil, err
@@ -162,7 +153,7 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	for key, value := range options {
 		importParams[key] = value
 	}
-	importParams["filename"] = tmpAuth.FileName
+	importParams["filename"] = aws.String(strings.Split(u.Path, ".")[0])
 	importParams["encryptionKey"] = string(d.Crypto.Hex(key, crypto.KeySize*2))
 	importParams["encryptionIV"] = string(d.Crypto.Hex(iv, crypto.IVSize*2))
 	importParams["dropDatabase"] = false
@@ -171,44 +162,29 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	if err != nil {
 		return nil, err
 	}
-	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/import", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
+	headers := d.Settings.HTTPManager.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
+	resp, statusCode, err := d.Settings.HTTPManager.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/import", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var job models.Job
-	err = httpclient.ConvertResp(resp, statusCode, &job)
+	err = d.Settings.HTTPManager.ConvertResp(resp, statusCode, &job)
 	if err != nil {
 		return nil, err
 	}
 	return &job, nil
 }
 
-func (d *SDb) revokeAuth(service *models.Service, tmpAuth *models.TempAuth) {
-	if err := d.RevokeTempUploadAuth(service, tmpAuth.UserID); err != nil {
-		logrus.Printf("Failed to cleanup after uploading your encrypted file: %s", err)
-	}
-}
-
-func (d *SDb) TempUploadAuth(service *models.Service) (*models.TempAuth, error) {
-	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/temp-auth?action_type=%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID, "upload"), headers)
+func (d *SDb) TempUploadURL(service *models.Service) (*models.TempURL, error) {
+	headers := d.Settings.HTTPManager.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
+	resp, statusCode, err := d.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/restore-url", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID), headers)
 	if err != nil {
 		return nil, err
 	}
-	var tempAuth models.TempAuth
-	err = httpclient.ConvertResp(resp, statusCode, &tempAuth)
+	var tempURL models.TempURL
+	err = d.Settings.HTTPManager.ConvertResp(resp, statusCode, &tempURL)
 	if err != nil {
 		return nil, err
 	}
-	return &tempAuth, nil
-}
-
-func (d *SDb) RevokeTempUploadAuth(service *models.Service, userID string) error {
-	headers := httpclient.GetHeaders(d.Settings.SessionToken, d.Settings.Version, d.Settings.Pod, d.Settings.UsersID)
-	resp, statusCode, err := httpclient.Delete(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/revoke-temp-auth?user_id=%s", d.Settings.PaasHost, d.Settings.PaasHostVersion, d.Settings.EnvironmentID, service.ID, url.QueryEscape(userID)), headers)
-	if err != nil {
-		return err
-	}
-	return httpclient.ConvertResp(resp, statusCode, nil)
+	return &tempURL, nil
 }

@@ -6,7 +6,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/httpclient"
 )
 
 func CmdRake(svcName, taskName, defaultSvcID string, ir IRake, is services.IServices) error {
@@ -39,10 +38,10 @@ func (r *SRake) Run(taskName, svcID string) error {
 	if err != nil {
 		return err
 	}
-	headers := httpclient.GetHeaders(r.Settings.SessionToken, r.Settings.Version, r.Settings.Pod, r.Settings.UsersID)
-	resp, statusCode, err := httpclient.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/rake", r.Settings.PaasHost, r.Settings.PaasHostVersion, r.Settings.EnvironmentID, svcID), headers)
+	headers := r.Settings.HTTPManager.GetHeaders(r.Settings.SessionToken, r.Settings.Version, r.Settings.Pod, r.Settings.UsersID)
+	resp, statusCode, err := r.Settings.HTTPManager.Post(b, fmt.Sprintf("%s%s/environments/%s/services/%s/rake", r.Settings.PaasHost, r.Settings.PaasHostVersion, r.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return err
 	}
-	return httpclient.ConvertResp(resp, statusCode, nil)
+	return r.Settings.HTTPManager.ConvertResp(resp, statusCode, nil)
 }

@@ -1,6 +1,8 @@
 package db
 
 import (
+	"io"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/config"
@@ -8,7 +10,9 @@ import (
 	"github.com/catalyzeio/cli/lib/crypto"
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/lib/prompts"
+	"github.com/catalyzeio/cli/lib/transfer"
 	"github.com/catalyzeio/cli/models"
+	"github.com/catalyzeio/gcm/gcm"
 	"github.com/jault3/mow.cli"
 )
 
@@ -222,12 +226,12 @@ type IDb interface {
 	Backup(service *models.Service) (*models.Job, error)
 	Download(backupID, filePath string, service *models.Service) error
 	Export(filePath string, job *models.Job, service *models.Service) error
-	Import(filePath, mongoCollection, mongoDatabase string, service *models.Service) (*models.Job, error)
+	Import(rt *transfer.ReaderTransfer, key, iv []byte, mongoCollection, mongoDatabase string, service *models.Service) (*models.Job, error)
 	List(page, pageSize int, service *models.Service) (*[]models.Job, error)
-	TempUploadAuth(service *models.Service) (*models.TempAuth, error)
 	TempDownloadURL(jobID string, service *models.Service) (*models.TempURL, error)
 	TempLogsURL(jobID string, serviceID string) (*models.TempURL, error)
 	DumpLogs(taskType string, job *models.Job, service *models.Service) error
+	NewEncryptReader(reader io.Reader, key, iv []byte) (*gcm.EncryptReader, error)
 }
 
 // SDb is a concrete implementation of IDb
@@ -244,4 +248,8 @@ func New(settings *models.Settings, crypto crypto.ICrypto, jobs jobs.IJobs) IDb 
 		Crypto:   crypto,
 		Jobs:     jobs,
 	}
+}
+
+func (db *SDb) NewEncryptReader(reader io.Reader, key, iv []byte) (*gcm.EncryptReader, error) {
+	return db.Crypto.NewEncryptReader(reader, key, iv)
 }

@@ -5,7 +5,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
 
@@ -30,13 +29,13 @@ func CmdList(ic ICerts, is services.IServices) error {
 }
 
 func (c *SCerts) List(svcID string) (*[]models.Cert, error) {
-	headers := httpclient.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod, c.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/certs", c.Settings.PaasHost, c.Settings.PaasHostVersion, c.Settings.EnvironmentID, svcID), headers)
+	headers := c.Settings.HTTPManager.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod, c.Settings.UsersID)
+	resp, statusCode, err := c.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/certs", c.Settings.PaasHost, c.Settings.PaasHostVersion, c.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var certs []models.Cert
-	err = httpclient.ConvertResp(resp, statusCode, &certs)
+	err = c.Settings.HTTPManager.ConvertResp(resp, statusCode, &certs)
 	if err != nil {
 		return nil, err
 	}

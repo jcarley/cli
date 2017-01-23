@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/catalyzeio/cli/commands/associate"
@@ -24,6 +25,7 @@ import (
 	"github.com/catalyzeio/cli/commands/keys"
 	"github.com/catalyzeio/cli/commands/logout"
 	"github.com/catalyzeio/cli/commands/logs"
+	"github.com/catalyzeio/cli/commands/maintenance"
 	"github.com/catalyzeio/cli/commands/metrics"
 	"github.com/catalyzeio/cli/commands/rake"
 	"github.com/catalyzeio/cli/commands/redeploy"
@@ -44,6 +46,7 @@ import (
 	"github.com/catalyzeio/cli/config"
 	"github.com/catalyzeio/cli/models"
 
+	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/lib/pods"
 	"github.com/catalyzeio/cli/lib/updater"
 
@@ -132,8 +135,13 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 	}
 
 	app.Before = func() {
+		if config.Beta {
+			logrus.Println("This is a BETA release. Please contact Catalyze support at support@catalyze.io with any issues.")
+		}
 		r := config.FileSettingsRetriever{}
 		*settings = *r.GetSettings(*givenEnvName, "", accountsHost, authHost, "", paasHost, "", *username, *password)
+		skip, _ := strconv.ParseBool(os.Getenv(config.SkipVerifyEnvVar))
+		settings.HTTPManager = httpclient.NewTLSHTTPManager(skip)
 		logrus.Debugf("%+v", settings)
 
 		if settings.Pods == nil || len(*settings.Pods) == 0 || settings.PodCheck < time.Now().Unix() {
@@ -153,7 +161,11 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 		config.SaveSettings(settings)
 	}
 
-	versionString := fmt.Sprintf("version %s %s", config.VERSION, config.ArchString())
+	betaString := ""
+	if config.Beta {
+		betaString = "-BETA"
+	}
+	versionString := fmt.Sprintf("version %s%s %s", config.VERSION, betaString, config.ArchString())
 	logrus.Debugln(versionString)
 	app.Version("v version", versionString)
 }
@@ -185,6 +197,7 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.CommandLong(keys.Cmd.Name, keys.Cmd.ShortHelp, keys.Cmd.LongHelp, keys.Cmd.CmdFunc(settings))
 	app.CommandLong(logout.Cmd.Name, logout.Cmd.ShortHelp, logout.Cmd.LongHelp, logout.Cmd.CmdFunc(settings))
 	app.CommandLong(logs.Cmd.Name, logs.Cmd.ShortHelp, logs.Cmd.LongHelp, logs.Cmd.CmdFunc(settings))
+	app.CommandLong(maintenance.Cmd.Name, maintenance.Cmd.ShortHelp, maintenance.Cmd.LongHelp, maintenance.Cmd.CmdFunc(settings))
 	app.CommandLong(metrics.Cmd.Name, metrics.Cmd.ShortHelp, metrics.Cmd.LongHelp, metrics.Cmd.CmdFunc(settings))
 	app.CommandLong(rake.Cmd.Name, rake.Cmd.ShortHelp, rake.Cmd.LongHelp, rake.Cmd.CmdFunc(settings))
 	app.CommandLong(redeploy.Cmd.Name, redeploy.Cmd.ShortHelp, redeploy.Cmd.LongHelp, redeploy.Cmd.CmdFunc(settings))

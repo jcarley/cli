@@ -6,7 +6,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"github.com/catalyzeio/cli/models"
 )
 
@@ -23,18 +22,32 @@ func (j *SJobs) PollTillFinished(jobID, svcID string) (string, error) {
 	return j.PollForStatus([]string{"finished"}, jobID, svcID)
 }
 
+func (j *SJobs) WaitToAppear(jobID, svcID string) error {
+	for {
+		headers := j.Settings.HTTPManager.GetHeaders(j.Settings.SessionToken, j.Settings.Version, j.Settings.Pod, j.Settings.UsersID)
+		_, statusCode, err := j.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs/%s", j.Settings.PaasHost, j.Settings.PaasHostVersion, j.Settings.EnvironmentID, svcID, jobID), headers)
+		if err != nil {
+			return err
+		}
+		if statusCode >= 200 && statusCode < 300 {
+			return nil
+		}
+		time.Sleep(time.Second * 2)
+	}
+}
+
 func (j *SJobs) PollForStatus(statuses []string, jobID, svcID string) (string, error) {
 	var job models.Job
 	failedAttempts := 0
 poll:
 	for {
 		failed := false
-		headers := httpclient.GetHeaders(j.Settings.SessionToken, j.Settings.Version, j.Settings.Pod, j.Settings.UsersID)
-		resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs/%s", j.Settings.PaasHost, j.Settings.PaasHostVersion, j.Settings.EnvironmentID, svcID, jobID), headers)
+		headers := j.Settings.HTTPManager.GetHeaders(j.Settings.SessionToken, j.Settings.Version, j.Settings.Pod, j.Settings.UsersID)
+		resp, statusCode, err := j.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/jobs/%s", j.Settings.PaasHost, j.Settings.PaasHostVersion, j.Settings.EnvironmentID, svcID, jobID), headers)
 		if err != nil {
 			failed = true
 		}
-		err = httpclient.ConvertResp(resp, statusCode, &job)
+		err = j.Settings.HTTPManager.ConvertResp(resp, statusCode, &job)
 		if err != nil {
 			failed = true
 		}

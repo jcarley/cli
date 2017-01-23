@@ -7,7 +7,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/httpclient"
 	"gopkg.in/yaml.v2"
 )
 
@@ -79,13 +78,13 @@ func CmdList(svcName, defaultSvcID string, formatter Formatter, iv IVars, is ser
 
 // List lists all environment variables.
 func (v *SVars) List(svcID string) (map[string]string, error) {
-	headers := httpclient.GetHeaders(v.Settings.SessionToken, v.Settings.Version, v.Settings.Pod, v.Settings.UsersID)
-	resp, statusCode, err := httpclient.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/env", v.Settings.PaasHost, v.Settings.PaasHostVersion, v.Settings.EnvironmentID, svcID), headers)
+	headers := v.Settings.HTTPManager.GetHeaders(v.Settings.SessionToken, v.Settings.Version, v.Settings.Pod, v.Settings.UsersID)
+	resp, statusCode, err := v.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/env", v.Settings.PaasHost, v.Settings.PaasHostVersion, v.Settings.EnvironmentID, svcID), headers)
 	if err != nil {
 		return nil, err
 	}
 	var envVars map[string]string
-	err = httpclient.ConvertResp(resp, statusCode, &envVars)
+	err = v.Settings.HTTPManager.ConvertResp(resp, statusCode, &envVars)
 	if err != nil {
 		return nil, err
 	}
