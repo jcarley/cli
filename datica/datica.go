@@ -1,4 +1,4 @@
-package catalyze
+package datica
 
 import (
 	"fmt"
@@ -7,48 +7,48 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/catalyzeio/cli/commands/associate"
-	"github.com/catalyzeio/cli/commands/associated"
-	"github.com/catalyzeio/cli/commands/certs"
-	"github.com/catalyzeio/cli/commands/clear"
-	"github.com/catalyzeio/cli/commands/console"
-	"github.com/catalyzeio/cli/commands/dashboard"
-	"github.com/catalyzeio/cli/commands/db"
-	"github.com/catalyzeio/cli/commands/default"
-	"github.com/catalyzeio/cli/commands/deploykeys"
-	"github.com/catalyzeio/cli/commands/disassociate"
-	"github.com/catalyzeio/cli/commands/domain"
-	"github.com/catalyzeio/cli/commands/environments"
-	"github.com/catalyzeio/cli/commands/files"
-	"github.com/catalyzeio/cli/commands/git"
-	"github.com/catalyzeio/cli/commands/invites"
-	"github.com/catalyzeio/cli/commands/keys"
-	"github.com/catalyzeio/cli/commands/logout"
-	"github.com/catalyzeio/cli/commands/logs"
-	"github.com/catalyzeio/cli/commands/maintenance"
-	"github.com/catalyzeio/cli/commands/metrics"
-	"github.com/catalyzeio/cli/commands/rake"
-	"github.com/catalyzeio/cli/commands/redeploy"
-	"github.com/catalyzeio/cli/commands/releases"
-	"github.com/catalyzeio/cli/commands/rollback"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/commands/sites"
-	"github.com/catalyzeio/cli/commands/ssl"
-	"github.com/catalyzeio/cli/commands/status"
-	"github.com/catalyzeio/cli/commands/supportids"
-	"github.com/catalyzeio/cli/commands/update"
-	"github.com/catalyzeio/cli/commands/users"
-	"github.com/catalyzeio/cli/commands/vars"
-	"github.com/catalyzeio/cli/commands/version"
-	"github.com/catalyzeio/cli/commands/whoami"
-	"github.com/catalyzeio/cli/commands/worker"
+	"github.com/daticahealth/cli/commands/associate"
+	"github.com/daticahealth/cli/commands/associated"
+	"github.com/daticahealth/cli/commands/certs"
+	"github.com/daticahealth/cli/commands/clear"
+	"github.com/daticahealth/cli/commands/console"
+	"github.com/daticahealth/cli/commands/dashboard"
+	"github.com/daticahealth/cli/commands/db"
+	"github.com/daticahealth/cli/commands/default"
+	"github.com/daticahealth/cli/commands/deploykeys"
+	"github.com/daticahealth/cli/commands/disassociate"
+	"github.com/daticahealth/cli/commands/domain"
+	"github.com/daticahealth/cli/commands/environments"
+	"github.com/daticahealth/cli/commands/files"
+	"github.com/daticahealth/cli/commands/git"
+	"github.com/daticahealth/cli/commands/invites"
+	"github.com/daticahealth/cli/commands/keys"
+	"github.com/daticahealth/cli/commands/logout"
+	"github.com/daticahealth/cli/commands/logs"
+	"github.com/daticahealth/cli/commands/maintenance"
+	"github.com/daticahealth/cli/commands/metrics"
+	"github.com/daticahealth/cli/commands/rake"
+	"github.com/daticahealth/cli/commands/redeploy"
+	"github.com/daticahealth/cli/commands/releases"
+	"github.com/daticahealth/cli/commands/rollback"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/commands/sites"
+	"github.com/daticahealth/cli/commands/ssl"
+	"github.com/daticahealth/cli/commands/status"
+	"github.com/daticahealth/cli/commands/supportids"
+	"github.com/daticahealth/cli/commands/update"
+	"github.com/daticahealth/cli/commands/users"
+	"github.com/daticahealth/cli/commands/vars"
+	"github.com/daticahealth/cli/commands/version"
+	"github.com/daticahealth/cli/commands/whoami"
+	"github.com/daticahealth/cli/commands/worker"
 
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/models"
 
-	"github.com/catalyzeio/cli/lib/httpclient"
-	"github.com/catalyzeio/cli/lib/pods"
-	"github.com/catalyzeio/cli/lib/updater"
+	"github.com/daticahealth/cli/lib/httpclient"
+	"github.com/daticahealth/cli/lib/pods"
+	"github.com/daticahealth/cli/lib/updater"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/jault3/mow.cli"
@@ -79,17 +79,17 @@ func (s *simpleLogger) Format(entry *logrus.Entry) ([]byte, error) {
 	return []byte(l), nil
 }
 
-// Run runs the Catalyze CLI
+// Run runs the Datica CLI
 func Run() {
+	InitLogrus()
+
 	if !config.Beta {
 		if updater.AutoUpdater != nil {
 			updater.AutoUpdater.BackgroundRun()
 		}
 	}
 
-	InitLogrus()
-
-	var app = cli.App("catalyze", fmt.Sprintf("Catalyze CLI. Version %s", config.VERSION))
+	var app = cli.App("datica", fmt.Sprintf("Datica CLI. Version %s", config.VERSION))
 	settings := &models.Settings{}
 	InitGlobalOpts(app, settings)
 	InitCLI(app, settings)
@@ -112,20 +112,20 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 	}
 	username := app.String(cli.StringOpt{
 		Name:      "U username",
-		Desc:      "Catalyze Username",
-		EnvVar:    config.CatalyzeUsernameEnvVar,
+		Desc:      "Datica Username",
+		EnvVar:    config.DaticaUsernameEnvVar,
 		HideValue: true,
 	})
 	password := app.String(cli.StringOpt{
 		Name:      "P password",
-		Desc:      "Catalyze Password",
-		EnvVar:    config.CatalyzePasswordEnvVar,
+		Desc:      "Datica Password",
+		EnvVar:    config.DaticaPasswordEnvVar,
 		HideValue: true,
 	})
 	givenEnvName := app.String(cli.StringOpt{
 		Name:      "E env",
 		Desc:      "The local alias of the environment in which this command will be run",
-		EnvVar:    config.CatalyzeEnvironmentEnvVar,
+		EnvVar:    config.DaticaEnvironmentEnvVar,
 		HideValue: true,
 	})
 	if loggingLevel := os.Getenv(config.LogLevelEnvVar); loggingLevel != "" {
@@ -136,7 +136,7 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 
 	app.Before = func() {
 		if config.Beta {
-			logrus.Println("This is a BETA release. Please contact Catalyze support at support@catalyze.io with any issues.")
+			logrus.Println("This is a BETA release. Please contact Datica Support at https://datica.zendesk.com/hc/en-us with any issues.")
 		}
 		r := config.FileSettingsRetriever{}
 		*settings = *r.GetSettings(*givenEnvName, "", accountsHost, authHost, "", paasHost, "", *username, *password)

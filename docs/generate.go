@@ -5,19 +5,19 @@ import (
 	"os"
 	"strings"
 
-	"github.com/catalyzeio/cli/catalyze"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/datica"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
-const binaryName = "catalyze"
+const binaryName = "datica"
 
 func main() {
-	app := cli.App("catalyze", "")
+	app := cli.App(binaryName, "")
 	settings := &models.Settings{}
-	catalyze.InitLogrus()
-	catalyze.InitGlobalOpts(app, settings)
-	catalyze.InitCLI(app, settings)
+	datica.InitLogrus()
+	datica.InitGlobalOpts(app, settings)
+	datica.InitCLI(app, settings)
 
 	intro, err := os.OpenFile("intro.md", os.O_RDONLY, 0644)
 	if err != nil {

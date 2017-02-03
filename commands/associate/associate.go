@@ -8,10 +8,10 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/environments"
-	"github.com/catalyzeio/cli/commands/git"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/environments"
+	"github.com/daticahealth/cli/commands/git"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/models"
 )
 
 func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia IAssociate, ig git.IGit, ie environments.IEnvironments, is services.IServices) error {
@@ -87,7 +87,7 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 		return err
 	}
 	logrus.Printf("Your git repository \"%s\" has been associated with code service \"%s\" and environment \"%s\"", remote, svcLabel, name)
-	logrus.Println("After associating to an environment, you need to add a cert with the \"catalyze certs create\" command, if you have not done so already")
+	logrus.Println("After associating to an environment, you need to add a cert with the \"datica certs create\" command, if you have not done so already")
 	return nil
 }
 

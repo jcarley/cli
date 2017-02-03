@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/models"
 )
 
 // CmdList lists all environments which the user has access to
@@ -21,7 +21,7 @@ func CmdList(environments IEnvironments) error {
 		for pod, err := range errs {
 			logrus.Debugf("Failed to list environments for pod \"%s\": %s", pod, err)
 		}
-		logrus.Println("If the environment you're looking for is not listed, ensure you have the correct permissions from your organization owner. If the environment is still not listed, please contact support@catalyze.io.")
+		logrus.Println("If the environment you're looking for is not listed, ensure you have the correct permissions from your organization owner. If the environment is still not listed, please contact Datica Support at https://datica.zendesk.com/hc/en-us.")
 	}
 	return nil
 }

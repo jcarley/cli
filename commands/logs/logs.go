@@ -10,12 +10,12 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/environments"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/commands/sites"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/environments"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/commands/sites"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 )
 
 const size = 50
@@ -50,7 +50,7 @@ func CmdLogs(queryString string, follow bool, hours, minutes, seconds int, envID
 		}
 	}
 	if domain == "" {
-		return errors.New("Could not determine the fully qualified domain name of your environment. Please contact Catalyze Support at support@catalyze.io with this error message to resolve this issue.")
+		return errors.New("Could not determine the fully qualified domain name of your environment. Please contact Datica Support at https://datica.zendesk.com/hc/en-us with this error message to resolve this issue.")
 	}
 	if follow {
 		if err := il.Watch(queryString, domain, settings.SessionToken); err != nil {

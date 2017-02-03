@@ -1,3 +1,3 @@
 # CLI Documentation
 
-For the most up to date CLI documentation, please visit the [Catalyze resource](https://resources.catalyze.io/paas/paas-cli-reference/) page.
+For the most up to date CLI documentation, please visit the [Datica resource](https://resources.datica.com/paas/paas-cli-reference/) page.

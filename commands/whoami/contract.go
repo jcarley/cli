@@ -2,9 +2,9 @@ package whoami
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/lib/auth"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -14,8 +14,8 @@ var Cmd = models.Command{
 	Name:      "whoami",
 	ShortHelp: "Retrieve your user ID",
 	LongHelp: "`whoami` prints out the currently logged in user's users ID. " +
-		"This is used with Catalyze support engineers. Here is a sample command\n\n" +
-		"```\ncatalyze whoami\n```",
+		"This is used with Datica support engineers. Here is a sample command\n\n" +
+		"```\ndatica whoami\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

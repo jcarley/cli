@@ -2,7 +2,7 @@ package dashboard
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -10,9 +10,9 @@ import (
 // name, arguments, and required/optional arguments and flags for the command.
 var Cmd = models.Command{
 	Name:      "dashboard",
-	ShortHelp: "Open the Catalyze Dashboard in your default browser",
-	LongHelp: "`dashboard` opens up the Catalyze Dashboard homepage in your default web browser. Here is a sample command\n\n" +
-		"```\ncatalyze dashboard\n```",
+	ShortHelp: "Open the Datica Dashboard in your default browser",
+	LongHelp: "`dashboard` opens up the Datica Dashboard homepage in your default web browser. Here is a sample command\n\n" +
+		"```\ndatica dashboard\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

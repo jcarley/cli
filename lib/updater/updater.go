@@ -59,7 +59,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/bugsnag/osext"
-	"github.com/catalyzeio/cli/config"
+	"github.com/daticahealth/cli/config"
 )
 
 const (
@@ -75,8 +75,8 @@ var AutoUpdater = &Updater{
 	APIURL:         "https://s3.amazonaws.com/cli-autoupdates/",
 	BinURL:         "https://s3.amazonaws.com/cli-autoupdates/",
 	DiffURL:        "https://s3.amazonaws.com/cli-autoupdates/",
-	Dir:            ".catalyze_update",
-	CmdName:        "catalyze",
+	Dir:            ".datica_update",
+	CmdName:        "datica",
 }
 
 // ErrHashMismatch represents a mismatch in the expected hash and the calculated hash
@@ -123,6 +123,11 @@ func (u *Updater) getExecRelativeDir(dir string) string {
 func (u *Updater) BackgroundRun() error {
 	os.MkdirAll(u.getExecRelativeDir(u.Dir), 0755)
 	if u.wantUpdate() {
+		// BEGIN datica binary name check
+		if filename, _ := osext.Executable(); filepath.Base(filename) != "datica" {
+			logrus.Warnf("Big news - Catalyze has renamed to Datica! Please rename your CLI by running \"mv %s %s\".", filename, filepath.Join(filepath.Dir(filename), "datica"))
+		}
+		// END datica binary name check
 		if err := up.CanUpdate(); err != nil {
 			return err
 		}
@@ -176,7 +181,7 @@ func (u *Updater) update() error {
 		} else {
 			logrus.Warnln("update: error fetching full binary,", err)
 		}
-		logrus.Warnln("update: please update your CLI manually by downloading the latest version for your OS here https://github.com/catalyzeio/cli/releases")
+		logrus.Warnln("update: please update your CLI manually by downloading the latest version for your OS here https://github.com/daticahealth/cli/releases")
 		return err
 	}
 

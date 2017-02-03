@@ -7,10 +7,10 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/jobs"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/lib/jobs"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 )
 
 func CmdScale(svcName, target, scaleString string, iw IWorker, is services.IServices, ip prompts.IPrompts, ij jobs.IJobs) error {
@@ -19,7 +19,7 @@ func CmdScale(svcName, target, scaleString string, iw IWorker, is services.IServ
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services list\" command.", svcName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services list\" command.", svcName)
 	}
 	scaleFunc, changeInScale, err := iw.ParseScale(scaleString)
 	if err != nil {

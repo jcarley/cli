@@ -6,9 +6,9 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/catalyzeio/cli/commands/environments"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/environments"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/models"
 	"github.com/pmylund/sortutil"
 )
 

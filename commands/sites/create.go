@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/models"
 )
 
 func CmdCreate(name, serviceName, hostname string, clientMaxBodySize, proxyConnectTimeout, proxyReadTimeout, proxySendTimeout, proxyUpstreamTimeout int, enableCORS, enableWebSockets bool, is ISites, iservices services.IServices) error {
@@ -15,7 +15,7 @@ func CmdCreate(name, serviceName, hostname string, clientMaxBodySize, proxyConne
 		return err
 	}
 	if upstreamService == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", serviceName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.", serviceName)
 	}
 
 	serviceProxy, err := iservices.RetrieveByLabel("service_proxy")
@@ -28,7 +28,7 @@ func CmdCreate(name, serviceName, hostname string, clientMaxBodySize, proxyConne
 		return err
 	}
 	logrus.Printf("Created '%s'", site.Name)
-	logrus.Println("To make your site go live, you must redeploy your service proxy with the \"catalyze redeploy service_proxy\" command")
+	logrus.Println("To make your site go live, you must redeploy your service proxy with the \"datica redeploy service_proxy\" command")
 	return nil
 }
 

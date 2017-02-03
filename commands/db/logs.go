@@ -8,9 +8,9 @@ import (
 	"os"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/jobs"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/lib/jobs"
+	"github.com/daticahealth/cli/models"
 )
 
 func CmdLogs(databaseName, backupID string, id IDb, is services.IServices, ij jobs.IJobs) error {
@@ -19,7 +19,7 @@ func CmdLogs(databaseName, backupID string, id IDb, is services.IServices, ij jo
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", databaseName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.", databaseName)
 	}
 	job, err := ij.Retrieve(backupID, service.ID, false)
 	if err != nil {

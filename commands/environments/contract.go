@@ -2,10 +2,10 @@ package environments
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/auth"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -21,8 +21,8 @@ var Cmd = models.Command{
 			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))
 			cmd.CommandLong(RenameSubCmd.Name, RenameSubCmd.ShortHelp, RenameSubCmd.LongHelp, RenameSubCmd.CmdFunc(settings))
 			cmd.Action = func() {
-				logrus.Warnln("This command has been moved! Please use \"catalyze environments list\" instead. This alias will be removed in the next CLI update.")
-				logrus.Warnln("You can list all available environments subcommands by running \"catalyze environments --help\".")
+				logrus.Warnln("This command has been moved! Please use \"datica environments list\" instead. This alias will be removed in the next CLI update.")
+				logrus.Warnln("You can list all available environments subcommands by running \"datica environments --help\".")
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -39,9 +39,9 @@ var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List all environments you have access to",
 	LongHelp: "`environments list` lists all environments that you are granted access to. " +
-		"These environments include those you created and those that other Catalyze customers have added you to. " +
+		"These environments include those you created and those that other Datica customers have added you to. " +
 		"Here is a sample command\n\n" +
-		"```\ncatalyze environments list\n```",
+		"```\ndatica environments list\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
@@ -61,7 +61,7 @@ var RenameSubCmd = models.Command{
 	Name:      "rename",
 	ShortHelp: "Rename an environment",
 	LongHelp: "`environments rename` allows you to rename your environment. Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" environments rename MyNewEnvName\n```",
+		"```\ndatica -E \"<your_env_alias>\" environments rename MyNewEnvName\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The new name of the environment")

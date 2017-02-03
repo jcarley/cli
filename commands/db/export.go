@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/jobs"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/lib/jobs"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 	"github.com/tj/go-spin"
 )
 
@@ -33,7 +33,7 @@ func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPr
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", databaseName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.", databaseName)
 	}
 	job, err := id.Backup(service)
 	if err != nil {
@@ -43,7 +43,7 @@ func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPr
 	// all because logrus treats print, println, and printf the same
 	logrus.Println("Polling until export finishes.")
 	if job.IsSnapshotBackup != nil && *job.IsSnapshotBackup {
-		logrus.Printf("This is a snapshot backup, it may be a while before this backup shows up in the \"catalyze db list %s\" command.", databaseName)
+		logrus.Printf("This is a snapshot backup, it may be a while before this backup shows up in the \"datica db list %s\" command.", databaseName)
 		err = ij.WaitToAppear(job.ID, service.ID)
 		if err != nil {
 			return err

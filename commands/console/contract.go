@@ -2,12 +2,12 @@ package console
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/auth"
-	"github.com/catalyzeio/cli/lib/jobs"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/jobs"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -21,8 +21,8 @@ var Cmd = models.Command{
 		"You can also open up a mysql prompt, mongo cli prompt, rails console, django shell, and much more. " +
 		"When accessing a database service, the `COMMAND` argument is not needed because the appropriate prompt will be given to you. " +
 		"If you are connecting to an application service the `COMMAND` argument is required. Here are some sample commands\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" console db01\n" +
-		"catalyze -E \"<your_env_alias>\" console app01 \"bundle exec rails console\"\n```",
+		"```\ndatica -E \"<your_env_alias>\" console db01\n" +
+		"datica -E \"<your_env_alias>\" console app01 \"bundle exec rails console\"\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to open up a console for")

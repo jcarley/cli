@@ -16,7 +16,7 @@ PodID:          %s`, envID, orgID, usersID, svcID, podID)
 }
 
 // SupportIDs prints out various IDs related to the associated environment to be
-// used when contacting Catalyze support at support@catalyze.io.
+// used when contacting Datica support.
 func (s *SSupportIDs) SupportIDs() (string, string, string, string, string, error) {
 	return s.Settings.EnvironmentID, s.Settings.OrgID, s.Settings.UsersID, s.Settings.ServiceID, s.Settings.Pod, nil
 }

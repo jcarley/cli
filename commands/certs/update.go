@@ -8,10 +8,10 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/commands/ssl"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/commands/ssl"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/models"
 )
 
 func CmdUpdate(hostname, pubKeyPath, privKeyPath string, selfSigned, resolve bool, ic ICerts, is services.IServices, issl ssl.ISSL) error {
@@ -58,7 +58,7 @@ func CmdUpdate(hostname, pubKeyPath, privKeyPath string, selfSigned, resolve boo
 		return err
 	}
 	logrus.Printf("Updated '%s'", hostname)
-	logrus.Println("To make your updated cert go live, you must redeploy your service proxy with the \"catalyze redeploy service_proxy\" command")
+	logrus.Println("To make your updated cert go live, you must redeploy your service proxy with the \"datica redeploy service_proxy\" command")
 	return nil
 }
 

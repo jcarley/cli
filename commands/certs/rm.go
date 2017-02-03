@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/config"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/config"
 )
 
 func CmdRm(hostname string, ic ICerts, is services.IServices) error {

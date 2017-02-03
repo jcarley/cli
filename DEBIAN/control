@@ -1,8 +1,8 @@
-Package: catalyze
+Package: datica
 Priority: extra
-Maintainer: Catalyze <support@catalyze.io>
+Maintainer: Datica <support@datica.com>
 Section: devel
 Version: {{version}}
 Architecture: {{arch}}
-Description: Catalyze CLI
+Description: Datica CLI
 Installed-Size: {{size}}

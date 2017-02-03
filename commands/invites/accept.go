@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/lib/auth"
-	"github.com/catalyzeio/cli/lib/prompts"
+	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/prompts"
 )
 
 // CmdAccept creates an environment from a JSON env spec

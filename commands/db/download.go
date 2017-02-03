@@ -15,9 +15,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 	"github.com/tj/go-spin"
 )
 
@@ -38,14 +38,14 @@ func CmdDownload(databaseName, backupID, filePath string, force bool, id IDb, ip
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", databaseName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.", databaseName)
 	}
 	err = id.Download(backupID, filePath, service)
 	if err != nil {
 		return err
 	}
 	logrus.Printf("%s backup downloaded successfully to %s", databaseName, filePath)
-	logrus.Printf("You can also view logs for this backup with the \"catalyze db logs %s %s\" command", databaseName, backupID)
+	logrus.Printf("You can also view logs for this backup with the \"datica db logs %s %s\" command", databaseName, backupID)
 	return nil
 }
 

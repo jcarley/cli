@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/models"
 )
 
 // TextTransformer is a concrete implementation of Transformer transforming data

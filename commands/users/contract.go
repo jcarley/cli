@@ -2,11 +2,11 @@ package users
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/invites"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/auth"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/invites"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -31,7 +31,7 @@ var ListSubCmd = models.Command{
 	LongHelp: "`users list` shows every user that belongs to your environment's organization. " +
 		"Users who belong to your environment's organization may access to your environment's services and data depending on their role in the organization. " +
 		"Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" users list\n```",
+		"```\ndatica -E \"<your_env_alias>\" users list\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
@@ -56,7 +56,7 @@ var RmSubCmd = models.Command{
 	LongHelp: "`users rm` revokes a users access to your environment's organization. " +
 		"Revoking a user's access to your environment's organization will revoke their access to your organization's environments. " +
 		"Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" users rm user@example.com\n```",
+		"```\ndatica -E \"<your_env_alias>\" users rm user@example.com\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			email := subCmd.StringArg("EMAIL", "", "The email address of the user to revoke access from for the given organization")

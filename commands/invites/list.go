@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/models"
 )
 
 func CmdList(envName string, ii IInvites) error {

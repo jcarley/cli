@@ -2,11 +2,11 @@ package services
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/auth"
-	"github.com/catalyzeio/cli/lib/jobs"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/jobs"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -22,8 +22,8 @@ var Cmd = models.Command{
 			cmd.CommandLong(StopSubCmd.Name, StopSubCmd.ShortHelp, StopSubCmd.LongHelp, StopSubCmd.CmdFunc(settings))
 			cmd.CommandLong(RenameSubCmd.Name, RenameSubCmd.ShortHelp, RenameSubCmd.LongHelp, RenameSubCmd.CmdFunc(settings))
 			cmd.Action = func() {
-				logrus.Warnln("This command has been moved! Please use \"catalyze services list\" instead. This alias will be removed in the next CLI update.")
-				logrus.Warnln("You can list all available services subcommands by running \"catalyze services --help\".")
+				logrus.Warnln("This command has been moved! Please use \"datica services list\" instead. This alias will be removed in the next CLI update.")
+				logrus.Warnln("You can list all available services subcommands by running \"datica services --help\".")
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -46,7 +46,7 @@ var ListSubCmd = models.Command{
 		"The services will be printed regardless of their currently running state. " +
 		"To see which services are currently running and which are not, use the [status](#status) command. " +
 		"Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" services list\n```",
+		"```\ndatica -E \"<your_env_alias>\" services list\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
@@ -69,7 +69,7 @@ var RenameSubCmd = models.Command{
 	Name:      "rename",
 	ShortHelp: "Rename a service",
 	LongHelp: "`services rename` allows you to rename any service in your environment. Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" services rename code-1 api-svc\n```",
+		"```\ndatica -E \"<your_env_alias>\" services rename code-1 api-svc\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The service to rename")
@@ -98,7 +98,7 @@ var StopSubCmd = models.Command{
 		"This is useful when performing maintenance and a service must be shutdown to perform that maintenance. " +
 		"Take caution when running this command as all instances of the service, all workers, all rake tasks, and all open console sessions will be stopped. " +
 		"Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" services stop code-1\n```",
+		"```\ndatica -E \"<your_env_alias>\" services stop code-1\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			svcName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to stop")

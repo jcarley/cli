@@ -9,9 +9,9 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/deploykeys"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/deploykeys"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/models"
 	"github.com/mitchellh/go-homedir"
 )
 

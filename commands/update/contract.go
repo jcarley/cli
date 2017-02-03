@@ -2,7 +2,7 @@ package update
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -15,7 +15,7 @@ var Cmd = models.Command{
 		"If a newer version of the CLI is available, it will be downloaded and installed automatically. " +
 		"This is used when you want to apply an update before the CLI automatically applies it on its own. " +
 		"Here is a sample command\n\n" +
-		"```\ncatalyze update\n```",
+		"```\ndatica update\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

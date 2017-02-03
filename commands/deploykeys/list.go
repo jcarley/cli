@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/models"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -18,7 +18,7 @@ func CmdList(svcName string, id IDeployKeys, is services.IServices) error {
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.", svcName)
 	}
 	if service.Type != "code" {
 		return fmt.Errorf("You can only list deploy keys for code services, not %s services", service.Type)

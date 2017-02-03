@@ -3,9 +3,9 @@ package clear
 import (
 	"testing"
 
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/models"
-	"github.com/catalyzeio/cli/test"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/models"
+	"github.com/daticahealth/cli/test"
 )
 
 const (
@@ -50,14 +50,14 @@ var clearTests = []struct {
 	expectErr      bool
 	expectedOutput string
 }{
-	{test.Alias, false, false, false, false, false, false, false, "No settings were specified. To see available options, run \"catalyze clear --help\"\n"},
+	{test.Alias, false, false, false, false, false, false, false, "No settings were specified. To see available options, run \"datica clear --help\"\n"},
 	{test.Alias, true, false, false, false, false, false, false, standardOutput},
 	{test.Alias, false, true, false, false, false, false, false, standardOutput},
 	{test.Alias, false, false, true, false, false, false, false, standardOutput},
 	{test.Alias, false, false, false, true, false, false, false, "\033[33m\033[1m[warning] \033[0mThe \"--default\" flag has been deprecated! It will be removed in a future version.\n" + standardOutput},
 	{test.Alias, false, false, false, false, true, false, false, standardOutput},
 	{test.Alias, false, false, false, false, false, true, false, "\033[33m\033[1m[warning] \033[0mThe \"--default\" flag has been deprecated! It will be removed in a future version.\n" + standardOutput},
-	{"bad-env", true, false, false, false, false, false, true, "\033[31m\033[1m[fatal] \033[0mNo environment named \"bad-env\" has been associated. Run \"catalyze associated\" to see what environments have been associated or run \"catalyze associate\" from a local git repo to create a new association\n"},
+	{"bad-env", true, false, false, false, false, false, true, "\033[31m\033[1m[fatal] \033[0mNo environment named \"bad-env\" has been associated. Run \"datica associated\" to see what environments have been associated or run \"datica associate\" from a local git repo to create a new association\n"},
 }
 
 func TestClear(t *testing.T) {

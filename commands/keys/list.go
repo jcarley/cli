@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/deploykeys"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/deploykeys"
+	"github.com/daticahealth/cli/models"
 	"github.com/olekukonko/tablewriter"
 )
 

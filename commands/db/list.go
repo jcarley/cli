@@ -5,8 +5,8 @@ import (
 	"sort"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/models"
 )
 
 func CmdList(databaseName string, page, pageSize int, id IDb, is services.IServices) error {
@@ -15,7 +15,7 @@ func CmdList(databaseName string, page, pageSize int, id IDb, is services.IServi
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", databaseName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.", databaseName)
 	}
 	jobs, err := id.List(page, pageSize, service)
 	if err != nil {

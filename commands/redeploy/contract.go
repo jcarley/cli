@@ -2,13 +2,13 @@ package redeploy
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/environments"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/auth"
-	"github.com/catalyzeio/cli/lib/jobs"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/environments"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/jobs"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -24,7 +24,7 @@ var Cmd = models.Command{
 		"For service proxy redeploys, there will be approximately 5 minutes of downtime. " +
 		"For code service redeploys, there will be approximately 30 seconds of downtime. " +
 		"Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" redeploy app01\n```",
+		"```\ndatica -E \"<your_env_alias>\" redeploy app01\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to redeploy (i.e. 'app01')")

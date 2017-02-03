@@ -14,8 +14,8 @@ import (
 	"golang.org/x/net/websocket"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/models"
 	"github.com/docker/docker/pkg/term"
 )
 
@@ -25,7 +25,7 @@ func CmdConsole(svcName, command string, ic IConsole, is services.IServices) err
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.\n", svcName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.\n", svcName)
 	}
 	return ic.Open(command, service)
 }

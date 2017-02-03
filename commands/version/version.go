@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/config"
+	"github.com/daticahealth/cli/config"
 )
 
 func CmdVersion() error {

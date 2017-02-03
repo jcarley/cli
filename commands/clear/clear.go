@@ -2,8 +2,8 @@ package clear
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/models"
 )
 
 func CmdClear(privateKey, session, environments, defaultEnv, pods bool, settings *models.Settings) error {
@@ -28,7 +28,7 @@ func CmdClear(privateKey, session, environments, defaultEnv, pods bool, settings
 	}
 	config.SaveSettings(settings)
 	if !privateKey && !session && !environments && !defaultEnv && !pods {
-		logrus.Println("No settings were specified. To see available options, run \"catalyze clear --help\"")
+		logrus.Println("No settings were specified. To see available options, run \"datica clear --help\"")
 	} else {
 		logrus.Println("All specified settings have been cleared")
 	}
