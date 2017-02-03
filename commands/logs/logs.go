@@ -50,7 +50,7 @@ func CmdLogs(queryString string, follow bool, hours, minutes, seconds int, envID
 		}
 	}
 	if domain == "" {
-		return errors.New("Could not determine the fully qualified domain name of your environment. Please contact Datica Support at https://datica.zendesk.com/hc/en-us with this error message to resolve this issue.")
+		return errors.New("Could not determine the fully qualified domain name of your environment. Please contact Datica Support at https://datica.com/support with this error message to resolve this issue.")
 	}
 	if follow {
 		if err := il.Watch(queryString, domain, settings.SessionToken); err != nil {

@@ -136,7 +136,7 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 
 	app.Before = func() {
 		if config.Beta {
-			logrus.Println("This is a BETA release. Please contact Datica Support at https://datica.zendesk.com/hc/en-us with any issues.")
+			logrus.Println("This is a BETA release. Please contact Datica Support at https://datica.com/support with any issues.")
 		}
 		r := config.FileSettingsRetriever{}
 		*settings = *r.GetSettings(*givenEnvName, "", accountsHost, authHost, "", paasHost, "", *username, *password)

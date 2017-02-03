@@ -11,7 +11,7 @@ import (
 var Cmd = models.Command{
 	Name:      "support-ids",
 	ShortHelp: "Print out various IDs related to your associated environment to be used when contacting Datica support",
-	LongHelp: "`support-ids` is helpful when contacting Datica support by submitting a ticket at https://datica.zendesk.com/hc/en-us. " +
+	LongHelp: "`support-ids` is helpful when contacting Datica support by submitting a ticket at https://datica.com/support. " +
 		"If you are having an issue with a CLI command or anything with your environment, it is helpful to run this command and copy the output into the initial correspondence with a Datica engineer. " +
 		"This will help Datica identify the environment faster and help come to resolution faster. Here is a sample command\n\n" +
 		"```\ndatica -E \"<your_env_alias>\" support-ids\n```",

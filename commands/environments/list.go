@@ -21,7 +21,7 @@ func CmdList(environments IEnvironments) error {
 		for pod, err := range errs {
 			logrus.Debugf("Failed to list environments for pod \"%s\": %s", pod, err)
 		}
-		logrus.Println("If the environment you're looking for is not listed, ensure you have the correct permissions from your organization owner. If the environment is still not listed, please contact Datica Support at https://datica.zendesk.com/hc/en-us.")
+		logrus.Println("If the environment you're looking for is not listed, ensure you have the correct permissions from your organization owner. If the environment is still not listed, please contact Datica Support at https://datica.com/support.")
 	}
 	return nil
 }

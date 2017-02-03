@@ -23,7 +23,7 @@ func CmdStop(svcName string, is IServices, ij jobs.IJobs, ip prompts.IPrompts) e
 		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services list\" command.", svcName)
 	}
 	if !service.Redeployable {
-		return fmt.Errorf("This service cannot be stopped. Please contact Datica Support at https://datica.zendesk.com/hc/en-us if you need the \"%s\" service stopped.", svcName)
+		return fmt.Errorf("This service cannot be stopped. Please contact Datica Support at https://datica.com/support if you need the \"%s\" service stopped.", svcName)
 	}
 
 	page := 0
