@@ -13,13 +13,13 @@ const (
 	// Beta determines whether or not this is a beta build of the CLI
 	Beta = false
 	// AccountsHost is the production accounts URL
-	AccountsHost = "https://product.datica.com/stratum"
+	AccountsHost = "https://product.datica.com/compliant-cloud"
 	// AuthHost is the production auth URL
-	AuthHost = "https://auth.datica.com"
+	AuthHost = "https://auth.catalyze.io"
 	// AuthHostVersion is the version path for the auth host
 	AuthHostVersion = ""
 	// PaasHost is the production PaaS URL
-	PaasHost = "https://paas-api.datica.com"
+	PaasHost = "https://paas-api.catalyze.io"
 	// PaasHostVersion is the version path for the PaaS host
 	PaasHostVersion = ""
 	// LogLevel is the amount of logging to enable

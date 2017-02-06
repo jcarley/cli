@@ -43,7 +43,7 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authH
 		logrus.Debugln("Migrating settings file from .catalyze to .datica")
 		err = os.Rename(filepath.Join(HomeDir, OldSettingsFile), filepath.Join(HomeDir, SettingsFile))
 		if err != nil {
-			logrus.Printf("Error encountered migrating the settings file from .catalyze to .datica: %s", err)
+			logrus.Printf("Error encountered migrating the settings file from .catalyze to .datica: %s. To fix this, please run \"mv %s %s\".", err, filepath.Join(HomeDir, OldSettingsFile), filepath.Join(HomeDir, SettingsFile))
 			os.Exit(1)
 		}
 	}
