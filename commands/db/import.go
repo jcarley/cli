@@ -138,6 +138,7 @@ func (d *SDb) Import(rt *transfer.ReaderTransfer, key, iv []byte, mongoCollectio
 		return nil, err
 	}
 	req, err := http.NewRequest("PUT", tmpURL.URL, rt)
+	req.ContentLength = int64(rt.Length())
 	done := make(chan bool)
 	go printTransferStatus(false, rt, done)
 	_, err = http.DefaultClient.Do(req)
