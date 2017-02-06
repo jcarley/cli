@@ -40,7 +40,6 @@ type ReaderTransfer struct {
 	length ByteSize
 	read   uint64
 	reader io.Reader
-	kill   int32
 }
 
 // NewReaderTransfer instantiates a ReadTransfer struct
@@ -49,21 +48,13 @@ func NewReaderTransfer(reader io.Reader, length int) *ReaderTransfer {
 	rt.length = ByteSize(length)
 	rt.read = 0
 	rt.reader = reader
-	rt.kill = 0
 	return rt
 }
 
 func (rt *ReaderTransfer) Read(p []byte) (int, error) {
-	if atomic.LoadInt32(&rt.kill) == 1 {
-		return 0, fmt.Errorf("transfer killed")
-	}
 	n, err := rt.reader.Read(p)
 	atomic.AddUint64(&rt.read, uint64(n))
 	return n, err
-}
-
-func (rt *ReaderTransfer) KillTransfer() {
-	atomic.StoreInt32(&rt.kill, 1)
 }
 
 func (rt *ReaderTransfer) Transferred() ByteSize {

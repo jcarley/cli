@@ -127,10 +127,13 @@ func printTransferStatus(isDownload bool, tr transfer.Transfer, done <-chan bool
 	}
 	lastLen := 0
 	success := true
+	isDone := false
+loop:
 	for i, l := tr.Transferred(), tr.Length(); i < l; i = tr.Transferred() {
 		select {
 		case success = <-done:
-			goto finish
+			isDone = true
+			break loop
 		case <-time.After(time.Millisecond * 100):
 			percent := uint64(i / l * 100)
 			s := fmt.Sprintf("\r\033[m\t%s of %s (%d%%) %s", i, l, percent, action)
@@ -144,9 +147,10 @@ func printTransferStatus(isDownload bool, tr transfer.Transfer, done <-chan bool
 			}
 		}
 	}
-	success = <-done
+	if !isDone {
+		success = <-done
+	}
 
-finish:
 	total := tr.Transferred()
 	l := tr.Length()
 	s := fmt.Sprintf("\r\033[m\t%s of %s (%d%%) %s", total, l, uint64(total/l*100), action)

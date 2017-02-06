@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/crypto"
 	"github.com/catalyzeio/cli/lib/jobs"
@@ -139,8 +138,6 @@ func (d *SDb) Import(rt *transfer.ReaderTransfer, key, iv []byte, mongoCollectio
 		return nil, err
 	}
 	req, err := http.NewRequest("PUT", tmpURL.URL, rt)
-	//req.URL.Opaque = strings.Replace(req.URL.Path, ":", "%3A", -1)
-	//req.URL.Opaque = strings.Replace(req.URL.Opaque, "|", "%7C", -1)
 	done := make(chan bool)
 	go printTransferStatus(false, rt, done)
 	_, err = http.DefaultClient.Do(req)
@@ -153,7 +150,7 @@ func (d *SDb) Import(rt *transfer.ReaderTransfer, key, iv []byte, mongoCollectio
 	for key, value := range options {
 		importParams[key] = value
 	}
-	importParams["filename"] = aws.String(strings.Split(u.Path, ".")[0])
+	importParams["filename"] = strings.TrimLeft(u.Path, "/")
 	importParams["encryptionKey"] = string(d.Crypto.Hex(key, crypto.KeySize*2))
 	importParams["encryptionIV"] = string(d.Crypto.Hex(iv, crypto.IVSize*2))
 	importParams["dropDatabase"] = false
