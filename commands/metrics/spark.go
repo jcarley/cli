@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/models"
 	ui "github.com/gizak/termui"
 )
 

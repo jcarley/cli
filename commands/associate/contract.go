@@ -2,12 +2,12 @@ package associate
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/environments"
-	"github.com/catalyzeio/cli/commands/git"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/auth"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/environments"
+	"github.com/daticahealth/cli/commands/git"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -18,13 +18,13 @@ var Cmd = models.Command{
 	ShortHelp: "Associates an environment",
 	LongHelp: "`associate` is the entry point of the cli. You need to associate an environment before you can run most other commands. " +
 		"Check out [scope](#global-scope) and [aliases](#environment-aliases) for more info on the value of the alias and default options. Here is a sample command\n\n" +
-		"```\ncatalyze associate My-Production-Environment app01 -a prod\n```",
+		"```\ndatica associate My-Production-Environment app01 -a prod\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			envName := cmd.StringArg("ENV_NAME", "", "The name of your environment")
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the primary code service to associate with this environment (i.e. 'app01')")
 			alias := cmd.StringOpt("a alias", "", "A shorter name to reference your environment by for local commands")
-			remote := cmd.StringOpt("r remote", "catalyze", "The name of the remote")
+			remote := cmd.StringOpt("r remote", "datica", "The name of the remote")
 			defaultEnv := cmd.BoolOpt("d default", false, "[DEPRECATED] Specifies whether or not the associated environment will be the default")
 			cmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {

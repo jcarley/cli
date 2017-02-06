@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/catalyzeio/cli",
+	"ImportPath": "github.com/daticahealth/cli",
 	"GoVersion": "go1.7",
 	"GodepVersion": "v74",
 	"Packages": [

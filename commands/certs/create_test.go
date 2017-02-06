@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/catalyzeio/cli/test"
+	"github.com/daticahealth/cli/test"
 )
 
 const (
@@ -42,7 +42,7 @@ LZYts3Ltv77ACpT4PLECQQDDql4xPUb6WfsSjyqqfwnzkFLWADTcQQG5MmUX6iNJ
 FBlcbW65DK1xPIitnX+jf803WaMPAP5YBoH6jC6VgcVH
 -----END RSA PRIVATE KEY-----`
 	certsCreateStandardOutput = `Created 'example.com'
-To make use of your cert, you need to add a site with the "catalyze sites create" command
+To make use of your cert, you need to add a site with the "datica sites create" command
 `
 )
 
@@ -78,7 +78,7 @@ var certCreateTests = []struct {
 	{test.Alias, certName, pubKeyPath, "./invalid-file.pem", true, false, true, "\033[31m\033[1m[fatal] \033[0mA private key does not exist at path './invalid-file.pem'\n"},
 	{test.Alias, certName, pubKeyPath, privKeyPath, false, false, false, "Incomplete certificate chain found, attempting to resolve this\n" + certsCreateStandardOutput},
 	{test.Alias, certName, pubKeyPath, privKeyPath, true, true, false, certsCreateStandardOutput},
-	{"bad-env", certName, pubKeyPath, privKeyPath, true, false, true, "\033[31m\033[1m[fatal] \033[0mNo environment named \"bad-env\" has been associated. Run \"catalyze associated\" to see what environments have been associated or run \"catalyze associate\" from a local git repo to create a new association\n"},
+	{"bad-env", certName, pubKeyPath, privKeyPath, true, false, true, "\033[31m\033[1m[fatal] \033[0mNo environment named \"bad-env\" has been associated. Run \"datica associated\" to see what environments have been associated or run \"datica associate\" from a local git repo to create a new association\n"},
 }
 
 func TestCertsCreate(t *testing.T) {
@@ -137,7 +137,7 @@ func TestCertsCreateNoAssociation(t *testing.T) {
 		t.Errorf("Expected error but no error returned: %s", output)
 		return
 	}
-	expectedOutput := "\033[31m\033[1m[fatal] \033[0mNo Catalyze environment has been associated. Run \"catalyze associate\" from a local git repo first\n"
+	expectedOutput := "\033[31m\033[1m[fatal] \033[0mNo Datica environment has been associated. Run \"datica associate\" from a local git repo first\n"
 	if output != expectedOutput {
 		t.Errorf("Expected: %s. Found: %s", expectedOutput, output)
 		return

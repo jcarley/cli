@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
+	"github.com/daticahealth/cli/commands/services"
 )
 
 func CmdDisable(svcName string, im IMaintenance, is services.IServices) error {
@@ -13,7 +13,7 @@ func CmdDisable(svcName string, im IMaintenance, is services.IServices) error {
 		return err
 	}
 	if upstreamService == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.", svcName)
 	}
 	if upstreamService.Type != "code" {
 		return fmt.Errorf("Maintenance mode can only be disabled for code services, not %s services", upstreamService.Type)

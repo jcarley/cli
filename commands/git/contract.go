@@ -2,11 +2,11 @@ package git
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/auth"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -14,7 +14,7 @@ import (
 // name, arguments, and required/optional arguments and flags for the command.
 var Cmd = models.Command{
 	Name:      "git-remote",
-	ShortHelp: "Manage git remotes to Catalyze code services",
+	ShortHelp: "Manage git remotes to Datica code services",
 	LongHelp: "The `git-remote` command allows you to interact with code service remote git URLs. " +
 		"The git-remote command can not be run directly but has sub commands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
@@ -30,11 +30,11 @@ var AddSubCmd = models.Command{
 	ShortHelp: "Add the git remote for the given code service to the local git repo",
 	LongHelp: "`git-remote add` adds the proper git remote to a local git repository with the given remote name and service. " +
 		"Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" git-remote add code-1 -r catalyze-code-1\n```",
+		"```\ndatica -E \"<your_env_alias>\" git-remote add code-1 -r datica-code-1\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to add a git remote for")
-			remote := subCmd.StringOpt("r remote", "catalyze", "The name of the git remote to be added")
+			remote := subCmd.StringOpt("r remote", "datica", "The name of the git remote to be added")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -58,7 +58,7 @@ var ShowSubCmd = models.Command{
 	LongHelp: "`git-remote show` prints out the git remote URL for the given service. " +
 		"This can be used to do a manual push or use the git remote for another purpose such as a CI integration. " +
 		"Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" git-remote show code-1\n```",
+		"```\ndatica -E \"<your_env_alias>\" git-remote show code-1\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to add a git remote for")

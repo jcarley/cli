@@ -6,7 +6,7 @@ import (
 	"sort"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
+	"github.com/daticahealth/cli/commands/services"
 	"gopkg.in/yaml.v2"
 )
 
@@ -61,7 +61,7 @@ func CmdList(svcName, defaultSvcID string, formatter Formatter, iv IVars, is ser
 			return err
 		}
 		if service == nil {
-			return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
+			return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.", svcName)
 		}
 		defaultSvcID = service.ID
 	}

@@ -7,8 +7,8 @@ import (
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/models"
 )
 
 // CmdDownload downloads a service file by its name (taken from listing
@@ -27,14 +27,14 @@ func CmdDownload(svcName, fileName, output string, force bool, ifiles IFiles, is
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.", svcName)
 	}
 	file, err := ifiles.Retrieve(fileName, service.ID)
 	if err != nil {
 		return err
 	}
 	if file == nil {
-		return fmt.Errorf("File with name %s does not exist. Try listing files again by running \"catalyze files list %s\"", fileName, svcName)
+		return fmt.Errorf("File with name %s does not exist. Try listing files again by running \"datica files list %s\"", fileName, svcName)
 	}
 	return ifiles.Save(output, force, file)
 }

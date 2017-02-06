@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/models"
 )
 
 // Signin signs in a user and returns the representative user model. If an

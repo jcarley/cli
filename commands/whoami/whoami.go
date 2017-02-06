@@ -11,9 +11,7 @@ func CmdWhoAmI(w IWhoAmI) error {
 	return nil
 }
 
-// WhoAmI prints out your user ID. This can be used for adding users to
-// environments via `catalyze adduser`, removing users from an environment
-// via `catalyze rmuser`, when contacting Catalyze Support, etc.
+// WhoAmI returns your user ID.
 func (w *SWhoAmI) WhoAmI() (string, error) {
 	return w.Settings.UsersID, nil
 }

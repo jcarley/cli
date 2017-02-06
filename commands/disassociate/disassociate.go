@@ -2,7 +2,7 @@ package disassociate
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/config"
+	"github.com/daticahealth/cli/config"
 )
 
 func CmdDisassociate(alias string, id IDisassociate) error {
@@ -16,7 +16,7 @@ func CmdDisassociate(alias string, id IDisassociate) error {
 }
 
 // Disassociate removes an existing association with the environment. The
-// `catalyze` remote on the local github repo will *NOT* be removed.
+// `datica` remote on the local github repo will *NOT* be removed.
 func (d *SDisassociate) Disassociate(alias string) error {
 	// DeleteBreadcrumb removes the environment from the settings.Environments
 	// array for you

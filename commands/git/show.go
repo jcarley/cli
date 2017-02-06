@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
+	"github.com/daticahealth/cli/commands/services"
 )
 
 func CmdShow(svcName string, is services.IServices) error {
@@ -13,7 +13,7 @@ func CmdShow(svcName string, is services.IServices) error {
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.", svcName)
 	}
 	if service.Source == "" {
 		return fmt.Errorf("No git remote found for the \"%s\" service.", svcName)

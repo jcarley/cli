@@ -8,10 +8,10 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/commands/ssl"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/commands/ssl"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/models"
 )
 
 func CmdCreate(hostname, pubKeyPath, privKeyPath string, selfSigned, resolve bool, ic ICerts, is services.IServices, issl ssl.ISSL) error {
@@ -58,7 +58,7 @@ func CmdCreate(hostname, pubKeyPath, privKeyPath string, selfSigned, resolve boo
 		return err
 	}
 	logrus.Printf("Created '%s'", hostname)
-	logrus.Println("To make use of your cert, you need to add a site with the \"catalyze sites create\" command")
+	logrus.Println("To make use of your cert, you need to add a site with the \"datica sites create\" command")
 	return nil
 }
 

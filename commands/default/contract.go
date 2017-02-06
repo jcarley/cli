@@ -2,8 +2,8 @@ package defaultcmd
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -16,7 +16,7 @@ var Cmd = models.Command{
 		"`default` sets the default environment for all commands that don't specify an environment with the `-E` flag. " +
 		"See [scope](#global-scope) for more information on scope and default environments. " +
 		"When setting a default environment, you must give the alias of the environment if one was set when it was associated and not the real environment name. Here is a sample command\n\n" +
-		"```\ncatalyze default prod\n```",
+		"```\ndatica default prod\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			alias := cmd.StringArg("ENV_ALIAS", "", "The alias of an already associated environment to set as the default")

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/config"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/config"
 )
 
 func CmdRm(name, svcName string, id IDeployKeys, is services.IServices) error {
@@ -17,7 +17,7 @@ func CmdRm(name, svcName string, id IDeployKeys, is services.IServices) error {
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.", svcName)
 	}
 	if service.Type != "code" {
 		return fmt.Errorf("You can only remove deploy keys from code services, not %s services", service.Type)

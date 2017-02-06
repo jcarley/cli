@@ -2,13 +2,13 @@ package domain
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/environments"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/commands/sites"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/auth"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/environments"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/commands/sites"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -17,9 +17,9 @@ import (
 var Cmd = models.Command{
 	Name:      "domain",
 	ShortHelp: "Print out the temporary domain name of the environment",
-	LongHelp: "`domain` prints out the temporary domain name setup by Catalyze for an environment. " +
+	LongHelp: "`domain` prints out the temporary domain name setup by Datica for an environment. " +
 		"This domain name typically takes the form podXXXXX.catalyzeapps.com but may vary based on the environment. Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" domain\n```",
+		"```\ndatica -E \"<your_env_alias>\" domain\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

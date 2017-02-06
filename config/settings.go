@@ -9,12 +9,15 @@ import (
 	"path/filepath"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/models"
 	"github.com/mitchellh/go-homedir"
 )
 
-// SettingsPath is the location of the catalyze config file.
-const SettingsFile = ".catalyze"
+// SettingsPath is the location of the datica config file.
+const (
+	OldSettingsFile = ".catalyze"
+	SettingsFile    = ".datica"
+)
 
 // SettingsRetriever defines an interface for a class responsible for generating
 // a settings object used for most commands in the CLI. Some examples might be
@@ -36,6 +39,15 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authH
 		os.Exit(1)
 	}
 
+	if _, err = os.Stat(filepath.Join(HomeDir, OldSettingsFile)); err == nil {
+		logrus.Debugln("Migrating settings file from .catalyze to .datica")
+		err = os.Rename(filepath.Join(HomeDir, OldSettingsFile), filepath.Join(HomeDir, SettingsFile))
+		if err != nil {
+			logrus.Printf("Error encountered migrating the settings file from .catalyze to .datica: %s. To fix this, please run \"mv %s %s\".", err, filepath.Join(HomeDir, OldSettingsFile), filepath.Join(HomeDir, SettingsFile))
+			os.Exit(1)
+		}
+	}
+
 	file, err := os.Open(filepath.Join(HomeDir, SettingsFile))
 	if os.IsNotExist(err) {
 		file, err = os.Create(filepath.Join(HomeDir, SettingsFile))
@@ -55,7 +67,7 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authH
 	if envName != "" {
 		setGivenEnv(envName, &settings)
 		if settings.EnvironmentID == "" || settings.ServiceID == "" {
-			logrus.Fatalf("No environment named \"%s\" has been associated. Run \"catalyze associated\" to see what environments have been associated or run \"catalyze associate\" from a local git repo to create a new association", envName)
+			logrus.Fatalf("No environment named \"%s\" has been associated. Run \"datica associated\" to see what environments have been associated or run \"datica associate\" from a local git repo to create a new association", envName)
 		}
 	}
 
@@ -115,7 +127,7 @@ func SaveSettings(settings *models.Settings) {
 // DeleteBreadcrumb removes the environment in the  global list
 func DeleteBreadcrumb(alias string, settings *models.Settings) error {
 	if _, ok := settings.Environments[alias]; !ok {
-		return fmt.Errorf("An environment named \"%s\" has not been associated. Run \"catalyze associated\" to see current associations.", alias)
+		return fmt.Errorf("An environment named \"%s\" has not been associated. Run \"datica associated\" to see current associations.", alias)
 	}
 
 	delete(settings.Environments, alias)

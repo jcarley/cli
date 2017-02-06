@@ -2,12 +2,12 @@ package certs
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/commands/ssl"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/auth"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/commands/ssl"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -33,12 +33,12 @@ var CreateSubCmd = models.Command{
 	LongHelp: "`certs create` allows you to upload an SSL certificate and private key which can be used to secure your public facing code service. " +
 		"Cert creation can be done at any time, even after environment provisioning, but must be done before [creating a site](#sites-create). " +
 		"When creating a cert, the CLI will check to ensure the certificate and private key match. If you are using a self signed cert, pass in the `-s` flag and the hostname check will be skipped. " +
-		"Catalyze requires that your certificate include your own certificate, intermediate certificates, and the root certificate in that order. " +
+		"Datica requires that your certificate include your own certificate, intermediate certificates, and the root certificate in that order. " +
 		"If you only include your certificate, the CLI will attempt to resolve this and fetch intermediate and root certificates for you. " +
 		"It is advised that you create a full chain before running this command as the `-r` flag is accomplished on a \"best effort\" basis.\n\n" +
 		"The `HOSTNAME` for a certificate does not need to match the valid Subject of the actual SSL certificate nor does it need to match the `site` name used in the `sites create` command. " +
 		"The `HOSTNAME` is used for organizational purposes only and can be named anything with the exclusion of the following characters: `/`, `&`, `%`. Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" certs create wildcard_mysitecom ~/path/to/cert.pem ~/path/to/priv.key\n```",
+		"```\ndatica -E \"<your_env_alias>\" certs create wildcard_mysitecom ~/path/to/cert.pem ~/path/to/priv.key\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of this SSL certificate plus private key pair")
@@ -68,7 +68,7 @@ var ListSubCmd = models.Command{
 	ShortHelp: "List all existing domains that have SSL certificate and private key pairs",
 	LongHelp: "`certs list` lists all of the available certs you have created on your environment. " +
 		"The displayed names are the names that should be used as the `DOMAIN` parameter in the [sites create](#sites-create) command. Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" certs list\n```",
+		"```\ndatica -E \"<your_env_alias>\" certs list\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
@@ -91,7 +91,7 @@ var RmSubCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Remove an existing domain and its associated SSL certificate and private key pair",
 	LongHelp: "`certs rm` allows you to delete old certificate and private key pairs. Only certs that are not in use by a site can be deleted. Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" certs rm mywebsite.com\n```",
+		"```\ndatica -E \"<your_env_alias>\" certs rm mywebsite.com\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("HOSTNAME", "", "The hostname of the domain and SSL certificate and private key pair")
@@ -118,7 +118,7 @@ var UpdateSubCmd = models.Command{
 	LongHelp: "`certs update` works nearly identical to the [certs create](#certs-create) command. " +
 		"All rules regarding self signed certs and certificate resolution from the `certs create` command apply to the `certs update` command. " +
 		"This is useful for when your certificates have expired and you need to upload new ones. Update your certs and then redeploy your service_proxy. Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" certs update mywebsite.com ~/path/to/new/cert.pem ~/path/to/new/priv.key\n```",
+		"```\ndatica -E \"<your_env_alias>\" certs update mywebsite.com ~/path/to/new/cert.pem ~/path/to/new/priv.key\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of this SSL certificate and private key pair")

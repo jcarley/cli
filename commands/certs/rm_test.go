@@ -3,7 +3,7 @@ package certs
 import (
 	"testing"
 
-	"github.com/catalyzeio/cli/test"
+	"github.com/daticahealth/cli/test"
 )
 
 const (
@@ -19,7 +19,7 @@ var certRmTests = []struct {
 	expectedOutput string
 }{
 	{test.Alias, certName, false, certsRmStandardOutput},
-	{"bad-env", certName, true, "\033[31m\033[1m[fatal] \033[0mNo environment named \"bad-env\" has been associated. Run \"catalyze associated\" to see what environments have been associated or run \"catalyze associate\" from a local git repo to create a new association\n"},
+	{"bad-env", certName, true, "\033[31m\033[1m[fatal] \033[0mNo environment named \"bad-env\" has been associated. Run \"datica associated\" to see what environments have been associated or run \"datica associate\" from a local git repo to create a new association\n"},
 	{test.Alias, "bad-cert-name", true, "\033[31m\033[1m[fatal] \033[0m(92002) Cert Not Found: Could not find a cert with the given name associated with the service.\n"},
 }
 
@@ -67,7 +67,7 @@ func TestCertsRmNoAssociation(t *testing.T) {
 		t.Errorf("Expected error but no error returned: %s", output)
 		return
 	}
-	expectedOutput := "\033[31m\033[1m[fatal] \033[0mNo Catalyze environment has been associated. Run \"catalyze associate\" from a local git repo first\n"
+	expectedOutput := "\033[31m\033[1m[fatal] \033[0mNo Datica environment has been associated. Run \"datica associate\" from a local git repo first\n"
 	if output != expectedOutput {
 		t.Errorf("Expected: %s. Found: %s", expectedOutput, output)
 		return

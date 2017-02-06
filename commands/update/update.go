@@ -6,8 +6,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
-	"github.com/catalyzeio/cli/lib/pods"
-	"github.com/catalyzeio/cli/lib/updater"
+	"github.com/daticahealth/cli/lib/pods"
+	"github.com/daticahealth/cli/lib/updater"
 )
 
 func CmdUpdate(iu IUpdate) error {
@@ -24,7 +24,7 @@ func CmdUpdate(iu IUpdate) error {
 		}
 	}
 	if !needsUpdate {
-		logrus.Println("You are already running the latest version of the Catalyze CLI")
+		logrus.Println("You are already running the latest version of the Datica CLI")
 		return nil
 	}
 	logrus.Printf("Version %s is available. Updating your CLI...", updater.AutoUpdater.Info.Version)

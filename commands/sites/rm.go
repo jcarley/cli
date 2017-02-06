@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/models"
 )
 
 func CmdRm(name string, is ISites, iservices services.IServices) error {
@@ -25,14 +25,14 @@ func CmdRm(name string, is ISites, iservices services.IServices) error {
 		}
 	}
 	if site == nil {
-		return fmt.Errorf("Could not find a site with the label \"%s\". You can list sites with the \"catalyze sites list\" command.", name)
+		return fmt.Errorf("Could not find a site with the label \"%s\". You can list sites with the \"datica sites list\" command.", name)
 	}
 	err = is.Rm(site.ID, serviceProxy.ID)
 	if err != nil {
 		return err
 	}
 	logrus.Println("Site removed")
-	logrus.Println("To make your changes go live, you must redeploy your service proxy with the \"catalyze redeploy service_proxy\" command")
+	logrus.Println("To make your changes go live, you must redeploy your service proxy with the \"datica redeploy service_proxy\" command")
 	return nil
 }
 

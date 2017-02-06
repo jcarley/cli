@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/config"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/config"
 )
 
 func CmdRm(svcName, releaseName string, ir IReleases, is services.IServices) error {
@@ -18,7 +18,7 @@ func CmdRm(svcName, releaseName string, ir IReleases, is services.IServices) err
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.", svcName)
 	}
 	err = ir.Rm(releaseName, service.ID)
 	if err != nil {

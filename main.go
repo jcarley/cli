@@ -1,7 +1,7 @@
 package main
 
-import "github.com/catalyzeio/cli/catalyze"
+import "github.com/daticahealth/cli/datica"
 
 func main() {
-	catalyze.Run()
+	datica.Run()
 }

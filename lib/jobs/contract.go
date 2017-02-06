@@ -1,6 +1,6 @@
 package jobs
 
-import "github.com/catalyzeio/cli/models"
+import "github.com/daticahealth/cli/models"
 
 // IJobs
 type IJobs interface {
