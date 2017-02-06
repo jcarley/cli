@@ -132,9 +132,32 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 		if lvl, err := logrus.ParseLevel(loggingLevel); err == nil {
 			logrus.SetLevel(lvl)
 		}
+	} else if loggingLevel := os.Getenv(config.LogLevelEnvVarDeprecated); loggingLevel != "" {
+		if lvl, err := logrus.ParseLevel(loggingLevel); err == nil {
+			logrus.SetLevel(lvl)
+		}
+		logrus.Warnf("You are using a deprecated environment variable %s. Please use %s instead. Support for %s will be removed soon.", config.LogLevelEnvVarDeprecated, config.LogLevelEnvVar, config.LogLevelEnvVarDeprecated)
 	}
 
 	app.Before = func() {
+		if *username == "" {
+			*username = os.Getenv(config.DaticaUsernameEnvVarDeprecated)
+			if *username != "" {
+				logrus.Warnf("You are using a deprecated environment variable %s. Please use %s instead. Support for %s will be removed soon.", config.DaticaUsernameEnvVarDeprecated, config.DaticaUsernameEnvVar, config.DaticaUsernameEnvVarDeprecated)
+			}
+		}
+		if *password == "" {
+			*password = os.Getenv(config.DaticaPasswordEnvVarDeprecated)
+			if *password != "" {
+				logrus.Warnf("You are using a deprecated environment variable %s. Please use %s instead. Support for %s will be removed soon.", config.DaticaPasswordEnvVarDeprecated, config.DaticaPasswordEnvVar, config.DaticaPasswordEnvVarDeprecated)
+			}
+		}
+		if *givenEnvName == "" {
+			*givenEnvName = os.Getenv(config.DaticaEnvironmentEnvVarDeprecated)
+			if *givenEnvName != "" {
+				logrus.Warnf("You are using a deprecated environment variable %s. Please use %s instead. Support for %s will be removed soon.", config.DaticaEnvironmentEnvVarDeprecated, config.DaticaEnvironmentEnvVar, config.DaticaEnvironmentEnvVarDeprecated)
+			}
+		}
 		if config.Beta {
 			logrus.Println("This is a BETA release. Please contact Datica Support at https://datica.com/support with any issues.")
 		}

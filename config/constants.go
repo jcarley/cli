@@ -50,6 +50,15 @@ const (
 	// SkipVerifyEnvVar is the env variable used to accept invalid SSL certificates
 	SkipVerifyEnvVar = "SKIP_VERIFY"
 
+	// DaticaUsernameEnvVarDeprecated is the deprecated env variable used to override the username
+	DaticaUsernameEnvVarDeprecated = "CATALYZE_USERNAME"
+	// DaticaPasswordEnvVarDeprecated is the deprecated env variable used to override the passowrd
+	DaticaPasswordEnvVarDeprecated = "CATALYZE_PASSWORD"
+	// DaticaEnvironmentEnvVarDeprecated is the deprecated env variable used to override the environment used in the current command
+	DaticaEnvironmentEnvVarDeprecated = "CATALYZE_ENV"
+	// LogLevelEnvVarDeprecated is the deprecated env variable used to override the logging level used
+	LogLevelEnvVarDeprecated = "CATALYZE_LOG_LEVEL"
+
 	// InvalidChars is a string containing all invalid characters for naming
 	InvalidChars = "/?%"
 )
