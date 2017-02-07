@@ -1,5 +1,18 @@
 # Datica CLI
 
+Welcome to the Datica CLI (formerly Catalyze).
+
+## Upgrading from `catalyze` to `datica`
+
+To upgrade your CLI from `catalyze` to `datica` perform the following steps:
+
+1. Run `catalyze update`
+1. Rename your CLI binary to `datica`
+
+That's it!
+
+## Documentation
+
 To learn more about the Datica CLI and all the great features we've added, we recommend reading the [documentation](https://resources.datica.com/compliant-cloud/cli-reference/).
 
 Check out the [releases](https://github.com/daticahealth/cli/releases) page or check below to download the right version for your platform.
