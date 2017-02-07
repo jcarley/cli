@@ -21,7 +21,7 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 	if !ig.Exists() {
 		return errors.New("No git repo found in the current directory")
 	}
-	logrus.Printf("Existing git remotes named \"%s\" will be overwritten", remote)
+	logrus.Printf("Existing git remotes named \"%s\" and \"catalyze\" will be overwritten", remote)
 	envs, errs := ie.List()
 	if errs != nil && len(errs) > 0 {
 		for pod, err := range errs {
@@ -69,7 +69,8 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 	for _, r := range remotes {
 		if r == remote {
 			ig.Rm(remote)
-			break
+		} else if r == "catalyze" {
+			ig.Rm("catalyze")
 		}
 	}
 	err = ig.Add(remote, chosenService.Source)
@@ -77,6 +78,11 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 		return err
 	}
 	logrus.Printf("\"%s\" remote added.", remote)
+	err = ig.Add("catalyze", chosenService.Source)
+	if err != nil {
+		return err
+	}
+	logrus.Println("\"catalyze\" remote added.")
 
 	name := alias
 	if name == "" {
@@ -86,7 +92,7 @@ func CmdAssociate(envLabel, svcLabel, alias, remote string, defaultEnv bool, ia 
 	if err != nil {
 		return err
 	}
-	logrus.Printf("Your git repository \"%s\" has been associated with code service \"%s\" and environment \"%s\"", remote, svcLabel, name)
+	logrus.Printf("Your git repository \"%s\" and \"catalyze\" have been associated with code service \"%s\" and environment \"%s\"", remote, svcLabel, name)
 	logrus.Println("After associating to an environment, you need to add a cert with the \"datica certs create\" command, if you have not done so already")
 	return nil
 }
