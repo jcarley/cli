@@ -51,7 +51,7 @@ GOOS=darwin GOARCH=amd64 GOBIN="" go install github.com/daticahealth/cli
 
 echo 'Syncing S3 data to the public/ directory'
 rm -rf public/*
-aws s3 sync s3://${BUCKET}/datica public/
+aws s3 sync s3://${BUCKET}/catalyze public/
 mkdir public/${VERSION}
 
 echo 'Building version '${VERSION}' JSON configuration files'

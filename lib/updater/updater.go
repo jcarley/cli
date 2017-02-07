@@ -76,7 +76,7 @@ var AutoUpdater = &Updater{
 	BinURL:         "https://s3.amazonaws.com/cli-autoupdates/",
 	DiffURL:        "https://s3.amazonaws.com/cli-autoupdates/",
 	Dir:            ".datica_update",
-	CmdName:        "datica",
+	CmdName:        "catalyze",
 }
 
 // ErrHashMismatch represents a mismatch in the expected hash and the calculated hash
