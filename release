@@ -148,7 +148,7 @@ cd ..
 
 if [ "${TEST}" = "false" ]; then
   echo 'Publishing to S3'
-  aws s3 sync public/ s3://${BUCKET}/datica --delete --exclude "*.DS_Store"
+  aws s3 sync public/ s3://${BUCKET}/catalyze --delete --exclude "*.DS_Store"
 
   echo 'Releasing to Github'
   cd builds/
