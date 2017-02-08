@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/jobs"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/lib/jobs"
+	"github.com/daticahealth/cli/models"
 )
 
 func CmdBackup(databaseName string, skipPoll bool, id IDb, is services.IServices, ij jobs.IJobs) error {
@@ -15,7 +15,7 @@ func CmdBackup(databaseName string, skipPoll bool, id IDb, is services.IServices
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", databaseName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.", databaseName)
 	}
 	job, err := id.Backup(service)
 	if err != nil {
@@ -27,7 +27,7 @@ func CmdBackup(databaseName string, skipPoll bool, id IDb, is services.IServices
 		// all because logrus treats print, println, and printf the same
 		logrus.Println("Polling until backup finishes.")
 		if isSnapshotBackup {
-			logrus.Printf("This is a snapshot backup, it may be a while before this backup shows up in the \"catalyze db list %s\" command.", databaseName)
+			logrus.Printf("This is a snapshot backup, it may be a while before this backup shows up in the \"datica db list %s\" command.", databaseName)
 			err = ij.WaitToAppear(job.ID, service.ID)
 			if err != nil {
 				return err
@@ -47,9 +47,9 @@ func CmdBackup(databaseName string, skipPoll bool, id IDb, is services.IServices
 			return fmt.Errorf("Job finished with invalid status %s", job.Status)
 		}
 	} else if isSnapshotBackup {
-		logrus.Printf("This is a snapshot backup, it may be a while before this backup shows up in the \"catalyze db list %s\" command.", databaseName)
+		logrus.Printf("This is a snapshot backup, it may be a while before this backup shows up in the \"datica db list %s\" command.", databaseName)
 	}
-	logrus.Printf("You can download your backup with the \"catalyze db download %s %s ./output_file_path\" command", databaseName, job.ID)
+	logrus.Printf("You can download your backup with the \"datica db download %s %s ./output_file_path\" command", databaseName, job.ID)
 	return nil
 }
 

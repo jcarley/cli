@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/models"
 )
 
 // CmdList lists all service files that are able to be downloaded
@@ -18,7 +18,7 @@ func CmdList(svcName string, ifiles IFiles, is services.IServices) error {
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.", svcName)
 	}
 	files, err := ifiles.List(service.ID)
 	if err != nil {
@@ -32,7 +32,7 @@ func CmdList(svcName string, ifiles IFiles, is services.IServices) error {
 	for _, sf := range *files {
 		logrus.Println(sf.Name)
 	}
-	logrus.Printf("\nTo view the contents of a service file, use the \"catalyze files download %s FILE_NAME\" command", svcName)
+	logrus.Printf("\nTo view the contents of a service file, use the \"datica files download %s FILE_NAME\" command", svcName)
 	return nil
 }
 

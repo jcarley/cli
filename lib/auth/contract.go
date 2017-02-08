@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 )
 
 // IAuth represents the contract that concrete implementations should follow

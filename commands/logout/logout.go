@@ -2,7 +2,7 @@ package logout
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/auth"
 )
 
 func CmdLogout(il ILogout, ia auth.IAuth) error {

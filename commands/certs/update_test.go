@@ -3,14 +3,14 @@ package certs
 import (
 	"testing"
 
-	"github.com/catalyzeio/cli/test"
+	"github.com/daticahealth/cli/test"
 )
 
 const (
 	certsUpdateCommandName    = "certs"
 	certsUpdateSubcommandName = "update"
 	certsUpdateStandardOutput = `Updated 'example.com'
-To make your updated cert go live, you must redeploy your service proxy with the "catalyze redeploy service_proxy" command
+To make your updated cert go live, you must redeploy your service proxy with the "datica redeploy service_proxy" command
 `
 )
 
@@ -29,7 +29,7 @@ var certUpdateTests = []struct {
 	{test.Alias, certName, pubKeyPath, invalidPath, true, false, true, "\033[31m\033[1m[fatal] \033[0mA private key does not exist at path 'invalid-file.pem'\n"},
 	{test.Alias, certName, pubKeyPath, privKeyPath, false, false, false, "Incomplete certificate chain found, attempting to resolve this\n" + certsUpdateStandardOutput},
 	{test.Alias, certName, pubKeyPath, privKeyPath, true, true, false, certsUpdateStandardOutput},
-	{"bad-env", certName, pubKeyPath, privKeyPath, true, false, true, "\033[31m\033[1m[fatal] \033[0mNo environment named \"bad-env\" has been associated. Run \"catalyze associated\" to see what environments have been associated or run \"catalyze associate\" from a local git repo to create a new association\n"},
+	{"bad-env", certName, pubKeyPath, privKeyPath, true, false, true, "\033[31m\033[1m[fatal] \033[0mNo environment named \"bad-env\" has been associated. Run \"datica associated\" to see what environments have been associated or run \"datica associate\" from a local git repo to create a new association\n"},
 	{test.Alias, "bad-cert-name", pubKeyPath, privKeyPath, true, false, true, "\033[31m\033[1m[fatal] \033[0m(92002) Cert Not Found: Could not find a cert with the given name associated with the service.\n"},
 }
 
@@ -91,7 +91,7 @@ func TestCertsUpdateNoAssociation(t *testing.T) {
 		t.Errorf("Expected error but no error returned: %s", output)
 		return
 	}
-	expectedOutput := "\033[31m\033[1m[fatal] \033[0mNo Catalyze environment has been associated. Run \"catalyze associate\" from a local git repo first\n"
+	expectedOutput := "\033[31m\033[1m[fatal] \033[0mNo Datica environment has been associated. Run \"datica associate\" from a local git repo first\n"
 	if output != expectedOutput {
 		t.Errorf("Expected: %s. Found: %s", expectedOutput, output)
 		return

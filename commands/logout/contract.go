@@ -2,9 +2,9 @@ package logout
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/lib/auth"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -16,7 +16,7 @@ var Cmd = models.Command{
 	LongHelp: "When using the CLI, your username and password are **never** stored in any file on your filesystem. " +
 		"However, in order to not type in your username and password each and every command, a session token is stored in the CLI's configuration file and used until it expires. " +
 		"`logout` removes this session token from the configuration file. Here is a sample command\n\n" +
-		"```\ncatalyze logout\n```",
+		"```\ndatica logout\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

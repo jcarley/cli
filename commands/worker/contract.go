@@ -2,12 +2,12 @@ package worker
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/auth"
-	"github.com/catalyzeio/cli/lib/jobs"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/jobs"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -33,7 +33,7 @@ var DeploySubCmd = models.Command{
 	LongHelp: "`worker deploy` allows you to start a background process asynchronously. The TARGET must be specified in your Procfile. " +
 		"Once the worker is started, any output can be found in your logging Dashboard or using the [logs](#logs) command. " +
 		"Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" worker deploy code-1 mailer\n```",
+		"```\ndatica -E \"<your_env_alias>\" worker deploy code-1 mailer\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to use to deploy a worker")
@@ -59,7 +59,7 @@ var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "Lists all workers for a given service",
 	LongHelp: "`worker list` lists all workers and their scale for a given code service along with the number of currently running instances of each worker target. Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" worker list code-1\n```",
+		"```\ndatica -E \"<your_env_alias>\" worker list code-1\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to list workers for")
@@ -84,7 +84,7 @@ var RmSubCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Remove all workers for a given service and target",
 	LongHelp: "`worker rm` removes a worker by the given TARGET and stops all currently running instances of that TARGET. Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" worker rm code-1 mailer\n```",
+		"```\ndatica -E \"<your_env_alias>\" worker rm code-1 mailer\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service running the workers")
@@ -111,13 +111,13 @@ var ScaleSubCmd = models.Command{
 	ShortHelp: "Scale existing workers up or down for a given service and target",
 	LongHelp: "`worker scale` allows you to scale up or down a given worker TARGET. " +
 		"Scaling up will launch new instances of the worker TARGET while scaling down will immediately stop running instances of the worker TARGET if applicable. Here are some sample commands\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" worker scale code-1 mailer 1\n" +
-		"catalyze -E \"<your_env_alias>\" worker scale code-1 mailer -- -2\n```",
+		"```\ndatica -E \"<your_env_alias>\" worker scale code-1 mailer 1\n" +
+		"datica -E \"<your_env_alias>\" worker scale code-1 mailer -- -2\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service running the workers")
 			target := subCmd.StringArg("TARGET", "", "The worker target to scale up or down")
-			scale := subCmd.StringArg("SCALE", "", "The new scale (or change in scale) for the given worker target. This can be a single value (i.e. 2) representing the final number of workers that should be running. Or this can be a change represented by a plus or minus sign followed by the value (i.e. +2 or -1). When using a change in value, be sure to insert the \"--\" operator to signal the end of options. For example, \"catalyze worker scale code-1 worker -- -1\"")
+			scale := subCmd.StringArg("SCALE", "", "The new scale (or change in scale) for the given worker target. This can be a single value (i.e. 2) representing the final number of workers that should be running. Or this can be a change represented by a plus or minus sign followed by the value (i.e. +2 or -1). When using a change in value, be sure to insert the \"--\" operator to signal the end of options. For example, \"datica worker scale code-1 worker -- -1\"")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())

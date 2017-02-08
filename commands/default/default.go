@@ -29,7 +29,7 @@ func (d *SDefault) Set(alias string) error {
 		}
 	}
 	if !found {
-		return fmt.Errorf("No environment with an alias of \"%s\" has been associated. Please run \"catalyze associate\" first", alias)
+		return fmt.Errorf("No environment with an alias of \"%s\" has been associated. Please run \"datica associate\" first", alias)
 	}
 	d.Settings.Default = alias
 	return nil

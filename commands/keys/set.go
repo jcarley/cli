@@ -5,9 +5,9 @@ import (
 	"os"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/lib/auth"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 	"github.com/mitchellh/go-homedir"
 )
 

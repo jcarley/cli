@@ -16,9 +16,9 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/updater"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/lib/updater"
+	"github.com/daticahealth/cli/models"
 )
 
 const defaultRedirectLimit = 10
@@ -77,7 +77,7 @@ func (m *TLSHTTPManager) GetHeaders(sessionToken, version, pod, userID string) m
 		"X-Pod-ID":            {pod},
 		"X-Request-Nonce":     {nonce},
 		"X-Request-Timestamp": {fmt.Sprintf("%d", timestamp)},
-		"User-Agent":          {fmt.Sprintf("catalyze-cli-%s %s %s %s", version, runtime.GOOS, config.ArchString(), userID)},
+		"User-Agent":          {fmt.Sprintf("datica-cli-%s %s %s %s", version, runtime.GOOS, config.ArchString(), userID)},
 	}
 }
 

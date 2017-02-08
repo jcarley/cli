@@ -3,7 +3,7 @@ package pods
 import (
 	"fmt"
 
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/models"
 )
 
 func (p *SPods) List() (*[]models.Pod, error) {

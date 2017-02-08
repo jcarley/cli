@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/models"
 )
 
 func (f *SFiles) Create(svcID, filePath, name, mode string) (*models.ServiceFile, error) {

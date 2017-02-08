@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
+	"github.com/daticahealth/cli/commands/services"
 )
 
 func CmdSet(svcName, defaultSvcID string, variables []string, iv IVars, is services.IServices) error {
@@ -17,7 +17,7 @@ func CmdSet(svcName, defaultSvcID string, variables []string, iv IVars, is servi
 			return err
 		}
 		if service == nil {
-			return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", svcName)
+			return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.", svcName)
 		}
 		defaultSvcID = service.ID
 	}
@@ -41,14 +41,14 @@ func CmdSet(svcName, defaultSvcID string, variables []string, iv IVars, is servi
 	}
 	// TODO add in the service label in the redeploy example once we take in the service label in
 	// this command
-	logrus.Println("Set. For these environment variables to take effect, you will need to redeploy your service with \"catalyze redeploy\"")
+	logrus.Println("Set. For these environment variables to take effect, you will need to redeploy your service with \"datica redeploy\"")
 	return nil
 }
 
 // Set adds a new environment variables or updates the value of an existing
 // environment variables. Any changes to environment variables will not take
 // effect until the service is redeployed by pushing new code or via
-// `catalyze redeploy`.
+// `datica redeploy`.
 func (v *SVars) Set(svcID string, envVarsMap map[string]string) error {
 	b, err := json.Marshal(envVarsMap)
 	if err != nil {

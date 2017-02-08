@@ -2,7 +2,7 @@ package supportids
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -10,11 +10,11 @@ import (
 // name, arguments, and required/optional arguments and flags for the command.
 var Cmd = models.Command{
 	Name:      "support-ids",
-	ShortHelp: "Print out various IDs related to your associated environment to be used when contacting Catalyze support",
-	LongHelp: "`support-ids` is helpful when contacting Catalyze support by sending an email to support@catalyze.io. " +
-		"If you are having an issue with a CLI command or anything with your environment, it is helpful to run this command and copy the output into the initial correspondence with a Catalyze engineer. " +
-		"This will help Catalyze identify the environment faster and help come to resolution faster. Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" support-ids\n```",
+	ShortHelp: "Print out various IDs related to your associated environment to be used when contacting Datica support",
+	LongHelp: "`support-ids` is helpful when contacting Datica support by submitting a ticket at https://datica.com/support. " +
+		"If you are having an issue with a CLI command or anything with your environment, it is helpful to run this command and copy the output into the initial correspondence with a Datica engineer. " +
+		"This will help Datica identify the environment faster and help come to resolution faster. Here is a sample command\n\n" +
+		"```\ndatica -E \"<your_env_alias>\" support-ids\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

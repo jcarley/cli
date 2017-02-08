@@ -2,11 +2,11 @@ package files
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/config"
-	"github.com/catalyzeio/cli/lib/auth"
-	"github.com/catalyzeio/cli/lib/prompts"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -33,11 +33,11 @@ var DownloadSubCmd = models.Command{
 		"Most service files are stored on your service_proxy and therefore you should not have to specify the `SERVICE_NAME` argument. " +
 		"Simply supply the `FILE_NAME` found from the [files list](#files-list) command and the contents of the file, as well as the permissions string, will be printed to your console. " +
 		"You can always store the file locally, applying the same permissions as those on the remote server, by specifying an output file with the `-o` flag. Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" files download /etc/nginx/sites-enabled/mywebsite.com\n```",
+		"```\ndatica -E \"<your_env_alias>\" files download /etc/nginx/sites-enabled/mywebsite.com\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "service_proxy", "The name of the service to download a file from")
-			fileName := subCmd.StringArg("FILE_NAME", "", "The name of the service file from running \"catalyze files list\"")
+			fileName := subCmd.StringArg("FILE_NAME", "", "The name of the service file from running \"datica files list\"")
 			output := subCmd.StringOpt("o output", "", "The downloaded file will be saved to the given location with the same file permissions as it has on the remote host. If those file permissions cannot be applied, a warning will be printed and default 0644 permissions applied. If no output is specified, stdout is used.")
 			force := subCmd.BoolOpt("f force", false, "If the specified output file already exists, automatically overwrite it")
 			subCmd.Action = func() {
@@ -63,7 +63,7 @@ var ListSubCmd = models.Command{
 	LongHelp: "`files list` prints out a listing of all service files available for download. " +
 		"Nearly all service files are stored on the service_proxy and therefore you should not have to specify the `SERVICE_NAME` argument. " +
 		"Here is a sample command\n\n" +
-		"```\ncatalyze -E \"<your_env_alias>\" files list\n```",
+		"```\ndatica -E \"<your_env_alias>\" files list\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			svcName := subCmd.StringArg("SERVICE_NAME", "service_proxy", "The name of the service to list files for")

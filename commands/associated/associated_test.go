@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/catalyzeio/cli/test"
+	"github.com/daticahealth/cli/test"
 )
 
 const (

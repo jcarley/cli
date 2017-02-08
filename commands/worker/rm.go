@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/jobs"
-	"github.com/catalyzeio/cli/lib/prompts"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/lib/jobs"
+	"github.com/daticahealth/cli/lib/prompts"
 )
 
 func CmdRm(svcName, target string, iw IWorker, is services.IServices, ip prompts.IPrompts, ij jobs.IJobs) error {
@@ -15,7 +15,7 @@ func CmdRm(svcName, target string, iw IWorker, is services.IServices, ip prompts
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services list\" command.", svcName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services list\" command.", svcName)
 	}
 	err = ip.YesNo(fmt.Sprintf("Removing the worker target %s for service %s will automatically stop all existing worker jobs with that target, would you like to proceed? (y/n) ", target, svcName))
 	if err != nil {

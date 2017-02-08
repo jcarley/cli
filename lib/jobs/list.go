@@ -3,7 +3,7 @@ package jobs
 import (
 	"fmt"
 
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/models"
 )
 
 func (j *SJobs) List(svcID string, page, pageSize int) (*[]models.Job, error) {

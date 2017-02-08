@@ -3,8 +3,8 @@ package worker
 import (
 	"fmt"
 
-	"github.com/catalyzeio/cli/commands/services"
-	"github.com/catalyzeio/cli/lib/jobs"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/lib/jobs"
 )
 
 func CmdWorker(svcName, defaultSvcID, target string, iw IWorker, is services.IServices, ij jobs.IJobs) error {
@@ -14,7 +14,7 @@ func CmdWorker(svcName, defaultSvcID, target string, iw IWorker, is services.ISe
 			return err
 		}
 		if service == nil {
-			return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services list\" command.", svcName)
+			return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services list\" command.", svcName)
 		}
 		svcName = service.Label
 	}

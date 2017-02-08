@@ -1,6 +1,6 @@
 package pods
 
-import "github.com/catalyzeio/cli/models"
+import "github.com/daticahealth/cli/models"
 
 // IPods
 type IPods interface {

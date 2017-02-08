@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/lib/jobs"
-	"github.com/catalyzeio/cli/lib/prompts"
+	"github.com/daticahealth/cli/lib/jobs"
+	"github.com/daticahealth/cli/lib/prompts"
 )
 
 // CmdStop stops all instances of a given service. All workers and rake tasks will also be stopped
@@ -20,10 +20,10 @@ func CmdStop(svcName string, is IServices, ij jobs.IJobs, ip prompts.IPrompts) e
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services list\" command.", svcName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services list\" command.", svcName)
 	}
 	if !service.Redeployable {
-		return fmt.Errorf("This service cannot be stopped. Please contact Catalyze Support at support@catalyze.io if you need the \"%s\" service stopped.", svcName)
+		return fmt.Errorf("This service cannot be stopped. Please contact Datica Support at https://datica.com/support if you need the \"%s\" service stopped.", svcName)
 	}
 
 	page := 0
@@ -51,6 +51,6 @@ func CmdStop(svcName string, is IServices, ij jobs.IJobs, ip prompts.IPrompts) e
 		page++
 	}
 
-	logrus.Printf("Successfully stopped %s. Run \"catalyze redeploy %s\" to start this service again.", svcName, svcName)
+	logrus.Printf("Successfully stopped %s. Run \"datica redeploy %s\" to start this service again.", svcName, svcName)
 	return nil
 }

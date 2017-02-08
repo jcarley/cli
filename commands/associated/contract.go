@@ -2,7 +2,7 @@ package associated
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/models"
+	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
 
@@ -13,7 +13,7 @@ var Cmd = models.Command{
 	ShortHelp: "Lists all associated environments",
 	LongHelp: "`associated` outputs information about all previously associated environments on your local machine. " +
 		"The information that is printed out includes the alias, environment ID, actual environment name, service ID, and the git repo directory. Here is a sample command\n\n" +
-		"```\ncatalyze associated\n```",
+		"```\ndatica associated\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

@@ -9,8 +9,8 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/catalyzeio/cli/commands/deploykeys"
-	"github.com/catalyzeio/cli/config"
+	"github.com/daticahealth/cli/commands/deploykeys"
+	"github.com/daticahealth/cli/config"
 )
 
 func CmdRemove(name, privateKeyPath string, ik IKeys, id deploykeys.IDeployKeys) error {
@@ -35,7 +35,7 @@ func CmdRemove(name, privateKeyPath string, ik IKeys, id deploykeys.IDeployKeys)
 		}
 		for _, uk := range *userKeys {
 			if strings.TrimSpace(pubKeyString) == strings.TrimSpace(uk.Key) {
-				return errors.New("You cannot remove the key that is currently being used for authentication. Run \"catalyze clear --private-key\" to remove your SSH key authentication settings.")
+				return errors.New("You cannot remove the key that is currently being used for authentication. Run \"datica clear --private-key\" to remove your SSH key authentication settings.")
 			}
 		}
 	}
