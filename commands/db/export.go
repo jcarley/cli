@@ -42,7 +42,7 @@ func CmdExport(databaseName, filePath string, force bool, id IDb, ip prompts.IPr
 	}
 	logrus.Printf("Export started (job ID = %s)", job.ID)
 	// all because logrus treats print, println, and printf the same
-	logrus.Println("Polling until export finishes.")
+	logrus.StandardLogger().Out.Write([]byte("Polling until backup finishes."))
 	if job.IsSnapshotBackup != nil && *job.IsSnapshotBackup {
 		logrus.Printf("This is a snapshot backup, it may be a while before this backup shows up in the \"catalyze db list %s\" command.", databaseName)
 		err = ij.WaitToAppear(job.ID, service.ID)
