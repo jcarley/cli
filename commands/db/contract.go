@@ -1,6 +1,8 @@
 package db
 
 import (
+	"io"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/config"
@@ -8,7 +10,9 @@ import (
 	"github.com/catalyzeio/cli/lib/crypto"
 	"github.com/catalyzeio/cli/lib/jobs"
 	"github.com/catalyzeio/cli/lib/prompts"
+	"github.com/catalyzeio/cli/lib/transfer"
 	"github.com/catalyzeio/cli/models"
+	"github.com/catalyzeio/gcm/gcm"
 	"github.com/jault3/mow.cli"
 )
 
@@ -144,6 +148,7 @@ var ImportSubCmd = models.Command{
 			filePath := subCmd.StringArg("FILEPATH", "", "The location of the file to import to the database")
 			mongoCollection := subCmd.StringOpt("c mongo-collection", "", "If importing into a mongo service, the name of the collection to import into")
 			mongoDatabase := subCmd.StringOpt("d mongo-database", "", "If importing into a mongo service, the name of the database to import into")
+			skipBackup := subCmd.BoolOpt("s skip-backup", false, "Skip backing up database. Useful for large databases, which can have long backup times.")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -151,12 +156,12 @@ var ImportSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdImport(*databaseName, *filePath, *mongoCollection, *mongoDatabase, New(settings, crypto.New(), jobs.New(settings)), services.New(settings), jobs.New(settings))
+				err := CmdImport(*databaseName, *filePath, *mongoCollection, *mongoDatabase, *skipBackup, New(settings, crypto.New(), jobs.New(settings)), prompts.New(), services.New(settings), jobs.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "DATABASE_NAME FILEPATH [-d [-c]]"
+			subCmd.Spec = "DATABASE_NAME FILEPATH [-s][-d [-c]]"
 		}
 	},
 }
@@ -221,12 +226,12 @@ type IDb interface {
 	Backup(service *models.Service) (*models.Job, error)
 	Download(backupID, filePath string, service *models.Service) error
 	Export(filePath string, job *models.Job, service *models.Service) error
-	Import(filePath, mongoCollection, mongoDatabase string, service *models.Service) (*models.Job, error)
+	Import(rt *transfer.ReaderTransfer, key, iv []byte, mongoCollection, mongoDatabase string, service *models.Service) (*models.Job, error)
 	List(page, pageSize int, service *models.Service) (*[]models.Job, error)
-	TempUploadURL(service *models.Service) (*models.TempURL, error)
 	TempDownloadURL(jobID string, service *models.Service) (*models.TempURL, error)
 	TempLogsURL(jobID string, serviceID string) (*models.TempURL, error)
 	DumpLogs(taskType string, job *models.Job, service *models.Service) error
+	NewEncryptReader(reader io.Reader, key, iv []byte) (*gcm.EncryptReader, error)
 }
 
 // SDb is a concrete implementation of IDb
@@ -243,4 +248,8 @@ func New(settings *models.Settings, crypto crypto.ICrypto, jobs jobs.IJobs) IDb 
 		Crypto:   crypto,
 		Jobs:     jobs,
 	}
+}
+
+func (db *SDb) NewEncryptReader(reader io.Reader, key, iv []byte) (*gcm.EncryptReader, error) {
+	return db.Crypto.NewEncryptReader(reader, key, iv)
 }

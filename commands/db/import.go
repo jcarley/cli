@@ -4,22 +4,21 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/catalyzeio/cli/commands/services"
 	"github.com/catalyzeio/cli/lib/crypto"
 	"github.com/catalyzeio/cli/lib/jobs"
+	"github.com/catalyzeio/cli/lib/prompts"
+	"github.com/catalyzeio/cli/lib/transfer"
 	"github.com/catalyzeio/cli/models"
 )
 
-func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id IDb, is services.IServices, ij jobs.IJobs) error {
+func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, skipBackup bool, id IDb, ip prompts.IPrompts, is services.IServices, ij jobs.IJobs) error {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return fmt.Errorf("A file does not exist at path '%s'", filePath)
 	}
@@ -30,43 +29,74 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id
 	if service == nil {
 		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"catalyze services\" command.", databaseName)
 	}
-	logrus.Printf("Backing up \"%s\" before performing the import", databaseName)
-	job, err := id.Backup(service)
+	key := make([]byte, crypto.KeySize)
+	iv := make([]byte, crypto.IVSize)
+	rand.Read(key)
+	rand.Read(iv)
+	file, err := os.Open(filePath)
 	if err != nil {
 		return err
 	}
-	logrus.Printf("Backup started (job ID = %s)", job.ID)
-	// all because logrus treats print, println, and printf the same
-	logrus.Println("Polling until backup finishes.")
-	if job.IsSnapshotBackup != nil && *job.IsSnapshotBackup {
-		logrus.Printf("This is a snapshot backup, it may be a while before this backup shows up in the \"catalyze db list %s\" command.", databaseName)
-		err = ij.WaitToAppear(job.ID, service.ID)
+	defer file.Close()
+	fi, err := file.Stat()
+	if err != nil {
+		return err
+	}
+	encryptFileReader, err := id.NewEncryptReader(file, key, iv)
+	if err != nil {
+		return err
+	}
+	uploadSize := encryptFileReader.CalculateTotalSize(int(fi.Size()))
+	fiveGB := transfer.GB * 5
+	if transfer.ByteSize(uploadSize) > fiveGB {
+		return fmt.Errorf("the encrypted size of %s exceeds the maximum upload size of %s", filePath, fiveGB)
+	}
+	rt := transfer.NewReaderTransfer(encryptFileReader, uploadSize)
+	if !skipBackup {
+		logrus.Printf("Backing up \"%s\" before performing the import", databaseName)
+		job, err := id.Backup(service)
+		if err != nil {
+			return err
+		}
+		logrus.Printf("Backup started (job ID = %s)", job.ID)
+
+		// all because logrus treats print, println, and printf the same
+		logrus.Println("Polling until backup finishes.")
+		if job.IsSnapshotBackup != nil && *job.IsSnapshotBackup {
+			logrus.Printf("This is a snapshot backup, it may be a while before this backup shows up in the \"catalyze db list %s\" command.", databaseName)
+			err = ij.WaitToAppear(job.ID, service.ID)
+			if err != nil {
+				return err
+			}
+		}
+		status, err := ij.PollTillFinished(job.ID, service.ID)
+		if err != nil {
+			return err
+		}
+		job.Status = status
+		logrus.Printf("Ended in status '%s'", job.Status)
+		err = id.DumpLogs("backup", job, service)
+		if err != nil {
+			return err
+		}
+		if job.Status != "finished" {
+			return fmt.Errorf("Job finished with invalid status %s", job.Status)
+		}
+	} else {
+		err := ip.YesNo("Are you sure you want to import data into your database without backing it up first? (y/n) ")
 		if err != nil {
 			return err
 		}
 	}
-	status, err := ij.PollTillFinished(job.ID, service.ID)
-	if err != nil {
-		return err
-	}
-	job.Status = status
-	logrus.Printf("Ended in status '%s'", job.Status)
-	err = id.DumpLogs("backup", job, service)
-	if err != nil {
-		return err
-	}
-	if job.Status != "finished" {
-		return fmt.Errorf("Job finished with invalid status %s", job.Status)
-	}
 	logrus.Printf("Importing '%s' into %s (ID = %s)", filePath, databaseName, service.ID)
-	job, err = id.Import(filePath, mongoCollection, mongoDatabase, service)
+	job, err := id.Import(rt, key, iv, mongoCollection, mongoDatabase, service)
 	if err != nil {
 		return err
 	}
 	// all because logrus treats print, println, and printf the same
 	logrus.StandardLogger().Out.Write([]byte(fmt.Sprintf("Processing import (job ID = %s).", job.ID)))
 
-	status, err = ij.PollTillFinished(job.ID, service.ID)
+	status, err := ij.PollTillFinished(job.ID, service.ID)
 	if err != nil {
 		return err
 	}
@@ -91,17 +121,7 @@ func CmdImport(databaseName, filePath, mongoCollection, mongoDatabase string, id
 // PostgreSQL and MySQL, this should be a single `.sql` file. For Mongo, this
 // should be a single tar'ed, gzipped archive (`.tar.gz`) of the database dump
 // that you want to import.
-func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *models.Service) (*models.Job, error) {
-	key := make([]byte, crypto.KeySize)
-	iv := make([]byte, crypto.IVSize)
-	rand.Read(key)
-	rand.Read(iv)
-	logrus.Println("Encrypting...")
-	encrFilePath, err := d.Crypto.EncryptFile(filePath, key, iv)
-	if err != nil {
-		return nil, err
-	}
-	defer os.Remove(encrFilePath)
+func (d *SDb) Import(rt *transfer.ReaderTransfer, key, iv []byte, mongoCollection, mongoDatabase string, service *models.Service) (*models.Job, error) {
 	options := map[string]string{}
 	if mongoCollection != "" {
 		options["databaseCollection"] = mongoCollection
@@ -109,33 +129,24 @@ func (d *SDb) Import(filePath, mongoCollection, mongoDatabase string, service *m
 	if mongoDatabase != "" {
 		options["database"] = mongoDatabase
 	}
-	logrus.Println("Uploading...")
-	tempURL, err := d.TempUploadURL(service)
+	tmpURL, err := d.TempUploadURL(service)
 	if err != nil {
 		return nil, err
 	}
-	encrFile, err := os.Open(encrFilePath)
+	u, err := url.Parse(tmpURL.URL)
 	if err != nil {
 		return nil, err
 	}
-	defer encrFile.Close()
-
-	u, err := url.Parse(tempURL.URL)
+	req, err := http.NewRequest("PUT", tmpURL.URL, rt)
+	req.ContentLength = int64(rt.Length())
+	done := make(chan bool)
+	go printTransferStatus(false, rt, done)
+	_, err = http.DefaultClient.Do(req)
 	if err != nil {
+		done <- false
 		return nil, err
 	}
-	svc := s3.New(session.New(&aws.Config{Region: aws.String("us-east-1"), Credentials: credentials.AnonymousCredentials}))
-	req, _ := svc.PutObjectRequest(&s3.PutObjectInput{
-		Bucket: aws.String(strings.Split(u.Host, ".")[0]),
-		Key:    aws.String(strings.TrimLeft(u.Path, "/")),
-		Body:   encrFile,
-	})
-	req.HTTPRequest.URL.RawQuery = u.RawQuery
-	err = req.Send()
-	if err != nil {
-		return nil, err
-	}
-
+	done <- true
 	importParams := map[string]interface{}{}
 	for key, value := range options {
 		importParams[key] = value
