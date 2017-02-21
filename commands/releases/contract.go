@@ -18,6 +18,8 @@ var Cmd = models.Command{
 		"A release is automatically created each time you perform a git push. " +
 		"The release is tagged with the git SHA of the commit. " +
 		"Releases are a way of tagging specific points in time of your git history. " +
+		"By default, the last three releases will be kept. " +
+		"Please contact Support if you require more than the last three releases to be retained. " +
 		"You can rollback to a specific release by using the [rollback](#rollback) command. " +
 		"The releases command cannot be run directly but has sub commands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
