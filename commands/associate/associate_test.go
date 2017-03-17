@@ -1,77 +1,149 @@
 package associate
 
 import (
-	"strings"
+	"fmt"
+	"net/http"
+	"reflect"
 	"testing"
 
+	"github.com/daticahealth/cli/commands/environments"
+	"github.com/daticahealth/cli/commands/git"
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/models"
 	"github.com/daticahealth/cli/test"
 )
 
-const (
-	commandName    = "associate"
-	standardOutput = `Existing git remotes named "datica" will be overwritten
-"datica" remote added.
-Your git repository "datica" has been associated with code service "code-1" and environment "ctest"
-After associating to an environment, you need to add a cert with the "datica certs create" command, if you have not done so already
-`
-)
-
 var associateTests = []struct {
-	envLabel       string
-	svcLabel       string
-	alias          string
-	remote         string
-	defaultEnv     bool
-	expectErr      bool
-	expectedOutput string
+	envName   string
+	svcName   string
+	alias     string
+	remote    string
+	expectErr bool
 }{
-	{test.EnvLabel, test.SvcLabel, test.Alias, "", false, false, standardOutput},
-	{"bad-env", test.SvcLabel, test.Alias, "", false, true, "Existing git remotes named \"datica\" will be overwritten\n\033[31m\033[1m[fatal] \033[0mNo environment with name \"bad-env\" found\n"},
-	{test.EnvLabel, "bad-svc", test.Alias, "", false, true, "Existing git remotes named \"datica\" will be overwritten\n\033[31m\033[1m[fatal] \033[0mNo code service found with label \"bad-svc\". Code services found: code-1\n"},
-	{test.EnvLabel, test.SvcLabel, "", "", false, false, "Existing git remotes named \"datica\" will be overwritten\n\"datica\" remote added.\nYour git repository \"datica\" has been associated with code service \"code-1\" and environment \"cli-integration-tests\"\nAfter associating to an environment, you need to add a cert with the \"datica certs create\" command, if you have not done so already\n"},
-	{test.EnvLabel, test.SvcLabel, test.Alias, "cz", false, false, "Existing git remotes named \"cz\" will be overwritten\n\"cz\" remote added.\nYour git repository \"cz\" has been associated with code service \"code-1\" and environment \"ctest\"\nAfter associating to an environment, you need to add a cert with the \"datica certs create\" command, if you have not done so already\n"},
-	{test.EnvLabel, test.SvcLabel, test.Alias, "", true, false, "\033[33m\033[1m[warning] \033[0mThe \"--default\" flag has been deprecated! It will be removed in a future version.\n" + standardOutput},
-	{"", test.SvcLabel, test.Alias, "", false, true, "Existing git remotes named \"datica\" will be overwritten\n\033[31m\033[1m[fatal] \033[0mNo environment with name \"\" found\n"},
-	{test.EnvLabel, "", test.Alias, "", false, true, "Existing git remotes named \"datica\" will be overwritten\n\033[31m\033[1m[fatal] \033[0mNo code service found with label \"\". Code services found: code-1\n"},
+	{test.EnvName, test.SvcLabel, "", "datica", false},
+	{test.EnvName, test.SvcLabel, "", "custom", false},
+	{test.EnvName, test.SvcLabel, test.Alias, "datica", false},
+	{test.EnvName, "bad-svc", "", "datica", true},
+	{"bad-env", test.SvcLabel, "", "datica", true},
 }
 
 func TestAssociate(t *testing.T) {
-	if err := test.SetUpGitRepo(); err != nil {
-		t.Error(err)
-		t.Fail()
-	}
+	mux, server, baseURL := test.Setup()
+	defer test.Teardown(server)
+	settings := test.GetSettings(baseURL.String())
+
+	mux.HandleFunc("/environments",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "GET")
+			if r.Header.Get("X-Pod-ID") == test.Pod {
+				fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","name":"%s","namespace":"%s","organizationId":"%s"}]`, test.EnvID, test.EnvName, test.Namespace, test.OrgID))
+			} else {
+				fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","name":"%s","namespace":"%s","organizationId":"%s"}]`, test.EnvIDAlt, test.EnvNameAlt, test.NamespaceAlt, test.OrgIDAlt))
+			}
+		},
+	)
+	mux.HandleFunc("/environments/"+test.EnvID+"/services",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "GET")
+			test.AssertEquals(t, r.Header.Get("X-Pod-ID"), test.Pod)
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","type":"code","label":"%s","source":"ssh://git@datica.com"}]`, test.SvcID, test.SvcLabel))
+		},
+	)
+	mux.HandleFunc("/environments/"+test.EnvIDAlt+"/services",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "GET")
+			test.AssertEquals(t, r.Header.Get("X-Pod-ID"), test.PodAlt)
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","type":"code","label":"%s","source":"ssh://git@datica.com"}]`, test.SvcIDAlt, test.SvcLabelAlt))
+		},
+	)
+
 	for _, data := range associateTests {
 		t.Logf("Data: %+v", data)
-		args := []string{commandName, data.envLabel, data.svcLabel}
-		if len(data.alias) != 0 {
-			args = append(args, "-a", data.alias)
-		}
-		expectedRemote := "datica"
-		if len(data.remote) != 0 {
-			expectedRemote = data.remote
-			args = append(args, "-r", data.remote)
-		}
-		if data.defaultEnv {
-			args = append(args, "-d")
-		}
 
-		output, err := test.RunCommand(test.BinaryName, args)
+		// reset
+		settings.Environments = map[string]models.AssociatedEnv{}
+
+		// test
+		err := CmdAssociate(data.envName, data.svcName, data.alias, data.remote, false, New(settings), git.New(), environments.New(settings), services.New(settings))
+
+		// assertions
 		if err != nil != data.expectErr {
-			t.Errorf("Unexpected error: %s", output)
+			t.Errorf("Unexpected error: %s", err)
 			continue
 		}
-		if output != data.expectedOutput {
-			t.Errorf("Expected: %v. Found: %v", data.expectedOutput, output)
-			continue
+		expectedEnvs := map[string]models.AssociatedEnv{}
+		if !data.expectErr {
+			name := data.alias
+			if name == "" {
+				name = data.envName
+			}
+			expectedEnvs[name] = models.AssociatedEnv{
+				Name:          test.EnvName,
+				EnvironmentID: test.EnvID,
+				ServiceID:     test.SvcID,
+				Directory:     "",
+				OrgID:         test.OrgID,
+				Pod:           test.Pod,
+			}
 		}
-		output, err = test.RunCommand("git", []string{"remote", "-v"})
-		if err != nil {
-			t.Errorf("Unexpected error running 'git remote -v': %s", output)
-			continue
+		actual := map[string]models.AssociatedEnv{}
+		for envName, env := range settings.Environments {
+			env.Directory = ""
+			actual[envName] = env
 		}
-		if !strings.Contains(output, expectedRemote) {
-			t.Errorf("Git remote not added. Expected: %s. Found %s", expectedRemote, output)
-			continue
+		if !reflect.DeepEqual(expectedEnvs, actual) {
+			t.Errorf("Associated environment not added to settings object correctly.\nExpected: %+v.\nFound:    %+v", expectedEnvs, settings.Environments)
 		}
+	}
+}
+
+func TestAssociateWithPodErrors(t *testing.T) {
+	mux, server, baseURL := test.Setup()
+	defer test.Teardown(server)
+	settings := test.GetSettings(baseURL.String())
+	settings.Environments = map[string]models.AssociatedEnv{}
+
+	mux.HandleFunc("/environments",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "GET")
+			if r.Header.Get("X-Pod-ID") == test.Pod {
+				fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","name":"%s","namespace":"%s","organizationId":"%s"}]`, test.EnvID, test.EnvName, test.Namespace, test.OrgID))
+			} else {
+				http.Error(w, `{"title":"Error","description":"error","code":1}`, 400)
+			}
+		},
+	)
+	mux.HandleFunc("/environments/"+test.EnvID+"/services",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "GET")
+			test.AssertEquals(t, r.Header.Get("X-Pod-ID"), test.Pod)
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","type":"code","label":"%s","source":"ssh://git@datica.com"}]`, test.SvcID, test.SvcLabel))
+		},
+	)
+
+	// test
+	err := CmdAssociate(test.EnvName, test.SvcLabel, "", "datica", false, New(settings), git.New(), environments.New(settings), services.New(settings))
+
+	// assert
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+	expectedEnvs := map[string]models.AssociatedEnv{
+		test.EnvName: models.AssociatedEnv{
+			Name:          test.EnvName,
+			EnvironmentID: test.EnvID,
+			ServiceID:     test.SvcID,
+			Directory:     "",
+			OrgID:         test.OrgID,
+			Pod:           test.Pod,
+		},
+	}
+	actual := map[string]models.AssociatedEnv{}
+	for envName, env := range settings.Environments {
+		env.Directory = ""
+		actual[envName] = env
+	}
+	if !reflect.DeepEqual(expectedEnvs, actual) {
+		t.Errorf("Associated environment not added to settings object correctly.\nExpected: %+v.\nFound:    %+v", expectedEnvs, settings.Environments)
 	}
 }
