@@ -25,7 +25,7 @@ func CmdLogs(databaseName, backupID string, id IDb, is services.IServices, ij jo
 	if err != nil {
 		return err
 	}
-	return id.DumpLogs("backup", job, service)
+	return id.DumpLogs(job.Type, job, service)
 }
 
 // DumpLogs dumps logs from a Backup/Restore/Import/Export job to the console

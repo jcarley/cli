@@ -3,50 +3,63 @@ package certs
 import (
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"testing"
 
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/commands/ssl"
 	"github.com/daticahealth/cli/test"
 )
 
 const (
-	certsCreateCommandName    = "certs"
-	certsCreateSubcommandName = "create"
-	certName                  = "example.com"
-	pubKey                    = `-----BEGIN CERTIFICATE-----
-MIICATCCAWoCCQCsoDP5n7FfzzANBgkqhkiG9w0BAQUFADBFMQswCQYDVQQGEwJB
-VTETMBEGA1UECBMKU29tZS1TdGF0ZTEhMB8GA1UEChMYSW50ZXJuZXQgV2lkZ2l0
-cyBQdHkgTHRkMB4XDTE1MDYwNDE5MTkzNVoXDTE2MDYwMzE5MTkzNVowRTELMAkG
-A1UEBhMCQVUxEzARBgNVBAgTClNvbWUtU3RhdGUxITAfBgNVBAoTGEludGVybmV0
-IFdpZGdpdHMgUHR5IEx0ZDCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEA3+Gz
-NFJhBdbUcFUxzlm70DJHXa9+nOAHZ9S6c66T1FXBRF94GfTSq8Qg9U+EOZf5cuhN
-6wkLD1LLHMdb/UEjyCVVOqscfeR/nPCT5B9sv881PM8jL8C7grAUezcKiNx7Fng8
-Dj9sczwziBR9P5ke5TI1g62LhHc0KGgMa8oNY7UCAwEAATANBgkqhkiG9w0BAQUF
-AAOBgQBgTk8C+e13xGEw8qI2xhNfudt+8ffzIjNNWptb8rhGWblyY7EVBuU24LqE
-oIOS7EH2aRhgvZjPUEQCNl+foQBRnRkYBeBhfUTl8QAUQNIyRUAHlQcPct9+VYcz
-7OeuMetZkluMG3w62ooiufaGC/8orztDEySO4cj1HWssE2h/zw==
+	certName = "example.com"
+	pubKey   = `-----BEGIN CERTIFICATE-----
+MIIDFDCCAfygAwIBAgIJAJ04dO4O6PrLMA0GCSqGSIb3DQEBBQUAMBAxDjAMBgNV
+BAMTBWxvY2FsMB4XDTE3MDEyNjA2MjQwMloXDTI3MDEyNDA2MjQwMlowEDEOMAwG
+A1UEAxMFbG9jYWwwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC7dwM2
+rMj9N0mEZP+V9sWx0MKcuc4Uymv4BbJO/dP7ryXJEMqSZc7DrmUs1XTKEguWu9dL
+0BylzCvaWalqKixojWL1Wojj6i8DfgHgFum+Fjd3EUZhbNnerfCC94Of1XCRSezG
+sWP7V0gGSlxoptRvhH4NTHkyemnaZEDs323VtuhG0AgoQ8EWS/XeVAWLlSsHRPWp
+BXjQn0ve33SsnbhbpkRkyB1jlH7vxbEaAX9aKrZYYSmXLz3NKp8ti8AljqybWC86
+ymVl5qStd6yz/CrFiGWki0F46/BdPB8ZCY4iOsuMXbWWDiRuq7llu8iWEat651DO
+VeAPKdQsRZgK/y1hAgMBAAGjcTBvMB0GA1UdDgQWBBRrj840X4a+uGDsKCRMHzX1
+mtXAWTBABgNVHSMEOTA3gBRrj840X4a+uGDsKCRMHzX1mtXAWaEUpBIwEDEOMAwG
+A1UEAxMFbG9jYWyCCQCdOHTuDuj6yzAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEB
+BQUAA4IBAQAVpa/IkKyDPE7X4RsHZLsinEfJpAahrLsSBGDIo6cgpB3txntgmoLU
+pC71ZQEE5glE4ENvflyLvvg6fAwlOVL0sax0GKfYgLJhg11CmsoRYiHCPh/bwqtU
+iqAzjo7yCsyzo1Q0IMbc0RHFBmikHJEL6Dsuri1Skj+KnXLBibl8FeFuppgusV+W
+8q3T/6ZNM8nFhRAPAQf7n4c4y+VjYuw/WSEdByH2NuLnLivb97E5BC0nr3/AK0Kz
+MSsO3RiSxj07Gepc+Ce0VNXZkVAjUiwHvZeC7ebLC/SQs8ihogi/TVELgQkksgC/
+lyUFiVHqjeeIKxYNy3d7RqGxzKKDRssi
 -----END CERTIFICATE-----`
 	privKey = `-----BEGIN RSA PRIVATE KEY-----
-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
+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
 -----END RSA PRIVATE KEY-----`
-	certsCreateStandardOutput = `Created 'example.com'
-To make use of your cert, you need to add a site with the "datica sites create" command
-`
-)
-
-var (
 	pubKeyPath  = "example.pem"
 	privKeyPath = "example-key.pem"
 	invalidPath = "invalid-file.pem"
@@ -54,131 +67,83 @@ var (
 
 func TestMain(m *testing.M) {
 	flag.Parse()
-	if err := CreateCertFiles(); err != nil {
+	if err := createCertFiles(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 	statusCode := m.Run()
-	CleanupCertFiles()
+	cleanupCertFiles()
 	os.Exit(statusCode)
 }
 
 var certCreateTests = []struct {
-	env            string
-	name           string
-	pubKeyPath     string
-	privKeyPath    string
-	selfSigned     bool
-	skipResolve    bool
-	expectErr      bool
-	expectedOutput string
+	hostname    string
+	pubKeyPath  string
+	privKeyPath string
+	selfSigned  bool
+	resolve     bool
+	expectErr   bool
 }{
-	{test.Alias, certName, pubKeyPath, privKeyPath, true, false, false, certsCreateStandardOutput},
-	{test.Alias, certName, "./invalid-file.pem", privKeyPath, true, false, true, "\033[31m\033[1m[fatal] \033[0mA cert does not exist at path './invalid-file.pem'\n"},
-	{test.Alias, certName, pubKeyPath, "./invalid-file.pem", true, false, true, "\033[31m\033[1m[fatal] \033[0mA private key does not exist at path './invalid-file.pem'\n"},
-	{test.Alias, certName, pubKeyPath, privKeyPath, false, false, false, "Incomplete certificate chain found, attempting to resolve this\n" + certsCreateStandardOutput},
-	{test.Alias, certName, pubKeyPath, privKeyPath, true, true, false, certsCreateStandardOutput},
-	{"bad-env", certName, pubKeyPath, privKeyPath, true, false, true, "\033[31m\033[1m[fatal] \033[0mNo environment named \"bad-env\" has been associated. Run \"datica associated\" to see what environments have been associated or run \"datica associate\" from a local git repo to create a new association\n"},
+	{certName, pubKeyPath, privKeyPath, true, true, false},
+	{certName, pubKeyPath, privKeyPath, true, false, false},
+	{certName, pubKeyPath, privKeyPath, false, true, false},
+	{certName, pubKeyPath, invalidPath, true, true, true},
+	{certName, invalidPath, privKeyPath, true, true, true},
+	{"/?%", pubKeyPath, privKeyPath, true, true, true},
 }
 
 func TestCertsCreate(t *testing.T) {
-	if err := test.SetUpGitRepo(); err != nil {
-		t.Error(err)
-		return
-	}
-	if err := test.SetUpAssociation(); err != nil {
-		t.Error(err)
-		return
-	}
+	mux, server, baseURL := test.Setup()
+	defer test.Teardown(server)
+	settings := test.GetSettings(baseURL.String())
+	mux.HandleFunc("/environments/"+test.EnvID+"/services/"+test.SvcID+"/certs",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "POST")
+			fmt.Fprint(w, `{}`)
+		},
+	)
+	mux.HandleFunc("/environments/"+test.EnvID+"/services",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "GET")
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"service_proxy"}]`, test.SvcID))
+		},
+	)
 
 	for _, data := range certCreateTests {
 		t.Logf("Data: %+v", data)
-		args := []string{"-E", data.env, certsCreateCommandName, certsCreateSubcommandName}
-		if len(data.name) != 0 {
-			args = append(args, data.name)
-		}
-		if len(data.pubKeyPath) != 0 {
-			args = append(args, data.pubKeyPath)
-		}
-		if len(data.privKeyPath) != 0 {
-			args = append(args, data.privKeyPath)
-		}
-		if data.selfSigned {
-			args = append(args, "-s")
-		}
-		if data.skipResolve {
-			args = append(args, "--resolve=false")
-		}
-		output, err := test.RunCommand(test.BinaryName, args)
+
+		// test
+		err := CmdCreate(data.hostname, data.pubKeyPath, data.privKeyPath, data.selfSigned, data.resolve, New(settings), services.New(settings), ssl.New(settings))
+
+		// assert
 		if err != nil != data.expectErr {
-			t.Errorf("Unexpected error: %s", output)
+			t.Errorf("Unexpected error: %s", err)
 			continue
 		}
-		if output != data.expectedOutput {
-			t.Errorf("Expected: %s. Found: %s", data.expectedOutput, output)
-			continue
-		}
-		if err == nil {
-			if output, err = test.RunCommand(test.BinaryName, []string{"-E", data.env, certsRmCommandName, certsRmSubcommandName, certName}); err != nil {
-				t.Errorf("Unexpected err: %s", output)
-				return
-			}
-		}
 	}
 }
 
-func TestCertsCreateNoAssociation(t *testing.T) {
-	if err := test.ClearAssociations(); err != nil {
-		t.Error(err)
-		return
-	}
-	output, err := test.RunCommand(test.BinaryName, []string{certsCreateCommandName, certsCreateSubcommandName, certName, pubKeyPath, privKeyPath})
+func TestCertsCreateFailSSL(t *testing.T) {
+	mux, server, baseURL := test.Setup()
+	defer test.Teardown(server)
+	settings := test.GetSettings(baseURL.String())
+	mux.HandleFunc("/environments/"+test.EnvID+"/services",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "GET")
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"service_proxy"}]`, test.SvcID))
+		},
+	)
+
+	// test
+	err := CmdCreate(certName, pubKeyPath, privKeyPath, false, false, New(settings), services.New(settings), ssl.New(settings))
+
+	// assert
 	if err == nil {
-		t.Errorf("Expected error but no error returned: %s", output)
-		return
-	}
-	expectedOutput := "\033[31m\033[1m[fatal] \033[0mNo Datica environment has been associated. Run \"datica associate\" from a local git repo first\n"
-	if output != expectedOutput {
-		t.Errorf("Expected: %s. Found: %s", expectedOutput, output)
-		return
+		t.Fatalf("Expected error but found nil")
 	}
 }
 
-func TestCertsCreateTwice(t *testing.T) {
-	if err := test.SetUpGitRepo(); err != nil {
-		t.Error(err)
-		return
-	}
-	if err := test.SetUpAssociation(); err != nil {
-		t.Error(err)
-		return
-	}
-	output, err := test.RunCommand(test.BinaryName, []string{"-E", test.Alias, certsCreateCommandName, certsCreateSubcommandName, certName, pubKeyPath, privKeyPath, "-s"})
-	if err != nil {
-		t.Errorf("Unexpected error: %s", output)
-		return
-	}
-	if output != certsCreateStandardOutput {
-		t.Errorf("Expected: %s. Found: %s", certsCreateStandardOutput, output)
-		return
-	}
-	output, err = test.RunCommand(test.BinaryName, []string{"-E", test.Alias, certsCreateCommandName, certsCreateSubcommandName, certName, pubKeyPath, privKeyPath, "-s"})
-	if err == nil {
-		t.Errorf("Expected error but no error returned: %s", output)
-		return
-	}
-	expectedOutput := "\033[31m\033[1m[fatal] \033[0m(92003) Cert Already Exists: A Cert already exists with the given name; alter name or delete existing cert to continue.\n"
-	if output != expectedOutput {
-		t.Errorf("Expected: %s. Found: %s", expectedOutput, output)
-		return
-	}
-	if output, err = test.RunCommand(test.BinaryName, []string{"-E", test.Alias, certsRmCommandName, certsRmSubcommandName, certName}); err != nil {
-		t.Errorf("Unexpected err: %s", output)
-		return
-	}
-}
-
-func CreateCertFiles() error {
+func createCertFiles() error {
 	cert, err := os.OpenFile(pubKeyPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
 		return err
@@ -194,9 +159,9 @@ func CreateCertFiles() error {
 	return nil
 }
 
-func CleanupCertFiles() error {
+func cleanupCertFiles() error {
 	err := os.Remove(pubKeyPath)
-	if err != nil {
+	if err == nil {
 		err = os.Remove(privKeyPath)
 	}
 	return err
