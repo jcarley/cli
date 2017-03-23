@@ -12,6 +12,8 @@ import (
 	"github.com/pmylund/sortutil"
 )
 
+const dateForm = "2006-01-02T15:04:05"
+
 func CmdStatus(envID string, is IStatus, ie environments.IEnvironments, iservices services.IServices) error {
 	env, err := ie.Retrieve(envID)
 	if err != nil {
@@ -36,7 +38,8 @@ func (s *SStatus) Status(env *models.Environment, services *[]models.Service) er
 
 	for _, service := range *services {
 		if service.Type != "" {
-			jobs, err := s.Jobs.RetrieveByStatus(service.ID, "running")
+			jobs, err := s.Jobs.List(service.ID, 1, 100)
+			//jobs, err := s.Jobs.RetrieveByStatus(service.ID, "running")
 			if err != nil {
 				return err
 			}
@@ -57,12 +60,9 @@ func (s *SStatus) Status(env *models.Environment, services *[]models.Service) er
 						}
 					}
 				} else if len(service.ReleaseVersion) > 0 {
-					displayType = fmt.Sprintf("%s (%s)", service.Label, service.ReleaseVersion)
-				} else {
-					displayType = fmt.Sprintf("%s", service.Label)
+					displayType = fmt.Sprintf("%s (git:%s)", service.Label, service.ReleaseVersion)
 				}
 
-				const dateForm = "2006-01-02T15:04:05"
 				t, _ := time.Parse(dateForm, job.CreatedAt)
 				fmt.Fprintln(w, displayType+"\t"+job.Status+"\t"+t.Local().Format(time.Stamp))
 			}
@@ -75,10 +75,8 @@ func (s *SStatus) Status(env *models.Environment, services *[]models.Service) er
 					if latestBuildJob.ID == "" {
 						fmt.Fprintln(w, "--------"+"\t"+service.Label+"\t"+"-------"+"\t"+"---------------")
 					} else if latestBuildJob.ID != "" {
-						const dateForm = "2006-01-02T15:04:05"
 						t, _ := time.Parse(dateForm, latestBuildJob.CreatedAt)
-						displayType := service.Label
-						displayType = fmt.Sprintf("%s (%s)", displayType, latestBuildJob.Type)
+						displayType := fmt.Sprintf("%s (%s)", service.Label, latestBuildJob.Type)
 						fmt.Fprintln(w, displayType+"\t"+latestBuildJob.Status+"\t"+t.Local().Format(time.Stamp))
 					}
 				}
