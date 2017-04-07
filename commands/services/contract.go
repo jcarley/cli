@@ -94,8 +94,8 @@ var RenameSubCmd = models.Command{
 var StopSubCmd = models.Command{
 	Name:      "stop",
 	ShortHelp: "Stop all instances of a given service (including all workers, rake tasks, and open consoles)",
-	LongHelp: "`services stop` shuts down all running instances of a given service. " +
-		"This is useful when performing maintenance and a service must be shutdown to perform that maintenance. " +
+	LongHelp: "`services stop` shuts down all running instances of a given code service. " +
+		"This is useful when performing maintenance on code services and a code service must be shutdown to perform that maintenance. " +
 		"Take caution when running this command as all instances of the service, all workers, all rake tasks, and all open console sessions will be stopped. " +
 		"Here is a sample command\n\n" +
 		"```\ndatica -E \"<your_env_alias>\" services stop code-1\n```",
