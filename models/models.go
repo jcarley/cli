@@ -332,7 +332,7 @@ type UserKey struct {
 type Volume struct {
 	ID   int    `json:"id"`
 	Type string `json:"type"`
-	Size string `json:"size"`
+	Size int    `json:"size"`
 }
 
 type Workers struct {
