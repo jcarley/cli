@@ -6,6 +6,7 @@ import (
 	"github.com/daticahealth/cli/lib/auth"
 	"github.com/daticahealth/cli/lib/jobs"
 	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/lib/volumes"
 	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
@@ -109,7 +110,7 @@ var StopSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdStop(*svcName, New(settings), jobs.New(settings), prompts.New())
+				err := CmdStop(*svcName, settings.Pod, New(settings), jobs.New(settings), volumes.New(settings), prompts.New())
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
