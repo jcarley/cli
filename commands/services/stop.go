@@ -6,11 +6,12 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/daticahealth/cli/lib/jobs"
 	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/lib/volumes"
 )
 
 // CmdStop stops all instances of a given service. All workers and rake tasks will also be stopped
 // if applicable.
-func CmdStop(svcName string, is IServices, ij jobs.IJobs, ip prompts.IPrompts) error {
+func CmdStop(svcName, pod string, is IServices, ij jobs.IJobs, iv volumes.IVolumes, ip prompts.IPrompts) error {
 	err := ip.YesNo(fmt.Sprintf("Are you sure you want to stop %s? This will stop all instances of the service, all workers, all rake tasks, and all currently open consoles. (y/n) ", svcName))
 	if err != nil {
 		return err
@@ -24,6 +25,16 @@ func CmdStop(svcName string, is IServices, ij jobs.IJobs, ip prompts.IPrompts) e
 	}
 	if !service.Redeployable {
 		return fmt.Errorf("This service cannot be stopped. Please contact Datica Support at https://datica.com/support if you need the \"%s\" service stopped.", svcName)
+	}
+	if pod == "csb01" && service.Name != "code" {
+		return fmt.Errorf("Only code services can be stopped for this environment, not %s services. Please contact Datica Support at https://datica.com/support if you need the \"%s\" service stopped.", service.Name, svcName)
+	}
+	volumes, err := iv.List(service.ID)
+	if err != nil {
+		return err
+	}
+	if volumes != nil && len(*volumes) > 0 {
+		return fmt.Errorf("This service has a storage volume and cannot be stopped. Please contact Datica Support at https://datica.com/support if you need the \"%s\" service stopped.", svcName)
 	}
 
 	page := 0
