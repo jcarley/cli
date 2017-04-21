@@ -31,7 +31,7 @@ var Cmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdServices(New(settings))
+				err := CmdServices(New(settings), volumes.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -57,7 +57,7 @@ var ListSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdServices(New(settings))
+				err := CmdServices(New(settings), volumes.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
