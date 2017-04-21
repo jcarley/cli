@@ -20,7 +20,7 @@ func CmdServices(is IServices, v volumes.IVolumes) error {
 		logrus.Println("No services found")
 		return nil
 	}
-	data := [][]string{{"NAME", "DNS", "RAM (GB)", "CPU", "STORAGE (GB)", "WORKER LIMIT", "SCALE"}}
+	data := [][]string{{"NAME", "DNS", "RAM (GB)", "CPU", "WORKER LIMIT", "SCALE", "STORAGE (GB)"}}
 	for _, s := range *svcs {
 
 		vols, err := v.List(s.ID)
@@ -32,13 +32,15 @@ func CmdServices(is IServices, v volumes.IVolumes) error {
 			vols = &[]models.Volume{{ID: 0, Type: "", Size: 0}}
 		}
 
+		volume := ""
 		for i, v := range *vols {
 			if i > 0 {
-				data = append(data, []string{"", "", "", "", fmt.Sprintf("%d", v.Size), "", ""})
-			} else {
-				data = append(data, []string{s.Label, s.DNS, fmt.Sprintf("%d", s.Size.RAM), fmt.Sprintf("%d", s.Size.CPU), fmt.Sprintf("%d", v.Size), fmt.Sprintf("%d", s.WorkerScale), fmt.Sprintf("%d", s.Scale)})
+				volume += ", "
 			}
+			volume += fmt.Sprintf("%d", v.Size)
 		}
+
+		data = append(data, []string{s.Label, s.DNS, fmt.Sprintf("%d", s.Size.RAM), fmt.Sprintf("%d", s.Size.CPU), fmt.Sprintf("%d", s.WorkerScale), fmt.Sprintf("%d", s.Scale), volume})
 
 	}
 
@@ -49,6 +51,8 @@ func CmdServices(is IServices, v volumes.IVolumes) error {
 	table.SetColumnSeparator("")
 	table.SetRowSeparator("")
 	table.AppendBulk(data)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+
 	table.Render()
 	return nil
 }
