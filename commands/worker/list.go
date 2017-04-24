@@ -45,7 +45,7 @@ func CmdList(svcName string, iw IWorker, is services.IServices, ij jobs.IJobs) e
 			workerJobs[j.Target] = &workerJob{0, 0}
 		}
 		if j.Status == "running" {
-			workerJobs[j.Target].running = 1
+			workerJobs[j.Target].running += 1
 		}
 	}
 
