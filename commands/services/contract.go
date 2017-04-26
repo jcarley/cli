@@ -6,6 +6,7 @@ import (
 	"github.com/daticahealth/cli/lib/auth"
 	"github.com/daticahealth/cli/lib/jobs"
 	"github.com/daticahealth/cli/lib/prompts"
+	"github.com/daticahealth/cli/lib/volumes"
 	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
 )
@@ -30,7 +31,7 @@ var Cmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdServices(New(settings))
+				err := CmdServices(New(settings), volumes.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -56,7 +57,7 @@ var ListSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdServices(New(settings))
+				err := CmdServices(New(settings), volumes.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -95,7 +96,7 @@ var StopSubCmd = models.Command{
 	Name:      "stop",
 	ShortHelp: "Stop all instances of a given service (including all workers, rake tasks, and open consoles)",
 	LongHelp: "`services stop` shuts down all running instances of a given service. " +
-		"This is useful when performing maintenance and a service must be shutdown to perform that maintenance. " +
+		"This is useful when performing maintenance on code services or services without volumes that must be shutdown to perform maintenance. " +
 		"Take caution when running this command as all instances of the service, all workers, all rake tasks, and all open console sessions will be stopped. " +
 		"Here is a sample command\n\n" +
 		"```\ndatica -E \"<your_env_alias>\" services stop code-1\n```",
@@ -109,7 +110,7 @@ var StopSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdStop(*svcName, New(settings), jobs.New(settings), prompts.New())
+				err := CmdStop(*svcName, settings.Pod, New(settings), jobs.New(settings), volumes.New(settings), prompts.New())
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}

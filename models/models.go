@@ -329,6 +329,12 @@ type UserKey struct {
 	Key  string `json:"key"`
 }
 
+type Volume struct {
+	ID   int    `json:"id"`
+	Type string `json:"type"`
+	Size int    `json:"size"`
+}
+
 type Workers struct {
 	Limit   int            `json:"worker_limit,omitempty"`
 	Workers map[string]int `json:"workers"`
