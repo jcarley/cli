@@ -38,17 +38,17 @@ func (i *SInvites) List() (*[]models.Invite, error) {
 	return &invites, nil
 }
 
-// ListRoles lists all available roles
-func (i *SInvites) ListRoles() (*[]models.Role, error) {
+// ListOrgGroups lists all available groups for an organization
+func (i *SInvites) ListOrgGroups() (*[]models.Group, error) {
 	headers := i.Settings.HTTPManager.GetHeaders(i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod, i.Settings.UsersID)
-	resp, statusCode, err := i.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/orgs/roles", i.Settings.AuthHost, i.Settings.AuthHostVersion), headers)
+	resp, statusCode, err := i.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/acls/%s/groups", i.Settings.AuthHost, i.Settings.AuthHostVersion, i.Settings.OrgID), headers)
 	if err != nil {
 		return nil, err
 	}
-	var roles []models.Role
-	err = i.Settings.HTTPManager.ConvertResp(resp, statusCode, &roles)
+	var groupWrapper models.GroupWrapper
+	err = i.Settings.HTTPManager.ConvertResp(resp, statusCode, &groupWrapper)
 	if err != nil {
 		return nil, err
 	}
-	return &roles, nil
+	return groupWrapper.Groups, nil
 }

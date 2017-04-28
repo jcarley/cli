@@ -7,38 +7,28 @@ import (
 	"github.com/daticahealth/cli/commands/invites"
 	"github.com/daticahealth/cli/models"
 	"github.com/olekukonko/tablewriter"
-	"github.com/pmylund/sortutil"
 )
 
 func CmdList(myUsersID string, iu IUsers, ii invites.IInvites) error {
-	orgUsers, err := iu.List()
+	orgGroups, err := ii.ListOrgGroups()
 	if err != nil {
 		return err
 	}
-	if orgUsers == nil || len(*orgUsers) == 0 {
+	if orgGroups == nil || len(*orgGroups) == 0 {
 		logrus.Println("No users found")
 		return nil
 	}
-	roles, err := ii.ListRoles()
-	if err != nil {
-		return err
-	}
-	rolesMap := map[int]string{}
-	for _, r := range *roles {
-		rolesMap[r.ID] = r.Name
-	}
-
-	sortutil.DescByField(*orgUsers, "RoleID")
-
-	data := [][]string{{"EMAIL", "ROLE"}}
-	for _, user := range *orgUsers {
-		if user.ID == myUsersID {
-			data = append(data, []string{user.Email, fmt.Sprintf("%s (you)", rolesMap[user.RoleID])})
-		} else {
-			data = append(data, []string{user.Email, rolesMap[user.RoleID]})
+	data := [][]string{{"EMAIL", "GROUP(S)"}}
+	for _, group := range *orgGroups {
+		groupMembers := group.Members
+		for _, member := range *groupMembers {
+			if member.ID == myUsersID {
+				data = append(data, []string{member.Email, fmt.Sprintf("%s (you)", group.Name)})
+			} else {
+				data = append(data, []string{member.Email, group.Name})
+			}
 		}
 	}
-
 	table := tablewriter.NewWriter(logrus.StandardLogger().Out)
 	table.SetBorder(false)
 	table.SetRowLine(false)

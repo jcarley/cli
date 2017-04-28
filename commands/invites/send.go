@@ -10,23 +10,26 @@ import (
 	"github.com/daticahealth/cli/models"
 )
 
-func CmdSend(email, envName, roleName string, ii IInvites, ip prompts.IPrompts) error {
+func CmdSend(email, envName, groupName string, ii IInvites, ip prompts.IPrompts) error {
 	err := ip.YesNo(fmt.Sprintf("Are you sure you want to invite %s to your %s organization? (y/n) ", email, envName))
 	if err != nil {
 		return err
 	}
-	roles, err := ii.ListRoles()
+	groups, err := ii.ListOrgGroups()
 	if err != nil {
 		return err
 	}
-	role := 5
-	for _, r := range *roles {
-		if strings.ToLower(r.Name) == strings.ToLower(roleName) {
-			role = r.ID
+	group := ""
+	for _, g := range *groups {
+		if strings.ToLower(g.Name) == strings.ToLower(groupName) {
+			group = g.Name
 			break
 		}
 	}
-	err = ii.Send(email, role)
+	if group == "" {
+		return fmt.Errorf("Error: Organization does not contain group %s", groupName)
+	}
+	err = ii.Send(email, group)
 	if err != nil {
 		return err
 	}
@@ -37,10 +40,10 @@ func CmdSend(email, envName, roleName string, ii IInvites, ip prompts.IPrompts) 
 // Send invites a user by email to the associated environment. They do
 // not need a Dashboard account prior to inviting them, but they must have a
 // Dashboard account in order to accept the invitation.
-func (i *SInvites) Send(email string, role int) error {
+func (i *SInvites) Send(email string, group string) error {
 	inv := models.PostInvite{
 		Email:        email,
-		Role:         role,
+		Group:        group,
 		LinkTemplate: fmt.Sprintf("%s/accept-invite?code={inviteCode}", i.Settings.AccountsHost),
 	}
 	b, err := json.Marshal(inv)

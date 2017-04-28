@@ -73,6 +73,23 @@ type Error struct {
 	Code        int    `json:"code"`
 }
 
+// ACL support
+type GroupWrapper struct {
+	Groups *[]Group `json:"groups"`
+}
+
+type Group struct {
+	Name      string         `json:"name"`
+	Acls      []string       `json:"acls"`
+	Protected bool           `json:protected`
+	Members   *[]GroupMember `json:"members"`
+}
+
+type GroupMember struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
+}
+
 // Hits contain arrays of log data
 type Hits struct {
 	Total    int64      `json:"total"`
@@ -93,13 +110,13 @@ type HTTPManager interface {
 
 // Invite represents an invitation to an organization
 type Invite struct {
-	ID       string `json:"id"`
-	OrgID    string `json:"orgID"`
-	SenderID string `json:"senderID"`
-	RoleID   int    `json:"roleID"`
-	Email    string `json:"email"`
-	Consumed bool   `json:"consumed"`
-	Revoked  bool   `json:"revoked"`
+	ID       string   `json:"id"`
+	OrgID    string   `json:"orgID"`
+	SenderID string   `json:"senderID"`
+	Groups   []string `json:"groups"`
+	Email    string   `json:"email"`
+	Consumed bool     `json:"consumed"`
+	Revoked  bool     `json:"revoked"`
 }
 
 // LogHits contain ordering data for logs
@@ -208,7 +225,7 @@ type PodWrapper struct {
 
 type PostInvite struct {
 	Email        string `json:"email"`
-	Role         int    `json:"role"`
+	Group        string `json:"group"`
 	LinkTemplate string `json:"linkTemplate"`
 }
 
