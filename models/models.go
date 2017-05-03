@@ -110,13 +110,13 @@ type HTTPManager interface {
 
 // Invite represents an invitation to an organization
 type Invite struct {
-	ID       string   `json:"id"`
-	OrgID    string   `json:"orgID"`
-	SenderID string   `json:"senderID"`
-	Groups   []string `json:"groups"`
-	Email    string   `json:"email"`
-	Consumed bool     `json:"consumed"`
-	Revoked  bool     `json:"revoked"`
+	ID       string `json:"id"`
+	OrgID    string `json:"orgID"`
+	SenderID string `json:"senderID"`
+	RoleID   int    `json:"roleID"`
+	Email    string `json:"email"`
+	Consumed bool   `json:"consumed"`
+	Revoked  bool   `json:"revoked"`
 }
 
 // LogHits contain ordering data for logs
@@ -225,7 +225,7 @@ type PodWrapper struct {
 
 type PostInvite struct {
 	Email        string `json:"email"`
-	Group        string `json:"group"`
+	Role         int    `json:"role"`
 	LinkTemplate string `json:"linkTemplate"`
 }
 

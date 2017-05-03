@@ -2,6 +2,7 @@ package users
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/daticahealth/cli/commands/invites"
@@ -19,15 +20,19 @@ func CmdList(myUsersID string, iu IUsers, ii invites.IInvites) error {
 		return nil
 	}
 	data := [][]string{{"EMAIL", "GROUP(S)"}}
+	members := make(map[string][]string)
 	for _, group := range *orgGroups {
 		groupMembers := group.Members
 		for _, member := range *groupMembers {
-			if member.ID == myUsersID {
-				data = append(data, []string{member.Email, fmt.Sprintf("%s (you)", group.Name)})
+			if _, ok := members[member.Email]; ok {
+				members[member.Email] = append(members[member.Email], group.Name)
 			} else {
-				data = append(data, []string{member.Email, group.Name})
+				members[member.Email] = []string{group.Name}
 			}
 		}
+	}
+	for k, v := range members {
+		data = append(data, []string{k, strings.Join(v, ", ")})
 	}
 	table := tablewriter.NewWriter(logrus.StandardLogger().Out)
 	table.SetBorder(false)

@@ -114,14 +114,15 @@ var SendSubCmd = models.Command{
 	Name:      "send",
 	ShortHelp: "Send an invite to a user by email for a given organization",
 	LongHelp: "`invites send` invites a new user to your environment's organization. " +
-		"The requires pieces of information are the email address to send the invitation to and the group to which to invite them. " +
+		"The only piece of information required is the email address to send the invitation to. " +
+		"The invited user will join the organization as a member with no permissions. " +
+		"You must grant them permission through the dashboard. " +
 		"The recipient does **not** need to have a Dashboard account in order to send them an invitation. " +
 		"However, they will need to have a Dashboard account to accept the invitation. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" invites send coworker@datica.com support\n```",
+		"```\ndatica -E \"<your_env_alias>\" invites send coworker@datica.com\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			email := subCmd.StringArg("EMAIL", "", "The email of a user to invite to the associated environment. This user does not need to have a Datica account prior to sending the invitation")
-			group := subCmd.StringArg("GROUP", "", "The group to which the user will be invited")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -129,12 +130,12 @@ var SendSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdSend(*email, settings.EnvironmentName, *group, New(settings), prompts.New())
+				err := CmdSend(*email, settings.EnvironmentName, New(settings), prompts.New())
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "EMAIL GROUP"
+			subCmd.Spec = "EMAIL"
 		}
 	},
 }
@@ -144,7 +145,7 @@ type IInvites interface {
 	Accept(inviteCode string) (string, error)
 	List() (*[]models.Invite, error)
 	Rm(inviteID string) error
-	Send(email string, group string) error
+	Send(email string) error
 	ListOrgGroups() (*[]models.Group, error)
 }
 
