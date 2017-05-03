@@ -24,11 +24,7 @@ func CmdList(myUsersID string, iu IUsers, ii invites.IInvites) error {
 	for _, group := range *orgGroups {
 		groupMembers := group.Members
 		for _, member := range *groupMembers {
-			if _, ok := members[member.Email]; ok {
-				members[member.Email] = append(members[member.Email], group.Name)
-			} else {
-				members[member.Email] = []string{group.Name}
-			}
+			members[member.Email] = append(members[member.Email], group.Name)
 		}
 	}
 	for k, v := range members {

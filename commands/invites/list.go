@@ -38,7 +38,7 @@ func (i *SInvites) List() (*[]models.Invite, error) {
 	return &invites, nil
 }
 
-// ListOrgGroups lists all available groups for an organization
+// ListOrgGroups lists all available groups for an organization and their members
 func (i *SInvites) ListOrgGroups() (*[]models.Group, error) {
 	headers := i.Settings.HTTPManager.GetHeaders(i.Settings.SessionToken, i.Settings.Version, i.Settings.Pod, i.Settings.UsersID)
 	resp, statusCode, err := i.Settings.HTTPManager.Get(nil, fmt.Sprintf("%s%s/acls/%s/groups", i.Settings.AuthHost, i.Settings.AuthHostVersion, i.Settings.OrgID), headers)
