@@ -11,15 +11,18 @@ import (
 )
 
 func CmdList(myUsersID string, iu IUsers, ii invites.IInvites) error {
+	orgUsers, err := iu.List()
+	if err != nil {
+		return err
+	}
+	if orgUsers == nil || len(*orgUsers) == 0 {
+		logrus.Println("No users found")
+		return nil
+	}
 	orgGroups, err := ii.ListOrgGroups()
 	if err != nil {
 		return err
 	}
-	if orgGroups == nil || len(*orgGroups) == 0 {
-		logrus.Println("No users found")
-		return nil
-	}
-	data := [][]string{{"EMAIL", "GROUP(S)"}}
 	members := make(map[string][]string)
 	for _, group := range *orgGroups {
 		groupMembers := group.Members
@@ -27,8 +30,13 @@ func CmdList(myUsersID string, iu IUsers, ii invites.IInvites) error {
 			members[member.Email] = append(members[member.Email], group.Name)
 		}
 	}
-	for k, v := range members {
-		data = append(data, []string{k, strings.Join(v, ", ")})
+	data := [][]string{{"EMAIL", "GROUP(S)"}}
+	for _, user := range *orgUsers {
+		if val, ok := members[user.Email]; ok {
+			data = append(data, []string{user.Email, strings.Join(val, ", ")})
+		} else {
+			data = append(data, []string{user.Email, "none"})
+		}
 	}
 	table := tablewriter.NewWriter(logrus.StandardLogger().Out)
 	table.SetBorder(false)

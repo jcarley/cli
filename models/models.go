@@ -81,7 +81,7 @@ type GroupWrapper struct {
 type Group struct {
 	Name      string         `json:"name"`
 	Acls      []string       `json:"acls"`
-	Protected bool           `json:protected`
+	Protected bool           `json:"protected"`
 	Members   *[]GroupMember `json:"members"`
 }
 
