@@ -115,15 +115,14 @@ var SendSubCmd = models.Command{
 	ShortHelp: "Send an invite to a user by email for a given organization",
 	LongHelp: "`invites send` invites a new user to your environment's organization. " +
 		"The only piece of information required is the email address to send the invitation to. " +
-		"The invited user will join the organization as a basic member, unless otherwise specified with the `-a` flag. " +
+		"The invited user will join the organization as a member with no permissions. " +
+		"You must grant them permission through the dashboard. " +
 		"The recipient does **not** need to have a Dashboard account in order to send them an invitation. " +
 		"However, they will need to have a Dashboard account to accept the invitation. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" invites send coworker@datica.com -a\n```",
+		"```\ndatica -E \"<your_env_alias>\" invites send coworker@datica.com\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			email := subCmd.StringArg("EMAIL", "", "The email of a user to invite to the associated environment. This user does not need to have a Datica account prior to sending the invitation")
-			subCmd.BoolOpt("m member", true, "Whether or not the user will be invited as a basic member")
-			adminRole := subCmd.BoolOpt("a admin", false, "Whether or not the user will be invited as an admin")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -131,16 +130,12 @@ var SendSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				role := "member"
-				if *adminRole {
-					role = "admin"
-				}
-				err := CmdSend(*email, role, settings.EnvironmentName, New(settings), prompts.New())
+				err := CmdSend(*email, settings.EnvironmentName, New(settings), prompts.New())
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "EMAIL [-m | -a]"
+			subCmd.Spec = "EMAIL"
 		}
 	},
 }
@@ -149,9 +144,9 @@ var SendSubCmd = models.Command{
 type IInvites interface {
 	Accept(inviteCode string) (string, error)
 	List() (*[]models.Invite, error)
-	ListRoles() (*[]models.Role, error)
 	Rm(inviteID string) error
-	Send(email string, role int) error
+	Send(email string) error
+	ListOrgGroups() (*[]models.Group, error)
 }
 
 // SInvites is a concrete implementation of IInvites
