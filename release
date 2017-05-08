@@ -13,11 +13,11 @@ if [ "${VERSION}" = "" ]; then
   echo 'You must specify the VERSION environment variable. This is the version you are releasing.'
   exit 1
 fi
-if [ "${AWS_ACCESS_KEY_ID}" = "" ]; then
+if [ "${TEST}" = "false" ] && [ "${AWS_ACCESS_KEY_ID}" = "" ]; then
   echo 'Missing required AWS_ACCESS_KEY_ID environment variable.'
   exit 1
 fi
-if [ "${AWS_SECRET_ACCESS_KEY}" = "" ]; then
+if [ "${TEST}" = "false" ] && [ "${AWS_SECRET_ACCESS_KEY}" = "" ]; then
   echo 'Missing required AWS_SECRET_ACCESS_KEY environment variable.'
   exit 1
 fi
