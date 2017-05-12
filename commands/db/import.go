@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -138,13 +139,21 @@ func (d *SDb) Import(rt *transfer.ReaderTransfer, key, iv []byte, mongoCollectio
 		return nil, err
 	}
 	req, err := http.NewRequest("PUT", tmpURL.URL, rt)
+	req.Header.Set("x-amz-server-side-encryption", "AES256")
 	req.ContentLength = int64(rt.Length())
 	done := make(chan bool)
 	go printTransferStatus(false, rt, done)
-	_, err = http.DefaultClient.Do(req)
+	uploadResp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		done <- false
 		return nil, err
+	}
+	defer uploadResp.Body.Close()
+	if uploadResp.StatusCode != 200 {
+		done <- false
+		b, err := ioutil.ReadAll(uploadResp.Body)
+		logrus.Debugf("Error uploading import file: %d %s %s", uploadResp.StatusCode, string(b), err)
+		return nil, fmt.Errorf("Failed to upload import file - received status code %d", uploadResp.StatusCode)
 	}
 	done <- true
 	importParams := map[string]interface{}{}
