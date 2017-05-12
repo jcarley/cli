@@ -11,5 +11,11 @@ func (g *SGit) List() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return strings.Split(string(out), "\n"), nil
+	remotes := []string{}
+	for _, r := range strings.Split(string(out), "\n") {
+		if len(strings.TrimSpace(r)) > 0 {
+			remotes = append(remotes, r)
+		}
+	}
+	return remotes, nil
 }

@@ -35,6 +35,7 @@ var AddSubCmd = models.Command{
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to add a git remote for")
 			remote := subCmd.StringOpt("r remote", "datica", "The name of the git remote to be added")
+			force := subCmd.BoolOpt("f force", false, "If a git remote with the specified name already exists, overwrite it")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -42,12 +43,12 @@ var AddSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdAdd(*serviceName, *remote, New(), services.New(settings))
+				err := CmdAdd(*serviceName, *remote, *force, New(), services.New(settings))
 				if err != nil {
 					logrus.Fatalln(err.Error())
 				}
 			}
-			subCmd.Spec = "SERVICE_NAME [-r]"
+			subCmd.Spec = "SERVICE_NAME [-r] [-f]"
 		}
 	},
 }
@@ -85,6 +86,7 @@ type IGit interface {
 	Exists() bool
 	List() ([]string, error)
 	Rm(remote string) error
+	SetURL(remote, gitURL string) error
 }
 
 // SGit is an implementor of IGit
