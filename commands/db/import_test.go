@@ -125,3 +125,48 @@ func TestDbImport(t *testing.T) {
 	}
 	os.Remove(importFilePath)
 }
+
+func TestDbImportFailedUpload(t *testing.T) {
+	ioutil.WriteFile(importFilePath, []byte("select 1;"), 0644)
+	mux, server, baseURL := test.Setup()
+	defer test.Teardown(server)
+	settings := test.GetSettings(baseURL.String())
+
+	mux.HandleFunc("/environments/"+test.EnvID+"/services",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "GET")
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"%s"}]`, dbID, dbName))
+		},
+	)
+	mux.HandleFunc("/environments/"+test.EnvID+"/services/"+dbID+"/import",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "POST")
+			fmt.Fprint(w, fmt.Sprintf(`{"id":"%s","type":"restore","status":"running","restore":{"keyLogs":"0000000000000000000000000000000000000000000000000000000000000000","iv":"000000000000000000000000"}}`, dbImportID))
+		},
+	)
+	mux.HandleFunc("/environments/"+test.EnvID+"/services/"+dbID+"/restore-url",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "GET")
+			fmt.Fprint(w, fmt.Sprintf(`{"url":"%s/restore"}`, baseURL.String()))
+		},
+	)
+	mux.HandleFunc("/restore",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "PUT")
+			ioutil.ReadAll(r.Body)
+			r.Body.Close()
+			w.WriteHeader(400)
+		},
+	)
+
+	// test
+	err := CmdImport(dbName, importFilePath, "", "", true, New(settings, crypto.New(), jobs.New(settings)), &test.FakePrompts{}, services.New(settings), jobs.New(settings))
+
+	// assert
+	if err == nil {
+		t.Fatalf("Expected error but got nil")
+	}
+	t.Log(err)
+
+	os.Remove(importFilePath)
+}
