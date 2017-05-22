@@ -15,8 +15,10 @@ import (
 const dateForm = "2006-01-02T15:04:05"
 
 var historicalStatus = map[string]bool{
-	"finished": true,
-	"failed":   true,
+	"finished":    true,
+	"failed":      true,
+	"disappeared": true,
+	"killed":      true,
 }
 
 func CmdStatus(envID string, is IStatus, ie environments.IEnvironments, iservices services.IServices, historical bool) error {
