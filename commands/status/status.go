@@ -14,7 +14,14 @@ import (
 
 const dateForm = "2006-01-02T15:04:05"
 
-func CmdStatus(envID string, is IStatus, ie environments.IEnvironments, iservices services.IServices) error {
+var historicalStatus = map[string]bool{
+	"finished":    true,
+	"failed":      true,
+	"disappeared": true,
+	"killed":      true,
+}
+
+func CmdStatus(envID string, is IStatus, ie environments.IEnvironments, iservices services.IServices, historical bool) error {
 	env, err := ie.Retrieve(envID)
 	if err != nil {
 		return err
@@ -23,11 +30,11 @@ func CmdStatus(envID string, is IStatus, ie environments.IEnvironments, iservice
 	if err != nil {
 		return err
 	}
-	return is.Status(env, svcs)
+	return is.Status(env, svcs, historical)
 }
 
 // Status prints out all of the non-utility services and their running jobs
-func (s *SStatus) Status(env *models.Environment, services *[]models.Service) error {
+func (s *SStatus) Status(env *models.Environment, services *[]models.Service, historical bool) error {
 	w := &tabwriter.Writer{}
 	w.Init(os.Stdout, 0, 8, 4, '\t', 0)
 
@@ -43,6 +50,9 @@ func (s *SStatus) Status(env *models.Environment, services *[]models.Service) er
 				return err
 			}
 			for _, job := range *jobs {
+				if !historical && historicalStatus[job.Status] {
+					continue
+				}
 				displayType := service.Label
 				if job.Type != "deploy" {
 					displayType = fmt.Sprintf("%s (%s)", service.Label, job.Type)
@@ -71,6 +81,9 @@ func (s *SStatus) Status(env *models.Environment, services *[]models.Service) er
 					return err
 				}
 				for _, latestBuildJob := range *latestBuildJobs {
+					if !historical && historicalStatus[latestBuildJob.Status] {
+						continue
+					}
 					if latestBuildJob.ID == "" {
 						fmt.Fprintln(w, "--------"+"\t"+service.Label+"\t"+"-------"+"\t"+"---------------")
 					} else if latestBuildJob.ID != "" {

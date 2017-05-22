@@ -123,7 +123,12 @@ var SendSubCmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			email := subCmd.StringArg("EMAIL", "", "The email of a user to invite to the associated environment. This user does not need to have a Datica account prior to sending the invitation")
+			memberRole := subCmd.BoolOpt("m member", false, "[DEPRECATED] Whether or not the user will be invited as a basic member. This flag will be removed in the next version")
+			adminRole := subCmd.BoolOpt("a admin", false, "[DEPRECATED] Whether or not the user will be invited as an admin. This flag will be removed in the next version")
 			subCmd.Action = func() {
+				if *memberRole || *adminRole {
+					logrus.Infoln("The -m and -a flags have been DEPRECATED. You must assign permissions by visiting the dashboard.")
+				}
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -135,7 +140,7 @@ var SendSubCmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "EMAIL"
+			subCmd.Spec = "EMAIL [-m | -a]"
 		}
 	},
 }
