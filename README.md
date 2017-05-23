@@ -2,10 +2,6 @@
 
 Welcome to the Datica CLI (formerly Catalyze).
 
-# development version
-
-> This branch is a development version of the Datica CLI. Any CLI based off of this branch is not supported by Datica. Please download the latest release [here](https://github.com/daticahealth/cli/releases).
-
 ## Upgrading from `catalyze` to `datica`
 
 To upgrade your CLI from `catalyze` to `datica` perform the following steps:
@@ -27,7 +23,7 @@ Once downloaded, the CLI will automatically update itself when a new version bec
 
 **PLEASE NOTE** You **must** put the CLI binary in a location for which you have write permissions. Without write permissions, the CLI will not automatically update and you will have to update manually by visiting the github repo and downloading the latest binary.
 
-## Version 3.5.0
+## Version 3.6.0
 
 ***Due to changes to Datica's API and authentication, existing environment associations need to be recreated if you have previously made them with an earlier version of the CLI (< 3.0)***
 
@@ -39,15 +35,15 @@ For all 64 bit users, choose the `amd64` version of your OS. For all 32 bit user
 
 ### Darwin (Apple Mac)
 
- * [datica\_3.5.0\_darwin\_386.zip](https://github.com/daticahealth/cli/releases/download/3.5.0/datica_3.5.0_darwin_386.zip)
- * [datica\_3.5.0\_darwin\_amd64.zip](https://github.com/daticahealth/cli/releases/download/3.5.0/datica_3.5.0_darwin_amd64.zip)
+ * [datica\_3.6.0\_darwin\_386.zip](https://github.com/daticahealth/cli/releases/download/3.6.0/datica_3.6.0_darwin_386.zip)
+ * [datica\_3.6.0\_darwin\_amd64.zip](https://github.com/daticahealth/cli/releases/download/3.6.0/datica_3.6.0_darwin_amd64.zip)
 
 ### Linux
 
- * [datica\_3.5.0\_linux\_386.tar.gz](https://github.com/daticahealth/cli/releases/download/3.5.0/datica_3.5.0_linux_386.tar.gz)
- * [datica\_3.5.0\_linux\_amd64.tar.gz](https://github.com/daticahealth/cli/releases/download/3.5.0/datica_3.5.0_linux_amd64.tar.gz)
+ * [datica\_3.6.0\_linux\_386.tar.gz](https://github.com/daticahealth/cli/releases/download/3.6.0/datica_3.6.0_linux_386.tar.gz)
+ * [datica\_3.6.0\_linux\_amd64.tar.gz](https://github.com/daticahealth/cli/releases/download/3.6.0/datica_3.6.0_linux_amd64.tar.gz)
 
 ### MS Windows
 
- * [datica\_3.5.0\_windows\_386.zip](https://github.com/daticahealth/cli/releases/download/3.5.0/datica_3.5.0_windows_386.zip)
- * [datica\_3.5.0\_windows\_amd64.zip](https://github.com/daticahealth/cli/releases/download/3.5.0/datica_3.5.0_windows_amd64.zip)
+ * [datica\_3.6.0\_windows\_386.zip](https://github.com/daticahealth/cli/releases/download/3.6.0/datica_3.6.0_windows_386.zip)
+ * [datica\_3.6.0\_windows\_amd64.zip](https://github.com/daticahealth/cli/releases/download/3.6.0/datica_3.6.0_windows_amd64.zip)
