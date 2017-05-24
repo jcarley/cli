@@ -25,14 +25,6 @@ if [ "${BUCKET}" = "" ]; then
   echo 'Missing required BUCKET environment variable.'
   exit 1
 fi
-if [ "${TEST}" = "false" ] && [ "${GITHUB_USERNAME}" = "" ]; then
-    echo 'Missing required GITHUB_USERNAME environment variable.'
-    exit 1
-fi
-if [ "${TEST}" = "false" ] && [ "${GITHUB_TOKEN}" = "" ]; then
-    echo 'Missing required GITHUB_TOKEN environment variable.'
-    exit 1
-fi
 
 if ! grep -q 'VERSION = "'${VERSION}'"' config/constants.go ; then
   echo ''${VERSION}' not found in config/constants. Please update the version in config/constants.go before proceeding'
@@ -150,25 +142,13 @@ if [ "${TEST}" = "false" ]; then
   echo 'Publishing to S3'
   aws s3 sync public/ s3://${BUCKET}/catalyze --delete --exclude "*.DS_Store"
 
-  echo 'Releasing to Github'
-  cd builds/
-  GITHUB_RESP="$(curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST https://api.github.com/repos/daticahealth/cli/releases -d '{\"tag_name\": \"'${VERSION}'\", \"target_commitish\": \"master\", \"name\": \"'${VERSION}'\", \"body\": \"Datica CLI Version '${VERSION}'\", \"draft\": false, \"prerelease\": false}')"
-  GITHUB_ID="$(echo ${GITHUB_RESP} | python -c 'import sys, json; print(json.load(sys.stdin)["id"])')"
-  GITHUB_UPLOAD_URL="$(echo ${GITHUB_RESP} | python -c 'import sys, json; print(json.load(sys.stdin)["upload_url"][:-13])')"
-  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/zip' ${GITHUB_UPLOAD_URL}?name=datica_${VERSION}_windows_386.zip --data-binary @datica_${VERSION}_windows_386.zip
-  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/zip' ${GITHUB_UPLOAD_URL}?name=datica_${VERSION}_windows_amd64.zip --data-binary @datica_${VERSION}_windows_amd64.zip
-  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/gzip' ${GITHUB_UPLOAD_URL}?name=datica_${VERSION}_linux_386.tar.gz --data-binary @datica_${VERSION}_linux_386.tar.gz
-  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/gzip' ${GITHUB_UPLOAD_URL}?name=datica_${VERSION}_linux_amd64.tar.gz --data-binary @datica_${VERSION}_linux_amd64.tar.gz
-  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/octet-stream' ${GITHUB_UPLOAD_URL}?name=datica_${VERSION}_linux_386.deb --data-binary @datica_${VERSION}_linux_386.deb
-  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/octet-stream' ${GITHUB_UPLOAD_URL}?name=datica_${VERSION}_linux_amd64.deb --data-binary @datica_${VERSION}_linux_amd64.deb
-  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/zip' ${GITHUB_UPLOAD_URL}?name=datica_${VERSION}_darwin_386.zip --data-binary @datica_${VERSION}_darwin_386.zip
-  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/zip' ${GITHUB_UPLOAD_URL}?name=datica_${VERSION}_darwin_amd64.zip --data-binary @datica_${VERSION}_darwin_amd64.zip
-  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/gzip' ${GITHUB_UPLOAD_URL}?name=datica_${VERSION}_darwin_386.tar.gz --data-binary @datica_${VERSION}_darwin_386.tar.gz
-  curl -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} --fail -XPOST -H 'Content-Type: application/gzip' ${GITHUB_UPLOAD_URL}?name=datica_${VERSION}_darwin_amd64.tar.gz --data-binary @datica_${VERSION}_darwin_amd64.tar.gz
+  echo 'Copying Github assets to S3'
+  aws s3 cp builds s3://${BUCKET}/assets --recursive --exclude "*.DS_Store"
 else
   echo 'Test mode enabled, skipping S3 upload and Github release'
   ls -al
   ls -al public
   cat public/*.json
   ls -al public/${VERSION}
+  ls -al builds
 fi
