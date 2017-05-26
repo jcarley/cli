@@ -73,6 +73,23 @@ type Error struct {
 	Code        int    `json:"code"`
 }
 
+// ACL support
+type GroupWrapper struct {
+	Groups *[]Group `json:"groups"`
+}
+
+type Group struct {
+	Name      string         `json:"name"`
+	Acls      []string       `json:"acls"`
+	Protected bool           `json:"protected"`
+	Members   *[]GroupMember `json:"members"`
+}
+
+type GroupMember struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
+}
+
 // Hits contain arrays of log data
 type Hits struct {
 	Total    int64      `json:"total"`

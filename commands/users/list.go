@@ -2,12 +2,12 @@ package users
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/daticahealth/cli/commands/invites"
 	"github.com/daticahealth/cli/models"
 	"github.com/olekukonko/tablewriter"
-	"github.com/pmylund/sortutil"
 )
 
 func CmdList(myUsersID string, iu IUsers, ii invites.IInvites) error {
@@ -19,26 +19,25 @@ func CmdList(myUsersID string, iu IUsers, ii invites.IInvites) error {
 		logrus.Println("No users found")
 		return nil
 	}
-	roles, err := ii.ListRoles()
+	orgGroups, err := ii.ListOrgGroups()
 	if err != nil {
 		return err
 	}
-	rolesMap := map[int]string{}
-	for _, r := range *roles {
-		rolesMap[r.ID] = r.Name
-	}
-
-	sortutil.DescByField(*orgUsers, "RoleID")
-
-	data := [][]string{{"EMAIL", "ROLE"}}
-	for _, user := range *orgUsers {
-		if user.ID == myUsersID {
-			data = append(data, []string{user.Email, fmt.Sprintf("%s (you)", rolesMap[user.RoleID])})
-		} else {
-			data = append(data, []string{user.Email, rolesMap[user.RoleID]})
+	members := make(map[string][]string)
+	for _, group := range *orgGroups {
+		groupMembers := group.Members
+		for _, member := range *groupMembers {
+			members[member.Email] = append(members[member.Email], group.Name)
 		}
 	}
-
+	data := [][]string{{"EMAIL", "GROUP(S)"}}
+	for _, user := range *orgUsers {
+		if val, ok := members[user.Email]; ok {
+			data = append(data, []string{user.Email, strings.Join(val, ", ")})
+		} else {
+			data = append(data, []string{user.Email, "none"})
+		}
+	}
 	table := tablewriter.NewWriter(logrus.StandardLogger().Out)
 	table.SetBorder(false)
 	table.SetRowLine(false)

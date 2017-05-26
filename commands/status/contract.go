@@ -20,9 +20,10 @@ var Cmd = models.Command{
 	LongHelp: "`status` will give a quick readout of your environment's health. " +
 		"This includes your environment name, environment ID, and for each service the name, size, build status, deploy status, and service ID. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" status\n```",
+		"```\ndatica -E \"<your_env_alias>\" status\ndatica -E \"<your_env_alias>\" status --historical\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
+			historical := cmd.BoolOpt("historical", false, "If this option is specified, a complete history of jobs will be reported")
 			cmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -30,18 +31,19 @@ var Cmd = models.Command{
 				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdStatus(settings.EnvironmentID, New(settings, jobs.New(settings)), environments.New(settings), services.New(settings))
+				err := CmdStatus(settings.EnvironmentID, New(settings, jobs.New(settings)), environments.New(settings), services.New(settings), *historical)
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
+			cmd.Spec = "[--historical]"
 		}
 	},
 }
 
 // IStatus
 type IStatus interface {
-	Status(env *models.Environment, services *[]models.Service) error
+	Status(env *models.Environment, services *[]models.Service, historical bool) error
 }
 
 // SStatus is a concrete implementation of IStatus

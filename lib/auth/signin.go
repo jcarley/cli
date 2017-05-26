@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/daticahealth/cli/config"
 	"github.com/daticahealth/cli/models"
 )
 
@@ -45,6 +46,9 @@ func (a *SAuth) Signin() (*models.User, error) {
 	a.Settings.UsersID = user.UsersID
 	a.Settings.Username = user.Username
 	a.Settings.SessionToken = user.SessionToken
+
+	config.SaveSettings(a.Settings)
+
 	return user, nil
 }
 

@@ -1,62 +1,16 @@
 package files
 
-/*const (
-	validSvcID   = "1"
-	invalidSvcID = "2"
+import (
+	"fmt"
+	"net/http"
+	"os"
+	"testing"
+
+	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/test"
 )
 
-type MFiles models.ServiceFile
-
-// To trigger an error, specify the invalidSvcID
-func (m *MFiles) Create(svcID, filePath, name, mode string) (*models.ServiceFile, error) {
-	if svcID == invalidSvcID {
-		return nil, errors.New("There was an error")
-	}
-	return &models.ServiceFile{
-		ID:             1,
-		Contents:       "echo 'test'",
-		GID:            0,
-		Mode:           mode,
-		Name:           name,
-		UID:            0,
-		EnableDownload: true,
-	}, nil
-}
-
-// To trigger an error, specify the invalidSvcID
-func (m *MFiles) List(svcID string) (*[]models.ServiceFile, error) {
-	if svcID == invalidSvcID {
-		return nil, errors.New("There was an error")
-	}
-	svcFile, _ := m.Create(svcID, "/tmp/file", "/my/file", "0644")
-	return &[]models.ServiceFile{
-		*svcFile,
-	}, nil
-}
-
-// To trigger an error, specify the invalidSvcID
-func (m *MFiles) Retrieve(fileName string, svcID string) (*models.ServiceFile, error) {
-	if svcID == invalidSvcID {
-		return nil, errors.New("There was an error")
-	}
-	svcFile, _ := m.Create(svcID, "/tmp/file", "/my/file", "0644")
-	return svcFile, nil
-}
-
-func (m *MFiles) Rm(fileID int, svcID string) error {
-	if svcID == invalidSvcID {
-		return errors.New("There was an error")
-	}
-	return nil
-}
-
-// To trigger an error, specify an output that is not an empty string
-func (m *MFiles) Save(output string, force bool, file *models.ServiceFile) error {
-	if output != "" {
-		return errors.New("There was an error")
-	}
-	return nil
-}
+const fileContents = "text"
 
 var downloadTests = []struct {
 	svcName   string
@@ -65,15 +19,89 @@ var downloadTests = []struct {
 	force     bool
 	expectErr bool
 }{
-	{"", "", "", false, false},
+	{test.SvcLabel, fileName, "", false, false},
+	{test.SvcLabel, fileName, "", true, false},
+	{test.SvcLabel, fileName, "output.txt", true, false},
+	{test.SvcLabel, "invalid-file", "", false, true},
+	{"invalid-svc", fileName, "", false, true},
 }
 
 func TestDownload(t *testing.T) {
+	os.Remove("output.txt")
+	mux, server, baseURL := test.Setup()
+	defer test.Teardown(server)
+	settings := test.GetSettings(baseURL.String())
+	mux.HandleFunc("/environments/"+test.EnvID+"/services",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "GET")
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"%s"}]`, test.SvcID, test.SvcLabel))
+		},
+	)
+	mux.HandleFunc("/environments/"+test.EnvID+"/services/"+test.SvcID+"/files",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "GET")
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":1,"name":"%s"}]`, fileName))
+		},
+	)
+	mux.HandleFunc("/environments/"+test.EnvID+"/services/"+test.SvcID+"/files/1",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "GET")
+			fmt.Fprint(w, fmt.Sprintf(`{"id":1,"name":"%s","contents":"%s"}`, fileName, fileContents))
+		},
+	)
+
 	for _, data := range downloadTests {
-		t.Logf("%+v\n", data)
-		err := CmdDownload(data.svcName, data.fileName, data.output, data.force, &MFiles{}, &MServices{})
+		t.Logf("Data: %+v", data)
+
+		// test
+		err := CmdDownload(data.svcName, data.fileName, data.output, data.force, New(settings), services.New(settings))
+
+		// assert
 		if err != nil != data.expectErr {
-			t.Errorf("Unexpected error: %s\n", err.Error())
+			t.Errorf("Unexpected error: %s", err)
+			continue
 		}
 	}
-}*/
+	os.Remove("output.txt")
+}
+
+func TestDownloadForce(t *testing.T) {
+	os.Remove("output.txt")
+	mux, server, baseURL := test.Setup()
+	defer test.Teardown(server)
+	settings := test.GetSettings(baseURL.String())
+	mux.HandleFunc("/environments/"+test.EnvID+"/services",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "GET")
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"%s"}]`, test.SvcID, test.SvcLabel))
+		},
+	)
+	mux.HandleFunc("/environments/"+test.EnvID+"/services/"+test.SvcID+"/files",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "GET")
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":1,"name":"%s"}]`, fileName))
+		},
+	)
+	mux.HandleFunc("/environments/"+test.EnvID+"/services/"+test.SvcID+"/files/1",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "GET")
+			fmt.Fprint(w, fmt.Sprintf(`{"id":1,"name":"%s","contents":"%s"}`, fileName, fileContents))
+		},
+	)
+
+	err := CmdDownload(test.SvcLabel, fileName, "output.txt", false, New(settings), services.New(settings))
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	err = CmdDownload(test.SvcLabel, fileName, "output.txt", false, New(settings), services.New(settings))
+	if err == nil {
+		t.Fatal("Expected error but got nil")
+	}
+
+	err = CmdDownload(test.SvcLabel, fileName, "output.txt", true, New(settings), services.New(settings))
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+	os.Remove("output.txt")
+}

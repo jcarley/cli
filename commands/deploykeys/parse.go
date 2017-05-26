@@ -14,7 +14,6 @@ func (d *SDeployKeys) ParsePrivateKey(b []byte) (*rsa.PrivateKey, error) {
 	}
 	privKey := in.(*rsa.PrivateKey)
 	return privKey, nil
-
 }
 
 func (d *SDeployKeys) ParsePublicKey(b []byte) (ssh.PublicKey, error) {
