@@ -17,6 +17,7 @@ import (
 	"github.com/daticahealth/cli/commands/environments"
 	"github.com/daticahealth/cli/commands/files"
 	"github.com/daticahealth/cli/commands/git"
+	initcmd "github.com/daticahealth/cli/commands/init"
 	"github.com/daticahealth/cli/commands/invites"
 	"github.com/daticahealth/cli/commands/keys"
 	"github.com/daticahealth/cli/commands/logout"
@@ -190,6 +191,7 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.CommandLong(environments.Cmd.Name, environments.Cmd.ShortHelp, environments.Cmd.LongHelp, environments.Cmd.CmdFunc(settings))
 	app.CommandLong(files.Cmd.Name, files.Cmd.ShortHelp, files.Cmd.LongHelp, files.Cmd.CmdFunc(settings))
 	app.CommandLong(git.Cmd.Name, git.Cmd.ShortHelp, git.Cmd.LongHelp, git.Cmd.CmdFunc(settings))
+	app.CommandLong(initcmd.Cmd.Name, initcmd.Cmd.ShortHelp, initcmd.Cmd.LongHelp, initcmd.Cmd.CmdFunc(settings))
 	app.CommandLong(invites.Cmd.Name, invites.Cmd.ShortHelp, invites.Cmd.LongHelp, invites.Cmd.CmdFunc(settings))
 	app.CommandLong(keys.Cmd.Name, keys.Cmd.ShortHelp, keys.Cmd.LongHelp, keys.Cmd.CmdFunc(settings))
 	app.CommandLong(logout.Cmd.Name, logout.Cmd.ShortHelp, logout.Cmd.LongHelp, logout.Cmd.CmdFunc(settings))

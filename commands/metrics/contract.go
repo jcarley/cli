@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/daticahealth/cli/commands/environments"
 	"github.com/daticahealth/cli/commands/services"
 	"github.com/daticahealth/cli/config"
 	"github.com/daticahealth/cli/lib/auth"
@@ -63,8 +64,15 @@ var CPUSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Fatal(err.Error())
+				if err := config.CheckRequiredAssociation(settings); err != nil {
+					envs, errs := environments.New(settings).List()
+					if errs != nil && len(errs) > 0 {
+						logrus.Debugf("Error listing environments: %+v", errs)
+					}
+					config.StoreEnvironments(envs, settings)
+					if err := config.CheckRequiredAssociation(settings); err != nil {
+						logrus.Fatal(err.Error())
+					}
 				}
 				err := CmdMetrics(*serviceName, CPU, *json, *csv, *text, *stream, *mins, New(settings), services.New(settings))
 				if err != nil {
@@ -102,8 +110,15 @@ var MemorySubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Fatal(err.Error())
+				if err := config.CheckRequiredAssociation(settings); err != nil {
+					envs, errs := environments.New(settings).List()
+					if errs != nil && len(errs) > 0 {
+						logrus.Debugf("Error listing environments: %+v", errs)
+					}
+					config.StoreEnvironments(envs, settings)
+					if err := config.CheckRequiredAssociation(settings); err != nil {
+						logrus.Fatal(err.Error())
+					}
 				}
 				err := CmdMetrics(*serviceName, Memory, *json, *csv, *text, *stream, *mins, New(settings), services.New(settings))
 				if err != nil {
@@ -140,8 +155,15 @@ var NetworkInSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Fatal(err.Error())
+				if err := config.CheckRequiredAssociation(settings); err != nil {
+					envs, errs := environments.New(settings).List()
+					if errs != nil && len(errs) > 0 {
+						logrus.Debugf("Error listing environments: %+v", errs)
+					}
+					config.StoreEnvironments(envs, settings)
+					if err := config.CheckRequiredAssociation(settings); err != nil {
+						logrus.Fatal(err.Error())
+					}
 				}
 				err := CmdMetrics(*serviceName, NetworkIn, *json, *csv, *text, *stream, *mins, New(settings), services.New(settings))
 				if err != nil {
@@ -179,8 +201,15 @@ var NetworkOutSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Fatal(err.Error())
+				if err := config.CheckRequiredAssociation(settings); err != nil {
+					envs, errs := environments.New(settings).List()
+					if errs != nil && len(errs) > 0 {
+						logrus.Debugf("Error listing environments: %+v", errs)
+					}
+					config.StoreEnvironments(envs, settings)
+					if err := config.CheckRequiredAssociation(settings); err != nil {
+						logrus.Fatal(err.Error())
+					}
 				}
 				err := CmdMetrics(*serviceName, NetworkOut, *json, *csv, *text, *stream, *mins, New(settings), services.New(settings))
 				if err != nil {

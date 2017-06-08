@@ -26,10 +26,18 @@ var Cmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Fatal(err.Error())
+				ie := environments.New(settings)
+				if err := config.CheckRequiredAssociation(settings); err != nil {
+					envs, errs := ie.List()
+					if errs != nil && len(errs) > 0 {
+						logrus.Debugf("Error listing environments: %+v", errs)
+					}
+					config.StoreEnvironments(envs, settings)
+					if err := config.CheckRequiredAssociation(settings); err != nil {
+						logrus.Fatal(err.Error())
+					}
 				}
-				err := CmdDomain(settings.EnvironmentID, environments.New(settings), services.New(settings), sites.New(settings))
+				err := CmdDomain(settings.EnvironmentID, ie, services.New(settings), sites.New(settings))
 				if err != nil {
 					logrus.Fatalln(err.Error())
 				}

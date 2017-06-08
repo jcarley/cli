@@ -2,6 +2,7 @@ package certs
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/daticahealth/cli/commands/environments"
 	"github.com/daticahealth/cli/commands/services"
 	"github.com/daticahealth/cli/commands/ssl"
 	"github.com/daticahealth/cli/config"
@@ -50,8 +51,15 @@ var CreateSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Fatal(err.Error())
+				if err := config.CheckRequiredAssociation(settings); err != nil {
+					envs, errs := environments.New(settings).List()
+					if errs != nil && len(errs) > 0 {
+						logrus.Debugf("Error listing environments: %+v", errs)
+					}
+					config.StoreEnvironments(envs, settings)
+					if err := config.CheckRequiredAssociation(settings); err != nil {
+						logrus.Fatal(err.Error())
+					}
 				}
 				err := CmdCreate(*name, *pubKeyPath, *privKeyPath, *selfSigned, *resolve, New(settings), services.New(settings), ssl.New(settings))
 				if err != nil {
@@ -75,8 +83,15 @@ var ListSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Fatal(err.Error())
+				if err := config.CheckRequiredAssociation(settings); err != nil {
+					envs, errs := environments.New(settings).List()
+					if errs != nil && len(errs) > 0 {
+						logrus.Debugf("Error listing environments: %+v", errs)
+					}
+					config.StoreEnvironments(envs, settings)
+					if err := config.CheckRequiredAssociation(settings); err != nil {
+						logrus.Fatal(err.Error())
+					}
 				}
 				err := CmdList(New(settings), services.New(settings))
 				if err != nil {
@@ -99,8 +114,15 @@ var RmSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Fatal(err.Error())
+				if err := config.CheckRequiredAssociation(settings); err != nil {
+					envs, errs := environments.New(settings).List()
+					if errs != nil && len(errs) > 0 {
+						logrus.Debugf("Error listing environments: %+v", errs)
+					}
+					config.StoreEnvironments(envs, settings)
+					if err := config.CheckRequiredAssociation(settings); err != nil {
+						logrus.Fatal(err.Error())
+					}
 				}
 				err := CmdRm(*name, New(settings), services.New(settings))
 				if err != nil {
@@ -130,8 +152,15 @@ var UpdateSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Fatal(err.Error())
+				if err := config.CheckRequiredAssociation(settings); err != nil {
+					envs, errs := environments.New(settings).List()
+					if errs != nil && len(errs) > 0 {
+						logrus.Debugf("Error listing environments: %+v", errs)
+					}
+					config.StoreEnvironments(envs, settings)
+					if err := config.CheckRequiredAssociation(settings); err != nil {
+						logrus.Fatal(err.Error())
+					}
 				}
 				err := CmdUpdate(*name, *pubKeyPath, *privKeyPath, *selfSigned, *resolve, New(settings), services.New(settings), ssl.New(settings))
 				if err != nil {

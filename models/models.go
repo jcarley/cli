@@ -336,6 +336,7 @@ type SettingsV2 struct {
 	PaasHostVersion string      `json:"-"`
 	Version         string      `json:"-"`
 	HTTPManager     HTTPManager `json:"-"`
+	GivenEnvName    string      `json:"-"`
 
 	Username        string                     `json:"-"`
 	Password        string                     `json:"-"`

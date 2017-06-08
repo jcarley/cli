@@ -76,10 +76,7 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authH
 
 	// try and set the given env first, if it exists
 	if envName != "" {
-		setGivenEnv(envName, &settings)
-		if settings.EnvironmentID == "" {
-			logrus.Fatalf("No environment named \"%s\" has been associated. Run \"datica associated\" to see what environments have been associated or run \"datica init\" to get started", envName)
-		}
+		SetGivenEnv(envName, &settings)
 	}
 
 	settings.AccountsHost = accountsHost
@@ -112,6 +109,18 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authH
 
 	settings.Version = VERSION
 	return &settings, nil
+}
+
+func StoreEnvironments(envs *[]models.Environment, settings *models.Settings) {
+	settings.Environments = map[string]models.AssociatedEnvV2{}
+	for _, env := range *envs {
+		settings.Environments[env.Name] = models.AssociatedEnvV2{
+			EnvironmentID: env.ID,
+			Name:          env.Name,
+			Pod:           env.Pod,
+			OrgID:         env.OrgID,
+		}
+	}
 }
 
 func migrateSettings(file *os.File, oldFormat, newFormat string) (models.Settings, error) {
@@ -155,10 +164,10 @@ func SaveSettings(settings *models.Settings) error {
 	return ioutil.WriteFile(filepath.Join(HomeDir, SettingsFile), b, 0644)
 }
 
-// setGivenEnv takes the given env name and finds it in the env list
+// SetGivenEnv takes the given env name and finds it in the env list
 // in the given settings object. It then populates the EnvironmentID and
 // ServiceID on the settings object with appropriate values.
-func setGivenEnv(envName string, settings *models.Settings) {
+func SetGivenEnv(envName string, settings *models.Settings) {
 	for eName, e := range settings.Environments {
 		if eName == envName {
 			settings.EnvironmentID = e.EnvironmentID
@@ -196,17 +205,15 @@ func defaultEnvPrompt(envName string) error {
 // that an appropriate environment has been picked and values assigned to the
 // given settings object before a command is run. This is intended to be called
 // before every command.
-func CheckRequiredAssociation(required, prompt bool, settings *models.Settings) error {
-	if required && settings.EnvironmentID == "" {
-		err := errors.New("No Datica environment has been associated. Run \"datica init\" to get started")
-		if prompt {
-			for _, e := range settings.Environments {
-				err = defaultEnvPrompt(e.Name)
-				if err == nil {
-					setGivenEnv(e.Name, settings)
-				}
-				break
+func CheckRequiredAssociation(settings *models.Settings) error {
+	if settings.EnvironmentID == "" {
+		err := errors.New("No Datica environment has been associated. Run \"datica associate\" from a local git repo first")
+		for _, e := range settings.Environments {
+			err = defaultEnvPrompt(e.Name)
+			if err == nil {
+				SetGivenEnv(e.Name, settings)
 			}
+			break
 		}
 		return err
 	}

@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/daticahealth/cli/commands/environments"
 	"github.com/daticahealth/cli/config"
 	"github.com/daticahealth/cli/lib/auth"
 	"github.com/daticahealth/cli/lib/jobs"
@@ -40,8 +41,15 @@ var ListSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Fatal(err.Error())
+				if err := config.CheckRequiredAssociation(settings); err != nil {
+					envs, errs := environments.New(settings).List()
+					if errs != nil && len(errs) > 0 {
+						logrus.Debugf("Error listing environments: %+v", errs)
+					}
+					config.StoreEnvironments(envs, settings)
+					if err := config.CheckRequiredAssociation(settings); err != nil {
+						logrus.Fatal(err.Error())
+					}
 				}
 				err := CmdServices(New(settings), volumes.New(settings))
 				if err != nil {
@@ -65,8 +73,15 @@ var RenameSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Fatal(err.Error())
+				if err := config.CheckRequiredAssociation(settings); err != nil {
+					envs, errs := environments.New(settings).List()
+					if errs != nil && len(errs) > 0 {
+						logrus.Debugf("Error listing environments: %+v", errs)
+					}
+					config.StoreEnvironments(envs, settings)
+					if err := config.CheckRequiredAssociation(settings); err != nil {
+						logrus.Fatal(err.Error())
+					}
 				}
 				err := CmdRename(*serviceName, *label, New(settings))
 				if err != nil {
@@ -93,8 +108,15 @@ var StopSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
-					logrus.Fatal(err.Error())
+				if err := config.CheckRequiredAssociation(settings); err != nil {
+					envs, errs := environments.New(settings).List()
+					if errs != nil && len(errs) > 0 {
+						logrus.Debugf("Error listing environments: %+v", errs)
+					}
+					config.StoreEnvironments(envs, settings)
+					if err := config.CheckRequiredAssociation(settings); err != nil {
+						logrus.Fatal(err.Error())
+					}
 				}
 				err := CmdStop(*svcName, settings.Pod, New(settings), jobs.New(settings), volumes.New(settings), prompts.New())
 				if err != nil {
