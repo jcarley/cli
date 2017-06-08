@@ -77,8 +77,8 @@ func GetSettings(baseURL string) *models.Settings {
 
 type FakePrompts struct{}
 
-func (f *FakePrompts) UsernamePassword(u, p string) (string, string, error) {
-	return "username", "password", nil
+func (f *FakePrompts) EmailPassword(e, p string) (string, string, error) {
+	return "email", "password", nil
 }
 func (f *FakePrompts) KeyPassphrase(string) string {
 	return "passphrase"

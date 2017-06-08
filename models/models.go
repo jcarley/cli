@@ -309,7 +309,7 @@ type SettingsV1 struct {
 	Version         string      `json:"-"`
 	HTTPManager     HTTPManager `json:"-"`
 
-	Username        string                     `json:"-"`
+	Email           string                     `json:"-"`
 	Password        string                     `json:"-"`
 	EnvironmentID   string                     `json:"-"` // the id of the environment used for the current command
 	ServiceID       string                     `json:"-"` // the id of the service used for the current command
@@ -338,7 +338,7 @@ type SettingsV2 struct {
 	HTTPManager     HTTPManager `json:"-"`
 	GivenEnvName    string      `json:"-"`
 
-	Username        string                     `json:"-"`
+	Email           string                     `json:"-"`
 	Password        string                     `json:"-"`
 	EnvironmentID   string                     `json:"-"` // the id of the environment used for the current command
 	Pod             string                     `json:"-"` // the pod used for the current command
@@ -375,7 +375,6 @@ type TempURL struct {
 
 // User is an authenticated User
 type User struct {
-	Username     string `json:"name"`
 	Email        string `json:"email"`
 	SessionToken string `json:"sessionToken"`
 	UsersID      string `json:"id"`

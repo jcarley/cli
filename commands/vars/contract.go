@@ -116,16 +116,17 @@ var SetSubCmd = models.Command{
 var UnsetSubCmd = models.Command{
 	Name:      "unset",
 	ShortHelp: "Unset (delete) an existing environment variable",
-	LongHelp: "`vars unset` removes an environment variables from the given code service. " +
+	LongHelp: "`vars unset` removes environment variables from the given code service. " +
 		"Only the environment variable name is required to unset. " +
 		"Once environment variables are unset, a [redeploy](#redeploy) is required for the given code service to realize the variable was removed. " +
+		"You can unset any number of environment variables in one command. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" vars unset code-1 AWS_ACCESS_KEY_ID\n```",
+		"```\ndatica -E \"<your_env_alias>\" vars unset code-1 AWS_ACCESS_KEY_ID AWS_SECRET_ACCES_KEY_ID\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service on which the environment variables will be unset.")
-			variables := subCmd.Strings(cli.StringsOpt{
-				Name:      "v variable",
+			variables := subCmd.Strings(cli.StringsArg{
+				Name:      "VARIABLE",
 				Value:     []string{},
 				Desc:      "The names of environment variables to unset",
 				HideValue: true,
@@ -149,7 +150,7 @@ var UnsetSubCmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "SERVICE_NAME -v..."
+			subCmd.Spec = "SERVICE_NAME VARIABLE..."
 		}
 	},
 }

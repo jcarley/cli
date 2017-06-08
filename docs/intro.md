@@ -62,6 +62,7 @@ The following table outlines all global options available in the CLI. Global opt
 
 | Short Name | Long Name | Description | Environment Variable |
 |------------|-----------|-------------|----------------------|
-| -U | --username | Your Datica username that you login to the Dashboard with | DATICA_USERNAME |
+| &nbsp; | --email | Your Datica email that you login to the Dashboard with | DATICA_EMAIL |
+| -U | --username | [DEPRECATED] Your Datica username that you login to the Dashboard with. Please use --email instead | DATICA_USERNAME |
 | -P | --password | Your Datica password that you login to the Dashboard with | DATICA_PASSWORD |
 | -E | --env | The local alias of the environment in which this command will be run. Read more about [environment aliases](#environment-aliases) | DATICA_ENV |

@@ -107,10 +107,16 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 	if paasHost == "" {
 		paasHost = config.PaasHost
 	}
+	email := app.String(cli.StringOpt{
+		Name:      "email",
+		Desc:      "Datica Email",
+		EnvVar:    config.DaticaEmailEnvVar,
+		HideValue: true,
+	})
 	username := app.String(cli.StringOpt{
 		Name:      "U username",
-		Desc:      "Datica Username",
-		EnvVar:    config.DaticaUsernameEnvVar,
+		Desc:      "[DEPRECATED] Datica Username (This flag is deprecated. Please use --email instead)",
+		EnvVar:    config.DaticaUsernameEnvVarDeprecated,
 		HideValue: true,
 	})
 	password := app.String(cli.StringOpt{
@@ -132,11 +138,17 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 	}
 
 	app.Before = func() {
+		if *email == "" {
+			*email = *username
+			if *email != "" {
+				logrus.Warnf("You are using a deprecated environment variable %s. Please use %s instead. Support for %s will be removed soon.", config.DaticaUsernameEnvVarDeprecated, config.DaticaEmailEnvVar, config.DaticaUsernameEnvVarDeprecated)
+			}
+		}
 		if config.Beta {
 			logrus.Println("This is a BETA release. Please contact Datica Support at https://datica.com/support with any issues.")
 		}
 		r := config.FileSettingsRetriever{}
-		s, err := r.GetSettings(*givenEnvName, "", accountsHost, authHost, "", paasHost, "", *username, *password)
+		s, err := r.GetSettings(*givenEnvName, "", accountsHost, authHost, "", paasHost, "", *email, *password)
 		if err != nil {
 			logrus.Println(err)
 			cli.Exit(1)

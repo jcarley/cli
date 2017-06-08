@@ -36,7 +36,7 @@ type SettingsRetriever interface {
 type FileSettingsRetriever struct{}
 
 // GetSettings returns a Settings object for the current context
-func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authHost, ignoreAuthHostVersion, paasHost, ignorePaasHostVersion, username, password string) (*models.Settings, error) {
+func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authHost, ignoreAuthHostVersion, paasHost, ignorePaasHostVersion, email, password string) (*models.Settings, error) {
 	HomeDir, err := homedir.Dir()
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authH
 	settings.AccountsHost = accountsHost
 	settings.AuthHost = authHost
 	settings.PaasHost = paasHost
-	settings.Username = username
+	settings.Email = email
 	settings.Password = password
 
 	authHostVersion := os.Getenv(AuthHostVersionEnvVar)
