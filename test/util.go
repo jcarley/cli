@@ -81,7 +81,7 @@ func GetSettings(baseURL string) *models.Settings {
 
 type FakePrompts struct{}
 
-func (f *FakePrompts) UsernamePassword() (string, string, error) {
+func (f *FakePrompts) UsernamePassword(u, p string) (string, string, error) {
 	return "username", "password", nil
 }
 func (f *FakePrompts) KeyPassphrase(string) string {
@@ -93,9 +93,13 @@ func (f *FakePrompts) Password(msg string) string {
 func (f *FakePrompts) PHI() error {
 	return nil
 }
-func (f *FakePrompts) YesNo(msg string) error {
+func (f *FakePrompts) YesNo(msg, prompt string) error {
 	return nil
 }
 func (f *FakePrompts) OTP(string) string {
 	return "123456"
+}
+
+func (f *FakePrompts) GenericPrompt(msg, prompt string, validOptions []string) string {
+	return "y"
 }

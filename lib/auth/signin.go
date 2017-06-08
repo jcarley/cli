@@ -76,7 +76,7 @@ func (a *SAuth) signInWithCredentials() (*signinResponse, error) {
 		Password:   a.Settings.Password,
 	}
 	if a.Settings.Username == "" || a.Settings.Password == "" {
-		username, password, err := a.Prompts.UsernamePassword()
+		username, password, err := a.Prompts.UsernamePassword(a.Settings.Username, a.Settings.Password)
 		if err != nil {
 			return nil, err
 		}
