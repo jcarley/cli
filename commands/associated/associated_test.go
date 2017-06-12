@@ -9,12 +9,10 @@ import (
 
 func TestAssociated(t *testing.T) {
 	settings := &models.Settings{
-		Environments: map[string]models.AssociatedEnv{
-			test.Alias: models.AssociatedEnv{
+		Environments: map[string]models.AssociatedEnvV2{
+			test.Alias: models.AssociatedEnvV2{
 				Name:          test.EnvName,
 				EnvironmentID: test.EnvID,
-				ServiceID:     test.SvcLabel,
-				Directory:     "",
 				Pod:           test.Pod,
 				OrgID:         test.OrgID,
 			},
@@ -28,7 +26,7 @@ func TestAssociated(t *testing.T) {
 
 func TestAssociatedNoAssociations(t *testing.T) {
 	settings := &models.Settings{
-		Environments: map[string]models.AssociatedEnv{},
+		Environments: map[string]models.AssociatedEnvV2{},
 	}
 	err := CmdAssociated(New(settings))
 	if err != nil {

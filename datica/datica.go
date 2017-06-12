@@ -7,16 +7,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/daticahealth/cli/commands/associate"
 	"github.com/daticahealth/cli/commands/associated"
 	"github.com/daticahealth/cli/commands/certs"
 	"github.com/daticahealth/cli/commands/clear"
 	"github.com/daticahealth/cli/commands/console"
-	"github.com/daticahealth/cli/commands/dashboard"
 	"github.com/daticahealth/cli/commands/db"
-	"github.com/daticahealth/cli/commands/default"
 	"github.com/daticahealth/cli/commands/deploykeys"
-	"github.com/daticahealth/cli/commands/disassociate"
 	"github.com/daticahealth/cli/commands/domain"
 	"github.com/daticahealth/cli/commands/environments"
 	"github.com/daticahealth/cli/commands/files"
@@ -132,37 +128,19 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 		if lvl, err := logrus.ParseLevel(loggingLevel); err == nil {
 			logrus.SetLevel(lvl)
 		}
-	} else if loggingLevel := os.Getenv(config.LogLevelEnvVarDeprecated); loggingLevel != "" {
-		if lvl, err := logrus.ParseLevel(loggingLevel); err == nil {
-			logrus.SetLevel(lvl)
-		}
-		logrus.Warnf("You are using a deprecated environment variable %s. Please use %s instead. Support for %s will be removed soon.", config.LogLevelEnvVarDeprecated, config.LogLevelEnvVar, config.LogLevelEnvVarDeprecated)
 	}
 
 	app.Before = func() {
-		if *username == "" {
-			*username = os.Getenv(config.DaticaUsernameEnvVarDeprecated)
-			if *username != "" {
-				logrus.Warnf("You are using a deprecated environment variable %s. Please use %s instead. Support for %s will be removed soon.", config.DaticaUsernameEnvVarDeprecated, config.DaticaUsernameEnvVar, config.DaticaUsernameEnvVarDeprecated)
-			}
-		}
-		if *password == "" {
-			*password = os.Getenv(config.DaticaPasswordEnvVarDeprecated)
-			if *password != "" {
-				logrus.Warnf("You are using a deprecated environment variable %s. Please use %s instead. Support for %s will be removed soon.", config.DaticaPasswordEnvVarDeprecated, config.DaticaPasswordEnvVar, config.DaticaPasswordEnvVarDeprecated)
-			}
-		}
-		if *givenEnvName == "" {
-			*givenEnvName = os.Getenv(config.DaticaEnvironmentEnvVarDeprecated)
-			if *givenEnvName != "" {
-				logrus.Warnf("You are using a deprecated environment variable %s. Please use %s instead. Support for %s will be removed soon.", config.DaticaEnvironmentEnvVarDeprecated, config.DaticaEnvironmentEnvVar, config.DaticaEnvironmentEnvVarDeprecated)
-			}
-		}
 		if config.Beta {
 			logrus.Println("This is a BETA release. Please contact Datica Support at https://datica.com/support with any issues.")
 		}
 		r := config.FileSettingsRetriever{}
-		*settings = *r.GetSettings(*givenEnvName, "", accountsHost, authHost, "", paasHost, "", *username, *password)
+		s, err := r.GetSettings(*givenEnvName, "", accountsHost, authHost, "", paasHost, "", *username, *password)
+		if err != nil {
+			logrus.Println(err)
+			cli.Exit(1)
+		}
+		*settings = *s
 		skip, _ := strconv.ParseBool(os.Getenv(config.SkipVerifyEnvVar))
 		settings.HTTPManager = httpclient.NewTLSHTTPManager(skip)
 		logrus.Debugf("%+v", settings)
@@ -202,16 +180,12 @@ func InitLogrus() {
 
 // InitCLI adds arguments and commands to the given cli instance
 func InitCLI(app *cli.Cli, settings *models.Settings) {
-	app.CommandLong(associate.Cmd.Name, associate.Cmd.ShortHelp, associate.Cmd.LongHelp, associate.Cmd.CmdFunc(settings))
 	app.CommandLong(associated.Cmd.Name, associated.Cmd.ShortHelp, associated.Cmd.LongHelp, associated.Cmd.CmdFunc(settings))
 	app.CommandLong(certs.Cmd.Name, certs.Cmd.ShortHelp, certs.Cmd.LongHelp, certs.Cmd.CmdFunc(settings))
 	app.CommandLong(clear.Cmd.Name, clear.Cmd.ShortHelp, clear.Cmd.LongHelp, clear.Cmd.CmdFunc(settings))
 	app.CommandLong(console.Cmd.Name, console.Cmd.ShortHelp, console.Cmd.LongHelp, console.Cmd.CmdFunc(settings))
-	app.CommandLong(dashboard.Cmd.Name, dashboard.Cmd.ShortHelp, dashboard.Cmd.LongHelp, dashboard.Cmd.CmdFunc(settings))
 	app.CommandLong(db.Cmd.Name, db.Cmd.ShortHelp, db.Cmd.LongHelp, db.Cmd.CmdFunc(settings))
-	app.CommandLong(defaultcmd.Cmd.Name, defaultcmd.Cmd.ShortHelp, defaultcmd.Cmd.LongHelp, defaultcmd.Cmd.CmdFunc(settings))
 	app.CommandLong(deploykeys.Cmd.Name, deploykeys.Cmd.ShortHelp, deploykeys.Cmd.LongHelp, deploykeys.Cmd.CmdFunc(settings))
-	app.CommandLong(disassociate.Cmd.Name, disassociate.Cmd.ShortHelp, disassociate.Cmd.LongHelp, disassociate.Cmd.CmdFunc(settings))
 	app.CommandLong(domain.Cmd.Name, domain.Cmd.ShortHelp, domain.Cmd.LongHelp, domain.Cmd.CmdFunc(settings))
 	app.CommandLong(environments.Cmd.Name, environments.Cmd.ShortHelp, environments.Cmd.LongHelp, environments.Cmd.CmdFunc(settings))
 	app.CommandLong(files.Cmd.Name, files.Cmd.ShortHelp, files.Cmd.LongHelp, files.Cmd.CmdFunc(settings))
