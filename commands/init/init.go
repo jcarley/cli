@@ -19,6 +19,7 @@ import (
 	"github.com/daticahealth/cli/config"
 	"github.com/daticahealth/cli/lib/prompts"
 	"github.com/daticahealth/cli/models"
+	homedir "github.com/mitchellh/go-homedir"
 )
 
 func CmdInit(settings *models.Settings, p prompts.IPrompts) error {
@@ -117,7 +118,6 @@ func CmdInit(settings *models.Settings, p prompts.IPrompts) error {
 		}
 		err = ig.SetURL(remoteName, svc.Source)
 	} else {
-		ig.Add(remoteName, svc.Source)
 		err = ig.Add(remoteName, svc.Source)
 	}
 	if err != nil {
@@ -139,8 +139,11 @@ func CmdInit(settings *models.Settings, p prompts.IPrompts) error {
 			if keyPath == "" {
 				break
 			} else if _, err = os.Stat(keyPath); os.IsNotExist(err) {
-				logrus.Printf("A file does not exist at %s", keyPath)
-				continue
+				keyPath, _ = homedir.Expand(keyPath)
+				if _, err = os.Stat(keyPath); os.IsNotExist(err) {
+					logrus.Printf("A file does not exist at %s", keyPath)
+					continue
+				}
 			}
 
 			keyBytes, err := ioutil.ReadFile(keyPath)
