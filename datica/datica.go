@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/daticahealth/cli/commands/associated"
 	"github.com/daticahealth/cli/commands/certs"
 	"github.com/daticahealth/cli/commands/clear"
 	"github.com/daticahealth/cli/commands/console"
@@ -170,6 +169,15 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 				logrus.Debugf("Error listing pods: %s", err.Error())
 			}
 		}
+
+		if settings.EnvironmentID == "" && *givenEnvName != "" {
+			envs, errs := environments.New(settings).List()
+			if errs != nil && len(errs) > 0 {
+				logrus.Debugf("Error listing environments: %+v", errs)
+			}
+			config.StoreEnvironments(envs, settings)
+			config.SetGivenEnv(*givenEnvName, settings)
+		}
 	}
 	app.After = func() {
 		config.SaveSettings(settings)
@@ -193,7 +201,6 @@ func InitLogrus() {
 
 // InitCLI adds arguments and commands to the given cli instance
 func InitCLI(app *cli.Cli, settings *models.Settings) {
-	app.CommandLong(associated.Cmd.Name, associated.Cmd.ShortHelp, associated.Cmd.LongHelp, associated.Cmd.CmdFunc(settings))
 	app.CommandLong(certs.Cmd.Name, certs.Cmd.ShortHelp, certs.Cmd.LongHelp, certs.Cmd.CmdFunc(settings))
 	app.CommandLong(clear.Cmd.Name, clear.Cmd.ShortHelp, clear.Cmd.LongHelp, clear.Cmd.CmdFunc(settings))
 	app.CommandLong(console.Cmd.Name, console.Cmd.ShortHelp, console.Cmd.LongHelp, console.Cmd.CmdFunc(settings))

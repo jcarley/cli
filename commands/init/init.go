@@ -19,7 +19,6 @@ import (
 	"github.com/daticahealth/cli/config"
 	"github.com/daticahealth/cli/lib/prompts"
 	"github.com/daticahealth/cli/models"
-	homedir "github.com/mitchellh/go-homedir"
 )
 
 func CmdInit(settings *models.Settings, p prompts.IPrompts) error {
@@ -135,17 +134,10 @@ func CmdInit(settings *models.Settings, p prompts.IPrompts) error {
 	}
 	if userKeys == nil || len(*userKeys) == 0 {
 		logrus.Println("You'll need to add an SSH key in order to push code.")
-		idRSA, _ := homedir.Expand("~/.ssh/id_rsa.pub")
-		existingPrompt := ""
-		if _, err = os.Stat(idRSA); err == nil {
-			existingPrompt = fmt.Sprintf(" (%s)", idRSA)
-			logrus.Printf("We found an SSH key at %s. Hit enter if you'd like to use that one.", idRSA)
-		}
-		key := ""
 		for {
-			keyPath := p.CaptureInput(fmt.Sprintf("Enter the path to your public SSH key%s: ", existingPrompt))
+			keyPath := p.CaptureInput("Enter the path to your public SSH key (leave empty to skip): ")
 			if keyPath == "" {
-				keyPath = idRSA
+				break
 			} else if _, err = os.Stat(keyPath); os.IsNotExist(err) {
 				logrus.Printf("A file does not exist at %s", keyPath)
 				continue
@@ -161,15 +153,13 @@ func CmdInit(settings *models.Settings, p prompts.IPrompts) error {
 				logrus.Printf("A valid public SSH key does not exist at %s", keyPath)
 				continue
 			}
-			key = string(ssh.MarshalAuthorizedKey(k))
+			err = ik.Add("my-key", string(ssh.MarshalAuthorizedKey(k)))
+			if err != nil {
+				return err
+			}
+			logrus.Println("Successfully added your SSH key.")
 			break
 		}
-
-		err = ik.Add("my-key", key)
-		if err != nil {
-			return err
-		}
-		logrus.Println("Successfully added your SSH key.")
 	}
 
 	domain, err := domain.FindEnvironmentDomain(env.ID, env.Namespace, is, sites.New(settings))

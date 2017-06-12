@@ -99,3 +99,7 @@ func (f *FakePrompts) OTP(string) string {
 func (f *FakePrompts) GenericPrompt(msg, prompt string, validOptions []string) string {
 	return "y"
 }
+
+func (f *FakePrompts) CaptureInput(msg string) string {
+	return "input"
+}

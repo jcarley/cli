@@ -207,7 +207,7 @@ func defaultEnvPrompt(envName string) error {
 // before every command.
 func CheckRequiredAssociation(settings *models.Settings) error {
 	if settings.EnvironmentID == "" {
-		err := errors.New("No Datica environment has been associated. Run \"datica associate\" from a local git repo first")
+		err := errors.New("No Datica environments found. Run \"datica init\" to get started")
 		for _, e := range settings.Environments {
 			err = defaultEnvPrompt(e.Name)
 			if err == nil {

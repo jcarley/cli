@@ -36,7 +36,7 @@ var ListSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatalln(err.Error())
 				}
-				err := CmdList(New(settings))
+				err := CmdList(settings, New(settings))
 				if err != nil {
 					logrus.Fatalln(err.Error())
 				}
@@ -57,18 +57,10 @@ var RenameSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				ie := New(settings)
 				if err := config.CheckRequiredAssociation(settings); err != nil {
-					envs, errs := ie.List()
-					if errs != nil && len(errs) > 0 {
-						logrus.Debugf("Error listing environments: %+v", errs)
-					}
-					config.StoreEnvironments(envs, settings)
-					if err := config.CheckRequiredAssociation(settings); err != nil {
-						logrus.Fatal(err.Error())
-					}
+					logrus.Fatal(err.Error())
 				}
-				err := CmdRename(settings.EnvironmentID, *name, ie)
+				err := CmdRename(settings.EnvironmentID, *name, New(settings))
 				if err != nil {
 					logrus.Fatalln(err.Error())
 				}

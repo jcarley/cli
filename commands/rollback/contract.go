@@ -2,7 +2,6 @@ package rollback
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/daticahealth/cli/commands/environments"
 	"github.com/daticahealth/cli/commands/releases"
 	"github.com/daticahealth/cli/commands/services"
 	"github.com/daticahealth/cli/config"
@@ -31,14 +30,7 @@ var Cmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 				if err := config.CheckRequiredAssociation(settings); err != nil {
-					envs, errs := environments.New(settings).List()
-					if errs != nil && len(errs) > 0 {
-						logrus.Debugf("Error listing environments: %+v", errs)
-					}
-					config.StoreEnvironments(envs, settings)
-					if err := config.CheckRequiredAssociation(settings); err != nil {
-						logrus.Fatal(err.Error())
-					}
+					logrus.Fatal(err.Error())
 				}
 				err := CmdRollback(*serviceName, *releaseName, jobs.New(settings), releases.New(settings), services.New(settings))
 				if err != nil {

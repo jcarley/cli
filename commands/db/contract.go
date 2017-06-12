@@ -7,7 +7,6 @@ import (
 
 	"github.com/catalyzeio/gcm/gcm"
 
-	"github.com/daticahealth/cli/commands/environments"
 	"github.com/daticahealth/cli/commands/services"
 	"github.com/daticahealth/cli/config"
 	"github.com/daticahealth/cli/lib/auth"
@@ -55,14 +54,7 @@ var BackupSubCmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 				if err := config.CheckRequiredAssociation(settings); err != nil {
-					envs, errs := environments.New(settings).List()
-					if errs != nil && len(errs) > 0 {
-						logrus.Debugf("Error listing environments: %+v", errs)
-					}
-					config.StoreEnvironments(envs, settings)
-					if err := config.CheckRequiredAssociation(settings); err != nil {
-						logrus.Fatal(err.Error())
-					}
+					logrus.Fatal(err.Error())
 				}
 				err := CmdBackup(*databaseName, *skipPoll, New(settings, crypto.New(), jobs.New(settings)), services.New(settings), jobs.New(settings))
 				if err != nil {
@@ -95,14 +87,7 @@ var DownloadSubCmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 				if err := config.CheckRequiredAssociation(settings); err != nil {
-					envs, errs := environments.New(settings).List()
-					if errs != nil && len(errs) > 0 {
-						logrus.Debugf("Error listing environments: %+v", errs)
-					}
-					config.StoreEnvironments(envs, settings)
-					if err := config.CheckRequiredAssociation(settings); err != nil {
-						logrus.Fatal(err.Error())
-					}
+					logrus.Fatal(err.Error())
 				}
 				err := CmdDownload(*databaseName, *backupID, *filePath, *force, New(settings, crypto.New(), jobs.New(settings)), prompts.New(), services.New(settings))
 				if err != nil {
@@ -134,14 +119,7 @@ var ExportSubCmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 				if err := config.CheckRequiredAssociation(settings); err != nil {
-					envs, errs := environments.New(settings).List()
-					if errs != nil && len(errs) > 0 {
-						logrus.Debugf("Error listing environments: %+v", errs)
-					}
-					config.StoreEnvironments(envs, settings)
-					if err := config.CheckRequiredAssociation(settings); err != nil {
-						logrus.Fatal(err.Error())
-					}
+					logrus.Fatal(err.Error())
 				}
 				err := CmdExport(*databaseName, *filePath, *force, New(settings, crypto.New(), jobs.New(settings)), prompts.New(), services.New(settings), jobs.New(settings))
 				if err != nil {
@@ -179,14 +157,7 @@ var ImportSubCmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 				if err := config.CheckRequiredAssociation(settings); err != nil {
-					envs, errs := environments.New(settings).List()
-					if errs != nil && len(errs) > 0 {
-						logrus.Debugf("Error listing environments: %+v", errs)
-					}
-					config.StoreEnvironments(envs, settings)
-					if err := config.CheckRequiredAssociation(settings); err != nil {
-						logrus.Fatal(err.Error())
-					}
+					logrus.Fatal(err.Error())
 				}
 				err := CmdImport(*databaseName, *filePath, *mongoCollection, *mongoDatabase, *skipBackup, New(settings, crypto.New(), jobs.New(settings)), prompts.New(), services.New(settings), jobs.New(settings))
 				if err != nil {
@@ -214,14 +185,7 @@ var ListSubCmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 				if err := config.CheckRequiredAssociation(settings); err != nil {
-					envs, errs := environments.New(settings).List()
-					if errs != nil && len(errs) > 0 {
-						logrus.Debugf("Error listing environments: %+v", errs)
-					}
-					config.StoreEnvironments(envs, settings)
-					if err := config.CheckRequiredAssociation(settings); err != nil {
-						logrus.Fatal(err.Error())
-					}
+					logrus.Fatal(err.Error())
 				}
 				err := CmdList(*databaseName, *page, *pageSize, New(settings, crypto.New(), jobs.New(settings)), services.New(settings))
 				if err != nil {
@@ -248,14 +212,7 @@ var LogsSubCmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 				if err := config.CheckRequiredAssociation(settings); err != nil {
-					envs, errs := environments.New(settings).List()
-					if errs != nil && len(errs) > 0 {
-						logrus.Debugf("Error listing environments: %+v", errs)
-					}
-					config.StoreEnvironments(envs, settings)
-					if err := config.CheckRequiredAssociation(settings); err != nil {
-						logrus.Fatal(err.Error())
-					}
+					logrus.Fatal(err.Error())
 				}
 				err := CmdLogs(*databaseName, *backupID, New(settings, crypto.New(), jobs.New(settings)), services.New(settings), jobs.New(settings))
 				if err != nil {
