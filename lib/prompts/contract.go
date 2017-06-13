@@ -8,19 +8,22 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/daticahealth/cli/config"
+
 	"golang.org/x/crypto/ssh/terminal"
 )
 
 // IPrompts is the interface in which to interact with the user and accept
 // input.
 type IPrompts interface {
-	UsernamePassword(existingUsername, existingPassword string) (string, string, error)
+	EmailPassword(existingEmail, existingPassword string) (string, string, error)
 	KeyPassphrase(string) string
 	Password(msg string) string
 	PHI() error
 	YesNo(msg, prompt string) error
 	OTP(string) string
 	GenericPrompt(msg, prompt string, validOptions []string) string
+	CaptureInput(msg string) string
 }
 
 // SPrompts is a concrete implementation of IPrompts
@@ -31,21 +34,23 @@ func New() IPrompts {
 	return &SPrompts{}
 }
 
-// UsernamePassword prompts a user to enter their username and password.
-func (p *SPrompts) UsernamePassword(existingUsername, existingPassword string) (string, string, error) {
-	username := existingUsername
+// EmailPassword prompts a user to enter their email and password.
+func (p *SPrompts) EmailPassword(existingEmail, existingPassword string) (string, string, error) {
+	email := existingEmail
 	var err error
-	if username == "" {
-		fmt.Print("Username or Email: ")
+	if email == "" {
+		fmt.Print("Email: ")
 		in := bufio.NewReader(os.Stdin)
-		username, err = in.ReadString('\n')
+		email, err = in.ReadString('\n')
 		if err != nil {
-			return "", "", errors.New("Invalid username")
+			return "", "", errors.New("Invalid email")
 		}
-		username = strings.TrimRight(username, "\n")
+		email = strings.TrimRight(email, "\n")
 		if runtime.GOOS == "windows" {
-			username = strings.TrimRight(username, "\r")
+			email = strings.TrimRight(email, "\r")
 		}
+	} else {
+		fmt.Printf("Using email from environment variable %s\n", config.DaticaEmailEnvVar)
 	}
 	password := existingPassword
 	if password == "" {
@@ -53,8 +58,10 @@ func (p *SPrompts) UsernamePassword(existingUsername, existingPassword string) (
 		bytes, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
 		fmt.Println("")
 		password = string(bytes)
+	} else {
+		fmt.Printf("Using password from environment variable %s\n", config.DaticaPasswordEnvVar)
 	}
-	return username, password, nil
+	return email, password, nil
 }
 
 // KeyPassphrase prompts a user to enter a passphrase for a named key.
@@ -146,5 +153,15 @@ func (p *SPrompts) GenericPrompt(msg, prompt string, validOptions []string) stri
 			break
 		}
 	}
+	return answer
+}
+
+// CaptureInput prompts the user with the given msg and reads input until a newline is encountered. The input is
+// returned with newlines stripped. The prompt and the input will be on the same line when shown to the user.
+func (p *SPrompts) CaptureInput(msg string) string {
+	var answer string
+	fmt.Printf(msg)
+	fmt.Scanln(&answer)
+	fmt.Println("")
 	return answer
 }

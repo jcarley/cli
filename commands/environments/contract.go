@@ -36,7 +36,7 @@ var ListSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatalln(err.Error())
 				}
-				err := CmdList(New(settings))
+				err := CmdList(settings, New(settings))
 				if err != nil {
 					logrus.Fatalln(err.Error())
 				}
@@ -57,7 +57,7 @@ var RenameSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
 				err := CmdRename(settings.EnvironmentID, *name, New(settings))

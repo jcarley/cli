@@ -63,7 +63,7 @@ var CPUSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
 				err := CmdMetrics(*serviceName, CPU, *json, *csv, *text, *stream, *mins, New(settings), services.New(settings))
@@ -102,7 +102,7 @@ var MemorySubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
 				err := CmdMetrics(*serviceName, Memory, *json, *csv, *text, *stream, *mins, New(settings), services.New(settings))
@@ -140,7 +140,7 @@ var NetworkInSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
 				err := CmdMetrics(*serviceName, NetworkIn, *json, *csv, *text, *stream, *mins, New(settings), services.New(settings))
@@ -179,7 +179,7 @@ var NetworkOutSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
 				err := CmdMetrics(*serviceName, NetworkOut, *json, *csv, *text, *stream, *mins, New(settings), services.New(settings))

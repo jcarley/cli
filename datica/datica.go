@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/daticahealth/cli/commands/associated"
 	"github.com/daticahealth/cli/commands/certs"
 	"github.com/daticahealth/cli/commands/clear"
 	"github.com/daticahealth/cli/commands/console"
@@ -17,6 +16,7 @@ import (
 	"github.com/daticahealth/cli/commands/environments"
 	"github.com/daticahealth/cli/commands/files"
 	"github.com/daticahealth/cli/commands/git"
+	initcmd "github.com/daticahealth/cli/commands/init"
 	"github.com/daticahealth/cli/commands/invites"
 	"github.com/daticahealth/cli/commands/keys"
 	"github.com/daticahealth/cli/commands/logout"
@@ -106,10 +106,16 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 	if paasHost == "" {
 		paasHost = config.PaasHost
 	}
+	email := app.String(cli.StringOpt{
+		Name:      "email",
+		Desc:      "Datica Email",
+		EnvVar:    config.DaticaEmailEnvVar,
+		HideValue: true,
+	})
 	username := app.String(cli.StringOpt{
 		Name:      "U username",
-		Desc:      "Datica Username",
-		EnvVar:    config.DaticaUsernameEnvVar,
+		Desc:      "[DEPRECATED] Datica Username (This flag is deprecated. Please use --email instead)",
+		EnvVar:    config.DaticaUsernameEnvVarDeprecated,
 		HideValue: true,
 	})
 	password := app.String(cli.StringOpt{
@@ -131,11 +137,17 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 	}
 
 	app.Before = func() {
+		if *email == "" {
+			*email = *username
+			if *email != "" {
+				logrus.Warnf("You are using a deprecated environment variable %s. Please use %s instead. Support for %s will be removed soon.", config.DaticaUsernameEnvVarDeprecated, config.DaticaEmailEnvVar, config.DaticaUsernameEnvVarDeprecated)
+			}
+		}
 		if config.Beta {
 			logrus.Println("This is a BETA release. Please contact Datica Support at https://datica.com/support with any issues.")
 		}
 		r := config.FileSettingsRetriever{}
-		s, err := r.GetSettings(*givenEnvName, "", accountsHost, authHost, "", paasHost, "", *username, *password)
+		s, err := r.GetSettings(*givenEnvName, "", accountsHost, authHost, "", paasHost, "", *email, *password)
 		if err != nil {
 			logrus.Println(err)
 			cli.Exit(1)
@@ -156,6 +168,15 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 				settings.Pods = &[]models.Pod{}
 				logrus.Debugf("Error listing pods: %s", err.Error())
 			}
+		}
+
+		if settings.EnvironmentID == "" && *givenEnvName != "" {
+			envs, errs := environments.New(settings).List()
+			if errs != nil && len(errs) > 0 {
+				logrus.Debugf("Error listing environments: %+v", errs)
+			}
+			config.StoreEnvironments(envs, settings)
+			config.SetGivenEnv(*givenEnvName, settings)
 		}
 	}
 	app.After = func() {
@@ -180,7 +201,6 @@ func InitLogrus() {
 
 // InitCLI adds arguments and commands to the given cli instance
 func InitCLI(app *cli.Cli, settings *models.Settings) {
-	app.CommandLong(associated.Cmd.Name, associated.Cmd.ShortHelp, associated.Cmd.LongHelp, associated.Cmd.CmdFunc(settings))
 	app.CommandLong(certs.Cmd.Name, certs.Cmd.ShortHelp, certs.Cmd.LongHelp, certs.Cmd.CmdFunc(settings))
 	app.CommandLong(clear.Cmd.Name, clear.Cmd.ShortHelp, clear.Cmd.LongHelp, clear.Cmd.CmdFunc(settings))
 	app.CommandLong(console.Cmd.Name, console.Cmd.ShortHelp, console.Cmd.LongHelp, console.Cmd.CmdFunc(settings))
@@ -190,6 +210,7 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.CommandLong(environments.Cmd.Name, environments.Cmd.ShortHelp, environments.Cmd.LongHelp, environments.Cmd.CmdFunc(settings))
 	app.CommandLong(files.Cmd.Name, files.Cmd.ShortHelp, files.Cmd.LongHelp, files.Cmd.CmdFunc(settings))
 	app.CommandLong(git.Cmd.Name, git.Cmd.ShortHelp, git.Cmd.LongHelp, git.Cmd.CmdFunc(settings))
+	app.CommandLong(initcmd.Cmd.Name, initcmd.Cmd.ShortHelp, initcmd.Cmd.LongHelp, initcmd.Cmd.CmdFunc(settings))
 	app.CommandLong(invites.Cmd.Name, invites.Cmd.ShortHelp, invites.Cmd.LongHelp, invites.Cmd.CmdFunc(settings))
 	app.CommandLong(keys.Cmd.Name, keys.Cmd.ShortHelp, keys.Cmd.LongHelp, keys.Cmd.CmdFunc(settings))
 	app.CommandLong(logout.Cmd.Name, logout.Cmd.ShortHelp, logout.Cmd.LongHelp, logout.Cmd.CmdFunc(settings))

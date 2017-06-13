@@ -52,22 +52,18 @@ func GetSettings(baseURL string) *models.Settings {
 	return &models.Settings{
 		SessionToken:   "token",
 		PrivateKeyPath: "ssh_rsa",
-		Default:        EnvName,
 		HTTPManager:    httpclient.NewTLSHTTPManager(false),
 		PaasHost:       baseURL,
-		Environments: map[string]models.AssociatedEnv{
-			Alias: models.AssociatedEnv{
+		Environments: map[string]models.AssociatedEnvV2{
+			Alias: models.AssociatedEnvV2{
 				Name:          EnvName,
 				EnvironmentID: EnvID,
-				ServiceID:     SvcID,
-				Directory:     "/",
 				Pod:           Pod,
 				OrgID:         OrgID,
 			},
 		},
 		OrgID:         OrgID,
 		EnvironmentID: EnvID,
-		ServiceID:     SvcID,
 		Pods: &[]models.Pod{
 			models.Pod{
 				Name: Pod,
@@ -81,8 +77,8 @@ func GetSettings(baseURL string) *models.Settings {
 
 type FakePrompts struct{}
 
-func (f *FakePrompts) UsernamePassword(u, p string) (string, string, error) {
-	return "username", "password", nil
+func (f *FakePrompts) EmailPassword(e, p string) (string, string, error) {
+	return "email", "password", nil
 }
 func (f *FakePrompts) KeyPassphrase(string) string {
 	return "passphrase"
@@ -102,4 +98,8 @@ func (f *FakePrompts) OTP(string) string {
 
 func (f *FakePrompts) GenericPrompt(msg, prompt string, validOptions []string) string {
 	return "y"
+}
+
+func (f *FakePrompts) CaptureInput(msg string) string {
+	return "input"
 }

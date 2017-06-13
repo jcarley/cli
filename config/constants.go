@@ -38,8 +38,8 @@ const (
 	AuthHostVersionEnvVar = "AUTH_HOST_VERSION"
 	// PaasHostVersionEnvVar is the env variable used to override PaasHostVersion
 	PaasHostVersionEnvVar = "PAAS_HOST_VERSION"
-	// DaticaUsernameEnvVar is the env variable used to override the username
-	DaticaUsernameEnvVar = "DATICA_USERNAME"
+	// DaticaEmailEnvVar is the env variable used to override the email
+	DaticaEmailEnvVar = "DATICA_EMAIL"
 	// DaticaPasswordEnvVar is the env variable used to override the passowrd
 	DaticaPasswordEnvVar = "DATICA_PASSWORD"
 	// DaticaEnvironmentEnvVar is the env variable used to override the environment used in the current command
@@ -48,6 +48,9 @@ const (
 	LogLevelEnvVar = "DATICA_LOG_LEVEL"
 	// SkipVerifyEnvVar is the env variable used to accept invalid SSL certificates
 	SkipVerifyEnvVar = "SKIP_VERIFY"
+
+	// DaticaUsernameEnvVarDeprecated is the deprecated env variable used to override the username
+	DaticaUsernameEnvVarDeprecated = "DATICA_USERNAME"
 
 	// InvalidChars is a string containing all invalid characters for naming
 	InvalidChars = "/?%"
