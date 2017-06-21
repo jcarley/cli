@@ -25,7 +25,7 @@ type LogMessage struct {
 	Source    string `json:"source"`
 }
 
-func (l *SLogs) Watch(queryString, domain, sessionToken string) error {
+func (l *SLogs) Watch(queryString, domain string) error {
 	if queryString == "*" {
 		queryString = ""
 	}
@@ -40,7 +40,7 @@ func (l *SLogs) Watch(queryString, domain, sessionToken string) error {
 			MinVersion: tls.VersionTLS12,
 		},
 	}
-	headers := http.Header{"Cookie": {"sessionToken=" + url.QueryEscape(sessionToken)}}
+	headers := http.Header{"Cookie": {"sessionToken=" + url.QueryEscape(l.Settings.SessionToken)}}
 	urlString := fmt.Sprintf("wss://%s/stream/", domain)
 	c, _, err := dialer.Dial(urlString, headers)
 	if err != nil {

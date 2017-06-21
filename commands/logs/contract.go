@@ -51,11 +51,14 @@ var Cmd = models.Command{
 	},
 }
 
+type queryGenerator func(queryString, appLogsIdentifier, appLogsValue string, timestamp time.Time, from int) []byte
+
 // ILogs ...
 type ILogs interface {
-	Output(queryString, sessionToken, domain string, from int, startTimestamp time.Time, endTimestamp time.Time) (int, error)
-	Stream(queryString, sessionToken, domain string, from int, timestamp time.Time) error
-	Watch(queryString, domain, sessionToken string) error
+	Output(queryString, domain string, generator queryGenerator, from int, startTimestamp time.Time, endTimestamp time.Time) (int, error)
+	RetrieveElasticsearchVersion(domain string) (string, error)
+	Stream(queryString, domain string, generator queryGenerator, from int, timestamp time.Time) error
+	Watch(queryString, domain string) error
 }
 
 // SLogs is a concrete implementation of ILogs
