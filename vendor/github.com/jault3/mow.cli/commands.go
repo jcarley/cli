@@ -9,6 +9,16 @@ import (
 	"text/tabwriter"
 )
 
+// DescriptionLocation defines where to print out help text
+type DescriptionLocation int
+
+const (
+	// DescriptionLocationTop specifies printing out the help text at the top of the output
+	DescriptionLocationTop DescriptionLocation = iota
+	// DescriptionLocationBottom specifies printing out the help text at the bottom of the output
+	DescriptionLocationBottom
+)
+
 /*
 Cmd represents a command (or sub command) in a CLI application. It should be constructed
 by calling Command() on an app to create a top level command or by calling Command() on another
@@ -25,6 +35,8 @@ type Cmd struct {
 	Spec string
 	// The command long description to be shown when help is requested
 	LongDesc string
+	// Location of the LongDesc text. 0 for the top or 1 for bottom of the full output
+	LongDescLocation DescriptionLocation
 	// The command error handling strategy
 	ErrorHandling flag.ErrorHandling
 
@@ -339,12 +351,14 @@ func (c *Cmd) PrintLongHelpTo(longDesc bool, writer io.Writer) {
 	}
 	fmt.Fprint(writer, "\n\n")
 
-	desc := c.desc
+	cmdDesc := c.desc
+	cmdDescLoc := 0
 	if longDesc && len(c.LongDesc) > 0 {
-		desc = c.LongDesc
+		cmdDesc = c.LongDesc
+		cmdDescLoc = 1
 	}
-	if len(desc) > 0 {
-		fmt.Fprintf(writer, "%s\n", desc)
+	if len(cmdDesc) > 0 && cmdDescLoc == 0 {
+		fmt.Fprintf(writer, "%s\n", cmdDesc)
 	}
 
 	w := tabwriter.NewWriter(writer, 15, 1, 3, ' ', 0)
@@ -383,6 +397,10 @@ func (c *Cmd) PrintLongHelpTo(longDesc bool, writer io.Writer) {
 
 	if len(c.Commands) > 0 {
 		fmt.Fprintf(writer, "\nRun '%s COMMAND --help' for more information on a command.\n", path)
+	}
+
+	if len(cmdDesc) > 0 && cmdDescLoc == 1 {
+		fmt.Fprintf(writer, "%s\n", cmdDesc)
 	}
 }
 
