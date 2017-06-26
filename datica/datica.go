@@ -126,7 +126,7 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 	})
 	givenEnvName := app.String(cli.StringOpt{
 		Name:      "E env",
-		Desc:      "The local alias of the environment in which this command will be run",
+		Desc:      "The name of the environment in which this command will be run",
 		EnvVar:    config.DaticaEnvironmentEnvVar,
 		HideValue: true,
 	})

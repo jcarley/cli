@@ -24,7 +24,7 @@ var Cmd = models.Command{
 		"For service proxy redeploys, there will be approximately 5 minutes of downtime. " +
 		"For code service redeploys, there will be approximately 30 seconds of downtime. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" redeploy app01\n```",
+		"```\ndatica -E \"<your_env_name>\" redeploy app01\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to redeploy (i.e. 'app01')")

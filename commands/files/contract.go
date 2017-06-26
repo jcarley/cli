@@ -33,7 +33,7 @@ var DownloadSubCmd = models.Command{
 		"Most service files are stored on your service_proxy and therefore you should not have to specify the `SERVICE_NAME` argument. " +
 		"Simply supply the `FILE_NAME` found from the [files list](#files-list) command and the contents of the file, as well as the permissions string, will be printed to your console. " +
 		"You can always store the file locally, applying the same permissions as those on the remote server, by specifying an output file with the `-o` flag. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" files download /etc/nginx/sites-enabled/mywebsite.com\n```",
+		"```\ndatica -E \"<your_env_name>\" files download /etc/nginx/sites-enabled/mywebsite.com\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "service_proxy", "The name of the service to download a file from")
@@ -63,7 +63,7 @@ var ListSubCmd = models.Command{
 	LongHelp: "`files list` prints out a listing of all service files available for download. " +
 		"Nearly all service files are stored on the service_proxy and therefore you should not have to specify the `SERVICE_NAME` argument. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" files list\n```",
+		"```\ndatica -E \"<your_env_name>\" files list\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			svcName := subCmd.StringArg("SERVICE_NAME", "service_proxy", "The name of the service to list files for")

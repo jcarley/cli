@@ -16,13 +16,13 @@ var Cmd = models.Command{
 		"You can clear out all settings or pick and choose which ones need to be removed. " +
 		"After running the `clear` command, any other CLI command will reset the removed settings to their appropriate values. Here are some sample commands\n\n" +
 		"```\ndatica clear --all\n" +
-		"datica clear --environments # removes your associated environments\n" +
+		"datica clear --environments # removes your environment data\n" +
 		"datica clear --session --private-key # removes all session and private key authentication information\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			privateKey := cmd.BoolOpt("private-key", false, "Clear out the saved private key information")
 			session := cmd.BoolOpt("session", false, "Clear out all session information")
-			envs := cmd.BoolOpt("environments", false, "Clear out all associated environments")
+			envs := cmd.BoolOpt("environments", false, "Clear out all your environment data")
 			pods := cmd.BoolOpt("pods", false, "Clear out all saved pods")
 			all := cmd.BoolOpt("all", false, "Clear out all settings")
 			cmd.Action = func() {
