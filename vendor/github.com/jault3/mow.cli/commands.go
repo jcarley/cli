@@ -352,12 +352,11 @@ func (c *Cmd) PrintLongHelpTo(longDesc bool, writer io.Writer) {
 	fmt.Fprint(writer, "\n\n")
 
 	cmdDesc := c.desc
-	cmdDescLoc := 0
+	cmdDescLoc := c.LongDescLocation
 	if longDesc && len(c.LongDesc) > 0 {
 		cmdDesc = c.LongDesc
-		cmdDescLoc = 1
 	}
-	if len(cmdDesc) > 0 && cmdDescLoc == 0 {
+	if len(cmdDesc) > 0 && cmdDescLoc == DescriptionLocationTop {
 		fmt.Fprintf(writer, "%s\n", cmdDesc)
 	}
 
@@ -399,7 +398,7 @@ func (c *Cmd) PrintLongHelpTo(longDesc bool, writer io.Writer) {
 		fmt.Fprintf(writer, "\nRun '%s COMMAND --help' for more information on a command.\n", path)
 	}
 
-	if len(cmdDesc) > 0 && cmdDescLoc == 1 {
+	if len(cmdDesc) > 0 && cmdDescLoc == DescriptionLocationBottom {
 		fmt.Fprintf(writer, "%s\n", cmdDesc)
 	}
 }
