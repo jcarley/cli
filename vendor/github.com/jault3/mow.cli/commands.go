@@ -35,8 +35,8 @@ type Cmd struct {
 	Spec string
 	// The command long description to be shown when help is requested
 	LongDesc string
-	// Location of the LongDesc text. 0 for the top or 1 for bottom of the full output
-	LongDescLocation DescriptionLocation
+	// Location of the description text. 0 for the top or 1 for bottom of the full output
+	DescLocation DescriptionLocation
 	// The command error handling strategy
 	ErrorHandling flag.ErrorHandling
 
@@ -352,7 +352,7 @@ func (c *Cmd) PrintLongHelpTo(longDesc bool, writer io.Writer) {
 	fmt.Fprint(writer, "\n\n")
 
 	cmdDesc := c.desc
-	cmdDescLoc := c.LongDescLocation
+	cmdDescLoc := c.DescLocation
 	if longDesc && len(c.LongDesc) > 0 {
 		cmdDesc = c.LongDesc
 	}
@@ -399,7 +399,7 @@ func (c *Cmd) PrintLongHelpTo(longDesc bool, writer io.Writer) {
 	}
 
 	if len(cmdDesc) > 0 && cmdDescLoc == DescriptionLocationBottom {
-		fmt.Fprintf(writer, "%s\n", cmdDesc)
+		fmt.Fprintf(writer, "\n%s\n", cmdDesc)
 	}
 }
 
