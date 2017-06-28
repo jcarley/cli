@@ -31,7 +31,7 @@ func CmdAdd(svcName, remote string, force bool, ig IGit, is services.IServices) 
 		}
 	}
 	if exists && !force {
-		return fmt.Errorf("A git remote named \"%s\" already exists, please specify --force to overwrite it", remote)
+		return fmt.Errorf("A git remote named \"%s\" already exists, please specify --force to overwrite it or use the -r (remote) option to name a different git remote", remote)
 	} else if exists {
 		err = ig.SetURL(remote, service.Source)
 		if err != nil {

@@ -49,7 +49,7 @@ var RenameSubCmd = models.Command{
 	Name:      "rename",
 	ShortHelp: "Rename an environment",
 	LongHelp: "`environments rename` allows you to rename your environment. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" environments rename MyNewEnvName\n```",
+		"```\ndatica -E \"<your_env_name>\" environments rename MyNewEnvName\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The new name of the environment")

@@ -47,10 +47,10 @@ var CPUSubCmd = models.Command{
 		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
 		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. " +
 		"Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" metrics cpu\n" +
-		"datica -E \"<your_env_alias>\" metrics cpu app01 --stream\n" +
-		"datica -E \"<your_env_alias>\" metrics cpu --json\n" +
-		"datica -E \"<your_env_alias>\" metrics cpu db01 --csv -m 60\n```",
+		"```\ndatica -E \"<your_env_name>\" metrics cpu\n" +
+		"datica -E \"<your_env_name>\" metrics cpu app01 --stream\n" +
+		"datica -E \"<your_env_name>\" metrics cpu --json\n" +
+		"datica -E \"<your_env_name>\" metrics cpu db01 --csv -m 60\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
@@ -86,10 +86,10 @@ var MemorySubCmd = models.Command{
 		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
 		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. " +
 		"Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" metrics memory\n" +
-		"datica -E \"<your_env_alias>\" metrics memory app01 --stream\n" +
-		"datica -E \"<your_env_alias>\" metrics memory --json\n" +
-		"datica -E \"<your_env_alias>\" metrics memory db01 --csv -m 60\n```",
+		"```\ndatica -E \"<your_env_name>\" metrics memory\n" +
+		"datica -E \"<your_env_name>\" metrics memory app01 --stream\n" +
+		"datica -E \"<your_env_name>\" metrics memory --json\n" +
+		"datica -E \"<your_env_name>\" metrics memory db01 --csv -m 60\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
@@ -124,10 +124,10 @@ var NetworkInSubCmd = models.Command{
 		"You can only stream metrics using plain text or spark lines formats. " +
 		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
 		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" metrics network-in\n" +
-		"datica -E \"<your_env_alias>\" metrics network-in app01 --stream\n" +
-		"datica -E \"<your_env_alias>\" metrics network-in --json\n" +
-		"datica -E \"<your_env_alias>\" metrics network-in db01 --csv -m 60\n```",
+		"```\ndatica -E \"<your_env_name>\" metrics network-in\n" +
+		"datica -E \"<your_env_name>\" metrics network-in app01 --stream\n" +
+		"datica -E \"<your_env_name>\" metrics network-in --json\n" +
+		"datica -E \"<your_env_name>\" metrics network-in db01 --csv -m 60\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
@@ -163,10 +163,10 @@ var NetworkOutSubCmd = models.Command{
 		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
 		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. " +
 		"Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" metrics network-out\n" +
-		"datica -E \"<your_env_alias>\" metrics network-out app01 --stream\n" +
-		"datica -E \"<your_env_alias>\" metrics network-out --json\n" +
-		"datica -E \"<your_env_alias>\" metrics network-out db01 --csv -m 60\n```",
+		"```\ndatica -E \"<your_env_name>\" metrics network-out\n" +
+		"datica -E \"<your_env_name>\" metrics network-out app01 --stream\n" +
+		"datica -E \"<your_env_name>\" metrics network-out --json\n" +
+		"datica -E \"<your_env_name>\" metrics network-out db01 --csv -m 60\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
