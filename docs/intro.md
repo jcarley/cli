@@ -1,6 +1,6 @@
 # Automatic Updates
 
-Any version of the CLI before version 4.0.0 will no longer automatically update. In order to obtain version 4.0.0 you will have to manually install the cli. Automatic updates will work again once you have upgraded to 4.0.0 or greater.
+Any version of the CLI before version 4.0.0 will no longer automatically update. In order to obtain version 4.0.0 you will have to manually install the CLI. Automatic updates will work again once you have upgraded to 4.0.0 or greater.
 
 Once downloaded, the CLI will attempt to automatically update itself when a new version becomes available. This ensures you are always running a compatible version of the Datica CLI. However you can always check out the latest releases on the [releases page](https://github.com/daticahealth/cli/releases).
 
@@ -18,11 +18,11 @@ Since version 2.0.0, the following platforms and architectures are supported by 
 
 # Global Scope
 
-Datica CLI commands can be run anywhere on your system with two exceptions. When you first run the command [`datica init`]() you must have a git repository as your current working directory so that it set add a git remote that is tied to your code service on the Datica Compliant Cloud platform. Additionally, the command [`datica git-remote`]() is used to manage git remotes and must be used inside of a git repository in order to work.
+Datica CLI commands can be run anywhere on your system with two exceptions. The [`datica init`](#init) command expects to be inside of either a git repository or a directory that you intend to be a git repository, as it will set up a git repository if one does not exist. Additionally, the [`datica git-remote`](#git-remote) command is used to manage git remotes and must be run inside of a git repository in order to work.
 
 If you have more than one environment, you must specify which environment to use with the global `-E` flag.
 
-Let's say you have initialize a code project for two environments (ex. "staging" and "production") named `mysandbox` and `myprod`. You have two options to specify which environment to run a command against.
+Let's say you have initialized a code project for two environments (ex. "staging" and "production") named `mysandbox` and `myprod`. You have two options to specify which environment to run a command against.
 
 First, you can tell the CLI which environment you want to use with the global option `-E` or `--env` (see [Global Options](#global-options)). Your command might start like this
 
