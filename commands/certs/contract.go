@@ -29,16 +29,19 @@ var Cmd = models.Command{
 
 var CreateSubCmd = models.Command{
 	Name:      "create",
-	ShortHelp: "Create a new domain with an SSL certificate and private key",
+	ShortHelp: "Create a new domain with an SSL certificate and private key or create a Let's Encrypt certificate",
 	LongHelp: "`certs create` allows you to upload an SSL certificate and private key which can be used to secure your public facing code service. " +
+		"Alternatively, you may opt to create a Let's Encrypt certificate. When creating a Let's Encrypt certificate, you only need to provide the certificate name along with the \"-l\" flag. " +
+		"Let's Encrypt certificates are issued asynchronously and may not be available immediately. Use the [certs list](#certs-list) command to check on the issuance status. " +
+		"Once issued, Let's Encrypt certificates automatically renew before expiring. " +
 		"Cert creation can be done at any time, even after environment provisioning, but must be done before [creating a site](#sites-create). " +
-		"When creating a cert, the CLI will check to ensure the certificate and private key match. If you are using a self signed cert, pass in the `-s` flag and the hostname check will be skipped. " +
+		"When uploading a custom cert, the CLI will check to ensure the certificate and private key match. If you are using a self signed cert, pass in the `-s` flag and the hostname check will be skipped. " +
 		"Datica requires that your certificate include your own certificate, intermediate certificates, and the root certificate in that order. " +
 		"If you only include your certificate, the CLI will attempt to resolve this and fetch intermediate and root certificates for you. " +
 		"It is advised that you create a full chain before running this command as the `-r` flag is accomplished on a \"best effort\" basis.\n\n" +
-		"The `HOSTNAME` for a certificate does not need to match the valid Subject of the actual SSL certificate nor does it need to match the `site` name used in the `sites create` command. " +
-		"The `HOSTNAME` is used for organizational purposes only and can be named anything with the exclusion of the following characters: `/`, `&`, `%`. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" certs create wildcard_mysitecom ~/path/to/cert.pem ~/path/to/priv.key\n```",
+		"Here are a few sample commands\n\n" +
+		"```\ndatica -E \"<your_env_name>\" certs create wildcard_mysitecom ~/path/to/cert.pem ~/path/to/priv.key\n" +
+		"datica -E \"<your_env_name>\" certs create my.site.com --lets-encrypt\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of this SSL certificate plus private key pair")
@@ -46,6 +49,7 @@ var CreateSubCmd = models.Command{
 			privKeyPath := subCmd.StringArg("PRIVATE_KEY_PATH", "", "The path to an unencrypted private key file in PEM format")
 			selfSigned := subCmd.BoolOpt("s self-signed", false, "Whether or not the given SSL certificate and private key are self signed")
 			resolve := subCmd.BoolOpt("r resolve", true, "Whether or not to attempt to automatically resolve incomplete SSL certificate issues")
+			letsEncrypt := subCmd.BoolOpt("l lets-encrypt", false, "Whether or not this is a Let's Encrypt certificate")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -53,12 +57,12 @@ var CreateSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdCreate(*name, *pubKeyPath, *privKeyPath, *selfSigned, *resolve, New(settings), services.New(settings), ssl.New(settings))
+				err := CmdCreate(*name, *pubKeyPath, *privKeyPath, *selfSigned, *resolve, *letsEncrypt, New(settings), services.New(settings), ssl.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "NAME PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r]"
+			subCmd.Spec = "NAME ((PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r]) | -l)"
 		}
 	},
 }
@@ -67,7 +71,9 @@ var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List all existing domains that have SSL certificate and private key pairs",
 	LongHelp: "`certs list` lists all of the available certs you have created on your environment. " +
-		"The displayed names are the names that should be used as the `CERT_NAME` parameter in the [sites create](#sites-create) command. Here is a sample command\n\n" +
+		"The displayed names are the names that should be used as the `CERT_NAME` parameter in the [sites create](#sites-create) command. " +
+		"If any certs are Let's Encrypt certs, the issuance status will also be shown. " +
+		"Here is a sample command\n\n" +
 		"```\ndatica -E \"<your_env_name>\" certs list\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
@@ -117,6 +123,7 @@ var UpdateSubCmd = models.Command{
 	ShortHelp: "Update the SSL certificate and private key pair for an existing domain",
 	LongHelp: "`certs update` works nearly identical to the [certs create](#certs-create) command. " +
 		"All rules regarding self signed certs and certificate resolution from the `certs create` command apply to the `certs update` command. " +
+		"Let's Encrypt certs cannot be updated since they are automatically renewed before expiring. " +
 		"This is useful for when your certificates have expired and you need to upload new ones. Update your certs and then redeploy your service_proxy. Here is a sample command\n\n" +
 		"```\ndatica -E \"<your_env_name>\" certs update mywebsite.com ~/path/to/new/cert.pem ~/path/to/new/priv.key\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {

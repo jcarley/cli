@@ -33,14 +33,14 @@ var CreateSubCmd = models.Command{
 	Name:      "create",
 	ShortHelp: "Create a new site linking it to an existing cert instance",
 	LongHelp: "`sites create` allows you to create a site configuration that is tied to a single service. " +
-		"To create a site, you must first [create a cert](#certs-create). " +
+		"To create a site, you must specify an existing cert made by the [certs create](#certs-create) command or use the \"-l\" flag to automatically create a Let's Encrypt certificate. " +
 		"A site has three pieces of information: a name, the service it's tied to, and the cert instance it will use. " +
 		"The name is the `server_name` that will be injected into this site's Nginx configuration file. " +
 		"It is important that this site name match what URL your site will respond to. " +
 		"If this is a bare domain, using `mysite.com` is sufficient. " +
 		"If it should respond to the APEX domain and all subdomains, it should be named `.mysite.com` notice the leading `.`. " +
 		"The service is a code service that will use this site configuration. " +
-		"Lastly, the cert instance must be specified by the `HOSTNAME` argument used in the [certs create](#certs-create) command. " +
+		"Lastly, the cert instance must be specified by the `CERT_NAME` argument used in the [certs create](#certs-create) command or by the \"-l\" flag indicating a new Let's Encrypt certificate should be created. " +
 		"You can also set Nginx configuration values directly by specifying one of the above flags. " +
 		"Specifying `--enable-cors` will add the following lines to your Nginx configuration\n\n" +
 		"```\nadd_header 'Access-Control-Allow-Origin' '$http_origin' always;\n" +
