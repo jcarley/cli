@@ -25,10 +25,11 @@ type Cert struct {
 	PubKey  string `json:"sslCertFile"`
 	PrivKey string `json:"sslPKFile"`
 
-	Service    string `json:"service,omitempty"`
-	PubKeyID   int    `json:"sslCertFileId,omitempty"`
-	PrivKeyID  int    `json:"sslPKFileId,omitempty"`
-	Restricted bool   `json:"restricted,omitempty"`
+	Service     string            `json:"service,omitempty"`
+	PubKeyID    int               `json:"sslCertFileId,omitempty"`
+	PrivKeyID   int               `json:"sslPKFileId,omitempty"`
+	Restricted  bool              `json:"restricted,omitempty"`
+	LetsEncrypt LetsEncryptStatus `json:"letsEncrypt,omitempty"`
 }
 
 type Command struct {
@@ -125,6 +126,30 @@ type Invite struct {
 	Email    string `json:"email"`
 	Consumed bool   `json:"consumed"`
 	Revoked  bool   `json:"revoked"`
+}
+
+// LetsEncryptStatus code
+type LetsEncryptStatus int
+
+const (
+	// NormalCert is a non-let's encrypt cert
+	NormalCert LetsEncryptStatus = iota
+	// Waiting verification and issuance
+	Waiting
+	// Valid certificate that has already been issued
+	Valid
+)
+
+func (l LetsEncryptStatus) String() string {
+	switch l {
+	case NormalCert:
+		return "This is not a Let's Encrypt certificate"
+	case Waiting:
+		return "Awaiting the certificate to be issued by Let's Encrypt"
+	case Valid:
+		return "Certificate successfully issued"
+	}
+	return ""
 }
 
 // LogHits contain ordering data for logs

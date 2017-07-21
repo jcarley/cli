@@ -11,7 +11,7 @@ import (
 )
 
 var certUpdateTests = []struct {
-	hostname    string
+	name        string
 	pubKeyPath  string
 	privKeyPath string
 	selfSigned  bool
@@ -47,7 +47,7 @@ func TestCertsUpdate(t *testing.T) {
 		t.Logf("Data: %+v", data)
 
 		// test
-		err := CmdUpdate(data.hostname, data.pubKeyPath, data.privKeyPath, data.selfSigned, data.resolve, New(settings), services.New(settings), ssl.New(settings))
+		err := CmdUpdate(data.name, data.pubKeyPath, data.privKeyPath, data.selfSigned, data.resolve, New(settings), services.New(settings), ssl.New(settings))
 
 		// assert
 		if err != nil != data.expectErr {

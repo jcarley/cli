@@ -67,7 +67,7 @@ var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List all existing domains that have SSL certificate and private key pairs",
 	LongHelp: "`certs list` lists all of the available certs you have created on your environment. " +
-		"The displayed names are the names that should be used as the `DOMAIN` parameter in the [sites create](#sites-create) command. Here is a sample command\n\n" +
+		"The displayed names are the names that should be used as the `CERT_NAME` parameter in the [sites create](#sites-create) command. Here is a sample command\n\n" +
 		"```\ndatica -E \"<your_env_name>\" certs list\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
@@ -94,7 +94,7 @@ var RmSubCmd = models.Command{
 		"```\ndatica -E \"<your_env_name>\" certs rm mywebsite.com\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
-			name := subCmd.StringArg("HOSTNAME", "", "The hostname of the domain and SSL certificate and private key pair")
+			name := subCmd.StringArg("NAME", "", "The name of the certificate to remove")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -107,7 +107,7 @@ var RmSubCmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "HOSTNAME"
+			subCmd.Spec = "NAME"
 		}
 	},
 }
@@ -145,10 +145,11 @@ var UpdateSubCmd = models.Command{
 
 // ICerts
 type ICerts interface {
-	Create(hostname, pubKey, privKey, svcID string) error
-	Update(hostname, pubKey, privKey, svcID string) error
+	Create(name, pubKey, privKey, svcID string) error
+	CreateLetsEncrypt(name, svcID string) error
+	Update(name, pubKey, privKey, svcID string) error
 	List(svcID string) (*[]models.Cert, error)
-	Rm(hostname, svcID string) error
+	Rm(name, svcID string) error
 }
 
 // SCerts is a concrete implementation of ICerts
