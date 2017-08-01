@@ -42,8 +42,10 @@ import (
 	"github.com/daticahealth/cli/config"
 	"github.com/daticahealth/cli/models"
 
+	"github.com/daticahealth/cli/lib/auth"
 	"github.com/daticahealth/cli/lib/httpclient"
 	"github.com/daticahealth/cli/lib/pods"
+	"github.com/daticahealth/cli/lib/prompts"
 	"github.com/daticahealth/cli/lib/updater"
 
 	"github.com/Sirupsen/logrus"
@@ -172,6 +174,7 @@ func InitGlobalOpts(app *cli.Cli, settings *models.Settings) {
 		}
 
 		if settings.EnvironmentID == "" && *givenEnvName != "" {
+			auth.New(settings, prompts.New()).Signin()
 			envs, errs := environments.New(settings).List()
 			if errs != nil && len(errs) > 0 {
 				logrus.Debugf("Error listing environments: %+v", errs)

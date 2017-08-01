@@ -266,6 +266,7 @@ type Service struct {
 	Label          string            `json:"label"`
 	Size           ServiceSize       `json:"size"`
 	Name           string            `json:"name"`
+	Environment    string            `json:"environment,omitempty"`
 	EnvVars        map[string]string `json:"environmentVariables,omitempty"`
 	Source         string            `json:"source,omitempty"`
 	LBIP           string            `json:"load_balancer_ip,omitempty"`
