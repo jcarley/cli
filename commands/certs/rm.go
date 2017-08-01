@@ -9,25 +9,25 @@ import (
 	"github.com/daticahealth/cli/config"
 )
 
-func CmdRm(hostname string, ic ICerts, is services.IServices) error {
-	if strings.ContainsAny(hostname, config.InvalidChars) {
-		return fmt.Errorf("Invalid cert hostname. Hostnames must not contain the following characters: %s", config.InvalidChars)
+func CmdRm(name string, ic ICerts, is services.IServices) error {
+	if strings.ContainsAny(name, config.InvalidChars) {
+		return fmt.Errorf("Invalid cert name. Names must not contain the following characters: %s", config.InvalidChars)
 	}
 	service, err := is.RetrieveByLabel("service_proxy")
 	if err != nil {
 		return err
 	}
-	err = ic.Rm(hostname, service.ID)
+	err = ic.Rm(name, service.ID)
 	if err != nil {
 		return err
 	}
-	logrus.Printf("Removed '%s'", hostname)
+	logrus.Printf("Removed '%s'", name)
 	return nil
 }
 
-func (c *SCerts) Rm(hostname, svcID string) error {
+func (c *SCerts) Rm(name, svcID string) error {
 	headers := c.Settings.HTTPManager.GetHeaders(c.Settings.SessionToken, c.Settings.Version, c.Settings.Pod, c.Settings.UsersID)
-	resp, statusCode, err := c.Settings.HTTPManager.Delete(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/certs/%s", c.Settings.PaasHost, c.Settings.PaasHostVersion, c.Settings.EnvironmentID, svcID, hostname), headers)
+	resp, statusCode, err := c.Settings.HTTPManager.Delete(nil, fmt.Sprintf("%s%s/environments/%s/services/%s/certs/%s", c.Settings.PaasHost, c.Settings.PaasHostVersion, c.Settings.EnvironmentID, svcID, name), headers)
 	if err != nil {
 		return err
 	}

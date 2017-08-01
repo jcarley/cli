@@ -2,6 +2,7 @@ package sites
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/daticahealth/cli/commands/certs"
 	"github.com/daticahealth/cli/commands/services"
 	"github.com/daticahealth/cli/config"
 	"github.com/daticahealth/cli/lib/auth"
@@ -32,14 +33,14 @@ var CreateSubCmd = models.Command{
 	Name:      "create",
 	ShortHelp: "Create a new site linking it to an existing cert instance",
 	LongHelp: "`sites create` allows you to create a site configuration that is tied to a single service. " +
-		"To create a site, you must first [create a cert](#certs-create). " +
+		"To create a site, you must specify an existing cert made by the [certs create](#certs-create) command or use the \"-l\" flag to automatically create a Let's Encrypt certificate. " +
 		"A site has three pieces of information: a name, the service it's tied to, and the cert instance it will use. " +
 		"The name is the `server_name` that will be injected into this site's Nginx configuration file. " +
 		"It is important that this site name match what URL your site will respond to. " +
 		"If this is a bare domain, using `mysite.com` is sufficient. " +
 		"If it should respond to the APEX domain and all subdomains, it should be named `.mysite.com` notice the leading `.`. " +
 		"The service is a code service that will use this site configuration. " +
-		"Lastly, the cert instance must be specified by the `HOSTNAME` argument used in the [certs create](#certs-create) command. " +
+		"Lastly, the cert instance must be specified by the `CERT_NAME` argument used in the [certs create](#certs-create) command or by the \"-l\" flag indicating a new Let's Encrypt certificate should be created. " +
 		"You can also set Nginx configuration values directly by specifying one of the above flags. " +
 		"Specifying `--enable-cors` will add the following lines to your Nginx configuration\n\n" +
 		"```\nadd_header 'Access-Control-Allow-Origin' '$http_origin' always;\n" +
@@ -56,12 +57,13 @@ var CreateSubCmd = models.Command{
 		"proxy_set_header Connection \"upgrade\";\n```\n\n" +
 		"Here are some sample commands\n\n" +
 		"```\ndatica -E \"<your_env_name>\" sites create .mysite.com app01 wildcard_mysitecom\n" +
-		"datica -E \"<your_env_name>\" sites create .mysite.com app01 wildcard_mysitecom --client-max-body-size 50 --enable-cors\n```",
+		"datica -E \"<your_env_name>\" sites create .mysite.com app01 wildcard_mysitecom --client-max-body-size 50 --enable-cors\n" +
+		"datica -E \"<your_env_name>\" sites create app01.mysite.com app01 --lets-encrypt --enable-websockets\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("SITE_NAME", "", "The name of the site to be created. This will be used in this site's nginx configuration file (i.e. \".example.com\")")
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to add this site configuration to (i.e. 'app01')")
-			hostname := subCmd.StringArg("HOSTNAME", "", "The hostname used in the creation of a certs instance with the 'certs' command (i.e. \"star_example_com\")")
+			certName := subCmd.StringArg("CERT_NAME", "", "The name of the cert created with the 'certs' command (i.e. \"star_example_com\")")
 			clientMaxBodySize := subCmd.IntOpt("client-max-body-size", -1, "The 'client_max_body_size' nginx config specified in megabytes")
 			proxyConnectTimeout := subCmd.IntOpt("proxy-connect-timeout", -1, "The 'proxy_connect_timeout' nginx config specified in seconds")
 			proxyReadTimeout := subCmd.IntOpt("proxy-read-timeout", -1, "The 'proxy_read_timeout' nginx config specified in seconds")
@@ -69,6 +71,7 @@ var CreateSubCmd = models.Command{
 			proxyUpstreamTimeout := subCmd.IntOpt("proxy-upstream-timeout", -1, "The 'proxy_next_upstream_timeout' nginx config specified in seconds")
 			enableCORS := subCmd.BoolOpt("enable-cors", false, "Enable or disable all features related to full CORS support")
 			enableWebSockets := subCmd.BoolOpt("enable-websockets", false, "Enable or disable all features related to full websockets support")
+			letsEncrypt := subCmd.BoolOpt("l lets-encrypt", false, "Whether or not this site should create an auto-renewing Let's Encrypt certificate")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -76,12 +79,12 @@ var CreateSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdCreate(*name, *serviceName, *hostname, *clientMaxBodySize, *proxyConnectTimeout, *proxyReadTimeout, *proxySendTimeout, *proxyUpstreamTimeout, *enableCORS, *enableWebSockets, New(settings), services.New(settings))
+				err := CmdCreate(*name, *serviceName, *certName, *clientMaxBodySize, *proxyConnectTimeout, *proxyReadTimeout, *proxySendTimeout, *proxyUpstreamTimeout, *enableCORS, *enableWebSockets, *letsEncrypt, New(settings), certs.New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "SITE_NAME SERVICE_NAME HOSTNAME [--client-max-body-size] [--proxy-connect-timeout] [--proxy-read-timeout] [--proxy-send-timeout] [--proxy-upstream-timeout] [--enable-cors] [--enable-websockets]"
+			subCmd.Spec = "SITE_NAME SERVICE_NAME (CERT_NAME | -l) [--client-max-body-size] [--proxy-connect-timeout] [--proxy-read-timeout] [--proxy-send-timeout] [--proxy-upstream-timeout] [--enable-cors] [--enable-websockets]"
 		}
 	},
 }
