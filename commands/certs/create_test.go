@@ -115,7 +115,7 @@ func TestCertsCreate(t *testing.T) {
 		t.Logf("Data: %+v", data)
 
 		// test
-		err := CmdCreate(data.name, data.pubKeyPath, data.privKeyPath, data.selfSigned, data.resolve, New(settings), services.New(settings), ssl.New(settings))
+		err := CmdCreate(data.name, data.pubKeyPath, data.privKeyPath, data.selfSigned, data.resolve, false, New(settings), services.New(settings), ssl.New(settings))
 
 		// assert
 		if err != nil != data.expectErr {
@@ -172,7 +172,7 @@ func TestCertsCreateFailSSL(t *testing.T) {
 	)
 
 	// test
-	err := CmdCreate(certName, pubKeyPath, privKeyPath, false, false, New(settings), services.New(settings), ssl.New(settings))
+	err := CmdCreate(certName, pubKeyPath, privKeyPath, false, false, false, New(settings), services.New(settings), ssl.New(settings))
 
 	// assert
 	if err == nil {
