@@ -76,7 +76,7 @@ var AutoUpdater = &Updater{
 	BinURL:         "https://s3.amazonaws.com/cli-autoupdates/",
 	DiffURL:        "https://s3.amazonaws.com/cli-autoupdates/",
 	Dir:            ".datica_update",
-	CmdName:        "catalyze",
+	CmdName:        "datica",
 }
 
 // ErrHashMismatch represents a mismatch in the expected hash and the calculated hash
@@ -123,11 +123,6 @@ func (u *Updater) getExecRelativeDir(dir string) string {
 func (u *Updater) BackgroundRun() error {
 	os.MkdirAll(u.getExecRelativeDir(u.Dir), 0755)
 	if u.wantUpdate() {
-		// BEGIN datica binary name check
-		if filename, _ := osext.Executable(); filepath.Base(filename) != "datica" {
-			logrus.Warnf("Big news - Catalyze has renamed to Datica! Please rename your CLI by running \"mv %s %s\".", filename, filepath.Join(filepath.Dir(filename), "datica"))
-		}
-		// END datica binary name check
 		if err := up.CanUpdate(); err != nil {
 			return err
 		}
