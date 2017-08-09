@@ -31,7 +31,7 @@ func CmdInit(settings *models.Settings, p prompts.IPrompts) error {
 		logrus.Debugf("Error listing environments: %+v", errs)
 	}
 	if envs == nil || len(*envs) == 0 {
-		logrus.Println("You don't have any environments. Visit https://datica.com/compliant-cloud to get started")
+		logrus.Println("You don't currently have any environments")
 		return nil
 	}
 

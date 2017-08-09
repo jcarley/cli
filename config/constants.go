@@ -12,7 +12,7 @@ const (
 	// Beta determines whether or not this is a beta build of the CLI
 	Beta = true
 	// AccountsHost is the production accounts URL
-	AccountsHost = "https://product.datica.com/compliant-cloud"
+	AccountsHost = "https://product.datica.com"
 	// AuthHost is the production auth URL
 	AuthHost = "https://auth.catalyze.io"
 	// AuthHostVersion is the version path for the auth host
