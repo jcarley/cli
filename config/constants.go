@@ -10,7 +10,7 @@ const (
 	// VERSION is the current cli version
 	VERSION = "4.0.0"
 	// Beta determines whether or not this is a beta build of the CLI
-	Beta = true
+	Beta = false
 	// AccountsHost is the production accounts URL
 	AccountsHost = "https://product.datica.com"
 	// AuthHost is the production auth URL

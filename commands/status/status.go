@@ -19,6 +19,7 @@ var historicalStatus = map[string]bool{
 	"failed":      true,
 	"disappeared": true,
 	"killed":      true,
+	"unknown":     true,
 }
 
 func CmdStatus(envID string, is IStatus, ie environments.IEnvironments, iservices services.IServices, historical bool) error {
@@ -68,7 +69,7 @@ func (s *SStatus) Status(env *models.Environment, services *[]models.Service, hi
 							}
 						}
 					}
-				} else if len(service.ReleaseVersion) > 0 {
+				} else if service.Type == "code" && len(service.ReleaseVersion) > 0 {
 					displayType = fmt.Sprintf("%s (git:%s)", service.Label, service.ReleaseVersion)
 				}
 
