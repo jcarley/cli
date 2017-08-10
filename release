@@ -34,98 +34,57 @@ fi
 echo 'Building version '${VERSION}' binaries'
 go vet $(go list ./... | grep -v /vendor/)
 go install github.com/daticahealth/cli
-GOOS=windows GOARCH=386 GOBIN="" go install github.com/daticahealth/cli
 GOOS=windows GOARCH=amd64 GOBIN="" go install github.com/daticahealth/cli
-GOOS=linux GOARCH=386 GOBIN="" go install github.com/daticahealth/cli
 GOOS=linux GOARCH=amd64 GOBIN="" go install github.com/daticahealth/cli
-GOOS=darwin GOARCH=386 GOBIN="" go install github.com/daticahealth/cli
 GOOS=darwin GOARCH=amd64 GOBIN="" go install github.com/daticahealth/cli
 
 echo 'Syncing S3 data to the public/ directory'
 rm -rf public/*
-aws s3 sync s3://${BUCKET}/catalyze public/
+aws s3 sync s3://${BUCKET}/datica public/
 mkdir public/${VERSION}
 
 echo 'Building version '${VERSION}' JSON configuration files'
-echo '{
-"Version": "'${VERSION}'",
-"Sha256": "'$(openssl dgst -sha256 -binary ${GOBIN}/windows_386/cli.exe | openssl base64)'"
-}' > public/windows-386.json
 echo '{
 "Version": "'${VERSION}'",
 "Sha256": "'$(openssl dgst -sha256 -binary ${GOBIN}/windows_amd64/cli.exe | openssl base64)'"
 }' > public/windows-amd64.json
 echo '{
 "Version": "'${VERSION}'",
-"Sha256": "'$(openssl dgst -sha256 -binary ${GOBIN}/linux_386/cli | openssl base64)'"
-}' > public/linux-386.json
-echo '{
-"Version": "'${VERSION}'",
 "Sha256": "'$(openssl dgst -sha256 -binary ${GOBIN}/cli | openssl base64)'"
 }' > public/linux-amd64.json
-echo '{
-"Version": "'${VERSION}'",
-"Sha256": "'$(openssl dgst -sha256 -binary ${GOBIN}/darwin_386/cli | openssl base64)'"
-}' > public/darwin-386.json
 echo '{
 "Version": "'${VERSION}'",
 "Sha256": "'$(openssl dgst -sha256 -binary ${GOBIN}/darwin_amd64/cli | openssl base64)'"
 }' > public/darwin-amd64.json
 
 echo 'Copying version '${VERSION}' binaries'
-cp ${GOBIN}/windows_386/cli.exe public/${VERSION}/windows-386
 cp ${GOBIN}/windows_amd64/cli.exe public/${VERSION}/windows-amd64
-cp ${GOBIN}/linux_386/cli public/${VERSION}/linux-386
 cp ${GOBIN}/cli public/${VERSION}/linux-amd64
-cp ${GOBIN}/darwin_386/cli public/${VERSION}/darwin-386
 cp ${GOBIN}/darwin_amd64/cli public/${VERSION}/darwin-amd64
 
-gzip public/${VERSION}/windows-386
 gzip public/${VERSION}/windows-amd64
-gzip public/${VERSION}/linux-386
 gzip public/${VERSION}/linux-amd64
-gzip public/${VERSION}/darwin-386
 gzip public/${VERSION}/darwin-amd64
 
 rm -rf builds
-mkdir -p builds/datica_${VERSION}_windows_386/
 mkdir -p builds/datica_${VERSION}_windows_amd64/
-mkdir -p builds/datica_${VERSION}_linux_386/
 mkdir -p builds/datica_${VERSION}_linux_amd64/
-mkdir -p builds/datica_${VERSION}_darwin_386/
 mkdir -p builds/datica_${VERSION}_darwin_amd64/
 
-cp ${GOBIN}/windows_386/cli.exe builds/datica_${VERSION}_windows_386/datica.exe
 cp ${GOBIN}/windows_amd64/cli.exe builds/datica_${VERSION}_windows_amd64/datica.exe
-cp ${GOBIN}/linux_386/cli builds/datica_${VERSION}_linux_386/datica
 cp ${GOBIN}/cli builds/datica_${VERSION}_linux_amd64/datica
-cp ${GOBIN}/darwin_386/cli builds/datica_${VERSION}_darwin_386/datica
 cp ${GOBIN}/darwin_amd64/cli builds/datica_${VERSION}_darwin_amd64/datica
 
 # generate zip files for windows and darwin
 cd builds/
-zip -r -X datica_${VERSION}_windows_386.zip datica_${VERSION}_windows_386
 zip -r -X datica_${VERSION}_windows_amd64.zip datica_${VERSION}_windows_amd64
-zip -r -X datica_${VERSION}_darwin_386.zip datica_${VERSION}_darwin_386
 zip -r -X datica_${VERSION}_darwin_amd64.zip datica_${VERSION}_darwin_amd64
 
 # generate tarballs for darwin and linux
-tar cvzf datica_${VERSION}_linux_386.tar.gz datica_${VERSION}_linux_386
 tar cvzf datica_${VERSION}_linux_amd64.tar.gz datica_${VERSION}_linux_amd64
-tar cvzf datica_${VERSION}_darwin_386.tar.gz datica_${VERSION}_darwin_386
 tar cvzf datica_${VERSION}_darwin_amd64.tar.gz datica_${VERSION}_darwin_amd64
 
 # generate debs for linux
-mkdir -p datica_${VERSION}_linux_386/usr/bin
-mv datica_${VERSION}_linux_386/datica datica_${VERSION}_linux_386/usr/bin/
-cp -r ../DEBIAN datica_${VERSION}_linux_386/
-sed -i "s/{{version}}/${VERSION}/g" datica_${VERSION}_linux_386/DEBIAN/control
-sed -i "s/{{arch}}/i386/g" datica_${VERSION}_linux_386/DEBIAN/control
-LINUX_386_SIZE="$(stat --printf='%s' datica_${VERSION}_linux_386/usr/bin/datica)"
-(( LINUX_386_SIZE = LINUX_386_SIZE /1024 ))
-sed -i "s/{{size}}/${LINUX_386_SIZE}/g" datica_${VERSION}_linux_386/DEBIAN/control
-dpkg-deb -b datica_${VERSION}_linux_386
-
 mkdir -p datica_${VERSION}_linux_amd64/usr/bin
 mv datica_${VERSION}_linux_amd64/datica datica_${VERSION}_linux_amd64/usr/bin/
 cp -r ../DEBIAN datica_${VERSION}_linux_amd64/
@@ -140,7 +99,7 @@ cd ..
 
 if [ "${TEST}" = "false" ]; then
   echo 'Publishing to S3'
-  aws s3 sync public/ s3://${BUCKET}/catalyze --delete --exclude "*.DS_Store"
+  aws s3 sync public/ s3://${BUCKET}/datica --delete --exclude "*.DS_Store"
 
   echo 'Copying Github assets to S3'
   aws s3 cp builds s3://${BUCKET}/assets --recursive --exclude "*.DS_Store"
