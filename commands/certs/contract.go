@@ -36,7 +36,7 @@ var CreateSubCmd = models.Command{
 		"Once issued, Let's Encrypt certificates automatically renew before expiring. " +
 		"Cert creation can be done at any time, even after environment provisioning, but must be done before [creating a site](#sites-create). " +
 		"When uploading a custom cert, the CLI will check to ensure the certificate and private key match. If you are using a self signed cert, pass in the `-s` flag and the hostname check will be skipped. " +
-		"Datica requires that your certificate include your own certificate, intermediate certificates, and the root certificate in that order. " +
+		"Datica requires that your certificate file include your own certificate, intermediate certificates, and the root certificate in that order. " +
 		"If you only include your certificate, the CLI will attempt to resolve this and fetch intermediate and root certificates for you. " +
 		"It is advised that you create a full chain before running this command as the `-r` flag is accomplished on a \"best effort\" basis.\n\n" +
 		"Here are a few sample commands\n\n" +
