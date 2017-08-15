@@ -1,5 +1,7 @@
 # Automatic Updates
 
+Any version of the CLI before version 4.0.0 will no longer automatically update. In order to obtain version 4.0.0 you will have to manually install the CLI. Automatic updates will work again once you have upgraded to 4.0.0 or greater.
+
 Once downloaded, the CLI will attempt to automatically update itself when a new version becomes available. This ensures you are always running a compatible version of the Datica CLI. However you can always check out the latest releases on the [releases page](https://github.com/daticahealth/cli/releases).
 
 To ensure your CLI can automatically update itself, be sure to put the binary in a location where you have **write access** without the need for sudo or escalated privileges.
@@ -10,15 +12,17 @@ Since version 2.0.0, the following platforms and architectures are supported by 
 
 | OS | Architecture |
 |----|--------------|
-| Darwin (Mac OS X) | 64-bit, 32-bit |
-| Linux | 64-bit, 32-bit |
-| Windows | 64-bit, 32-bit |
+| Darwin (Mac OS X) | 64-bit |
+| Linux | 64-bit |
+| Windows | 64-bit |
 
 # Global Scope
 
-The CLI now supports the concept of scope. Previous to version 2.0.0, all commands had to be run within an associated local git repo. Now, the only time you need to be in a local git repo is when you associate to a new environment. After the initial association, CLI commands can be run from any directory. If you have more than one environment, you must specify which environment to use with the global `-E` flag.
+Datica CLI commands can be run anywhere on your system with two exceptions. The [`datica init`](#init) command expects to be inside of either a git repository or a directory that you intend to be a git repository, as it will set up a git repository if one does not exist. Additionally, the [`datica git-remote`](#git-remote) command is used to manage git remotes and must be run inside of a git repository in order to work.
 
-Let's say you have associated to two environments named `mysandbox` and `myprod`. You have two options to specify which environment to run a command against.
+If you have more than one environment, you must specify which environment to use with the global `-E` flag.
+
+Let's say you have initialized a code project for two environments (ex. "staging" and "production") named `mysandbox` and `myprod`. You have two options to specify which environment to run a command against.
 
 First, you can tell the CLI which environment you want to use with the global option `-E` or `--env` (see [Global Options](#global-options)). Your command might start like this
 
@@ -26,29 +30,7 @@ First, you can tell the CLI which environment you want to use with the global op
 datica -E myprod ...
 ```
 
-If you don't set the `-E` flag, then the CLI takes the first environment you associated and prompts you to continue with this environment. This concept of scope will make it easier for Datica customers with multiple environments to use the CLI!
-
-# Environment Aliases
-
-When you associate an environment from within a local git repo, you typically run the following command:
-
-```
-datica -E "<your_env_alias>" associate "My Health Tech Company Production" app01
-```
-
-Where `My Health Tech Company Production` is the name of your environment. However with the concept of [scope](#global-scope) and being able to specify which environment to use on a command by command basis with the `-E` global option, that is a lot to type! This is where environment aliases come in handy.
-
-When you associate an environment and you want to pick a shorter name to reference the environment by, simply add a `-a` flag to the command. Let's try the command again calling it `prod` this time:
-
-```
-datica -E "<your_env_alias>" associate "My Health Tech Company Production" app01 -a prod
-```
-
-Now when you run the [associated](#associated) command, you will see the alias as well as the actual environment name.
-
-When using aliases, there are a couple things to keep in mind. Aliases are only local and never leave your local machine. If you alias this environment `prod`, a coworker can alias the environment `healthtech-prod` with no ramifications. Second, after setting an alias you will never reference the environment by its actual name with the CLI. You will always use the alias for flags, arguments, options, etc.
-
-To change or remove an alias, you must [disassociate](#disassociate) and then [reassociate](#associate) with a new alias.
+If you don't set the `-E` flag, then the CLI picks one of your environments and prompts you to continue with this environment. This concept of scope will make it easier for Datica customers with multiple environments to use the CLI!
 
 # Bash Autocompletion
 
@@ -62,6 +44,7 @@ The following table outlines all global options available in the CLI. Global opt
 
 | Short Name | Long Name | Description | Environment Variable |
 |------------|-----------|-------------|----------------------|
-| -U | --username | Your Datica username that you login to the Dashboard with | DATICA_USERNAME |
+| &nbsp; | --email | Your Datica email that you login to the Dashboard with | DATICA_EMAIL |
+| -U | --username | [DEPRECATED] Your Datica username that you login to the Dashboard with. Please use --email instead | DATICA_USERNAME |
 | -P | --password | Your Datica password that you login to the Dashboard with | DATICA_PASSWORD |
-| -E | --env | The local alias of the environment in which this command will be run. Read more about [environment aliases](#environment-aliases) | DATICA_ENV |
+| -E | --env | The name of the environment for which this command will be run. | DATICA_ENV |

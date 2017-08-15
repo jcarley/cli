@@ -24,8 +24,8 @@ var Cmd = models.Command{
 		"You can also follow the logs with the `-f` option. " +
 		"When using `-f` all logs will be printed to the console within the given time frame as well as any new logs that are sent to the logging Dashboard for the duration of the command. " +
 		"When using the `-f` option, hit ctrl-c to stop. Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" logs --hours=6 --minutes=30\n" +
-		"datica -E \"<your_env_alias>\" logs -f\n```",
+		"```\ndatica -E \"<your_env_name>\" logs --hours=6 --minutes=30\n" +
+		"datica -E \"<your_env_name>\" logs -f\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			query := cmd.StringArg("QUERY", "*", "The query to send to your logging dashboard's elastic search (regex is supported)")
@@ -38,7 +38,7 @@ var Cmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
 				err := CmdLogs(*query, *follow || *tail, *hours, *mins, *secs, settings.EnvironmentID, settings, New(settings), prompts.New(), environments.New(settings), services.New(settings), sites.New(settings))
@@ -51,11 +51,14 @@ var Cmd = models.Command{
 	},
 }
 
+type queryGenerator func(queryString, appLogsIdentifier, appLogsValue string, timestamp time.Time, from int) []byte
+
 // ILogs ...
 type ILogs interface {
-	Output(queryString, sessionToken, domain string, follow bool, hours, minutes, seconds, from int, startTimestamp time.Time, endTimestamp time.Time, env *models.Environment) (int, time.Time, error)
-	Stream(queryString, sessionToken, domain string, follow bool, hours, minutes, seconds, from int, timestamp time.Time, env *models.Environment) error
-	Watch(queryString, domain, sessionToken string) error
+	Output(queryString, domain string, generator queryGenerator, from int, startTimestamp time.Time, endTimestamp time.Time) (int, error)
+	RetrieveElasticsearchVersion(domain string) (string, error)
+	Stream(queryString, domain string, generator queryGenerator, from int, timestamp time.Time) error
+	Watch(queryString, domain string) error
 }
 
 // SLogs is a concrete implementation of ILogs

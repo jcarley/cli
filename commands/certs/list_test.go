@@ -16,7 +16,7 @@ func TestCertsList(t *testing.T) {
 	mux.HandleFunc("/environments/"+test.EnvID+"/services/"+test.SvcID+"/certs",
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "GET")
-			fmt.Fprint(w, `[{"name":"cert1"},{"name":"cert2"}]`)
+			fmt.Fprint(w, `[{"name":"cert0","letsEncrypt":0},{"name":"cert1","letsEncrypt":1},{"name":"cert2","letsEncrypt":2},{"name":"cert3","letsEncrypt":3}]`)
 		},
 	)
 	mux.HandleFunc("/environments/"+test.EnvID+"/services",

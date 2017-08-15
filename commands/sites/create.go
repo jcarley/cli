@@ -5,17 +5,18 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/daticahealth/cli/commands/certs"
 	"github.com/daticahealth/cli/commands/services"
 	"github.com/daticahealth/cli/models"
 )
 
-func CmdCreate(name, serviceName, hostname string, clientMaxBodySize, proxyConnectTimeout, proxyReadTimeout, proxySendTimeout, proxyUpstreamTimeout int, enableCORS, enableWebSockets bool, is ISites, iservices services.IServices) error {
+func CmdCreate(name, serviceName, certName string, clientMaxBodySize, proxyConnectTimeout, proxyReadTimeout, proxySendTimeout, proxyUpstreamTimeout int, enableCORS, enableWebSockets, letsEncrypt bool, is ISites, ic certs.ICerts, iservices services.IServices) error {
 	upstreamService, err := iservices.RetrieveByLabel(serviceName)
 	if err != nil {
 		return err
 	}
 	if upstreamService == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.", serviceName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services list\" command.", serviceName)
 	}
 
 	serviceProxy, err := iservices.RetrieveByLabel("service_proxy")
@@ -23,7 +24,15 @@ func CmdCreate(name, serviceName, hostname string, clientMaxBodySize, proxyConne
 		return err
 	}
 
-	site, err := is.Create(name, hostname, upstreamService.ID, serviceProxy.ID, generateSiteValues(clientMaxBodySize, proxyConnectTimeout, proxyReadTimeout, proxySendTimeout, proxyUpstreamTimeout, enableCORS, enableWebSockets))
+	if letsEncrypt {
+		err = ic.CreateLetsEncrypt(name, serviceProxy.ID)
+		if err != nil {
+			return err
+		}
+		certName = name
+	}
+
+	site, err := is.Create(name, certName, upstreamService.ID, serviceProxy.ID, generateSiteValues(clientMaxBodySize, proxyConnectTimeout, proxyReadTimeout, proxySendTimeout, proxyUpstreamTimeout, enableCORS, enableWebSockets))
 	if err != nil {
 		return err
 	}

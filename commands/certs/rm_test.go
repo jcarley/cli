@@ -10,7 +10,7 @@ import (
 )
 
 var certRmTests = []struct {
-	hostname  string
+	name      string
 	expectErr bool
 }{
 	{certName, false},
@@ -38,7 +38,7 @@ func TestCertsRm(t *testing.T) {
 		t.Logf("Data: %+v", data)
 
 		// test
-		err := CmdRm(data.hostname, New(settings), services.New(settings))
+		err := CmdRm(data.name, New(settings), services.New(settings))
 
 		// assert
 		if err != nil != data.expectErr {

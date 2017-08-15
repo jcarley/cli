@@ -31,7 +31,7 @@ var DisableSubCmd = models.Command{
 	ShortHelp: "Disable maintenance mode for a code service",
 	LongHelp: "`maintenance disable` turns off maintenance mode for a given code service. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" maintenance disable code-1\n```",
+		"```\ndatica -E \"<your_env_name>\" maintenance disable code-1\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to disable maintenance mode for")
@@ -39,7 +39,7 @@ var DisableSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
 				err := CmdDisable(*serviceName, New(settings), services.New(settings))
@@ -59,7 +59,7 @@ var EnableSubCmd = models.Command{
 		"Maintenance mode redirects all traffic for the given code service to a default HTTP maintenance page. " +
 		"If you would like to customize this maintenance page, please contact Datica support. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" maintenance enable code-1\n```",
+		"```\ndatica -E \"<your_env_name>\" maintenance enable code-1\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the code service to enable maintenance mode for")
@@ -67,7 +67,7 @@ var EnableSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
 				err := CmdEnable(*serviceName, New(settings), services.New(settings))
@@ -86,8 +86,8 @@ var ShowSubCmd = models.Command{
 	LongHelp: "`maintenance show` displays whether or not maintenance mode is enabled " +
 		"for a code service or all code services. " +
 		"Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" maintenance show\n" +
-		"datica -E \"<your_env_alias>\" maintenance show code-1\n```",
+		"```\ndatica -E \"<your_env_name>\" maintenance show\n" +
+		"datica -E \"<your_env_name>\" maintenance show code-1\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the code service to show the status of maintenance mode")
@@ -95,7 +95,7 @@ var ShowSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
 				err := CmdShow(*serviceName, settings.EnvironmentID, settings.Pod, New(settings), services.New(settings))

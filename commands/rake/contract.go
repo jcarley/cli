@@ -17,24 +17,24 @@ var Cmd = models.Command{
 	ShortHelp: "Execute a rake task",
 	LongHelp: "`rake` executes a rake task by its name asynchronously. " +
 		"Once executed, the output of the task can be seen through your logging Dashboard. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" rake code-1 db:migrate\n```",
+		"```\ndatica -E \"<your_env_name>\" rake code-1 db:migrate\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			serviceName := cmd.StringArg("SERVICE_NAME", "", "The service that will run the rake task. Defaults to the associated service.")
+			serviceName := cmd.StringArg("SERVICE_NAME", "", "The service that will run the rake task.")
 			taskName := cmd.StringArg("TASK_NAME", "", "The name of the rake task to run")
 			cmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdRake(*serviceName, *taskName, settings.ServiceID, New(settings), services.New(settings))
+				err := CmdRake(*serviceName, *taskName, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			cmd.Spec = "[SERVICE_NAME] TASK_NAME"
+			cmd.Spec = "SERVICE_NAME TASK_NAME"
 		}
 	},
 }

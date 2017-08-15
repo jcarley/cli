@@ -1,8 +1,10 @@
 package certs
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"testing"
@@ -77,7 +79,7 @@ func TestMain(m *testing.M) {
 }
 
 var certCreateTests = []struct {
-	hostname    string
+	name        string
 	pubKeyPath  string
 	privKeyPath string
 	selfSigned  bool
@@ -113,13 +115,48 @@ func TestCertsCreate(t *testing.T) {
 		t.Logf("Data: %+v", data)
 
 		// test
-		err := CmdCreate(data.hostname, data.pubKeyPath, data.privKeyPath, data.selfSigned, data.resolve, New(settings), services.New(settings), ssl.New(settings))
+		err := CmdCreate(data.name, data.pubKeyPath, data.privKeyPath, data.selfSigned, data.resolve, false, New(settings), services.New(settings), ssl.New(settings))
 
 		// assert
 		if err != nil != data.expectErr {
 			t.Errorf("Unexpected error: %s", err)
 			continue
 		}
+	}
+}
+
+func TestCertsCreateLetsEncrypt(t *testing.T) {
+	mux, server, baseURL := test.Setup()
+	defer test.Teardown(server)
+	settings := test.GetSettings(baseURL.String())
+	mux.HandleFunc("/environments/"+test.EnvID+"/services/"+test.SvcID+"/certs",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "POST")
+			defer r.Body.Close()
+			body, _ := ioutil.ReadAll(r.Body)
+			var certReq struct {
+				Name        string `json:"name"`
+				LetsEncrypt bool   `json:"letsEncrypt"`
+			}
+			err := json.Unmarshal(body, &certReq)
+			if err != nil || !certReq.LetsEncrypt || certReq.Name != certName {
+				w.WriteHeader(400)
+			}
+			fmt.Fprint(w, `{}`)
+		},
+	)
+	mux.HandleFunc("/environments/"+test.EnvID+"/services",
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "GET")
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"service_proxy"}]`, test.SvcID))
+		},
+	)
+	// test
+	err := New(settings).CreateLetsEncrypt(certName, test.SvcID)
+
+	// assert
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
 	}
 }
 
@@ -135,7 +172,7 @@ func TestCertsCreateFailSSL(t *testing.T) {
 	)
 
 	// test
-	err := CmdCreate(certName, pubKeyPath, privKeyPath, false, false, New(settings), services.New(settings), ssl.New(settings))
+	err := CmdCreate(certName, pubKeyPath, privKeyPath, false, false, false, New(settings), services.New(settings), ssl.New(settings))
 
 	// assert
 	if err == nil {

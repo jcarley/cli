@@ -42,37 +42,36 @@ var CPUSubCmd = models.Command{
 	ShortHelp: "Print service and environment CPU metrics in your local time zone",
 	LongHelp: "`metrics cpu` prints out CPU metrics for your environment or individual services. " +
 		"You can print out metrics in csv, json, plain text, or spark lines format. " +
-		"If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. " +
+		"If you want plain text format, omit the `--json` and `--csv` flags. " +
 		"You can only stream metrics using plain text or spark lines formats. " +
 		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
 		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. " +
 		"Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" metrics cpu\n" +
-		"datica -E \"<your_env_alias>\" metrics cpu app01 --stream\n" +
-		"datica -E \"<your_env_alias>\" metrics cpu --json\n" +
-		"datica -E \"<your_env_alias>\" metrics cpu db01 --csv -m 60\n```",
+		"```\ndatica -E \"<your_env_name>\" metrics cpu\n" +
+		"datica -E \"<your_env_name>\" metrics cpu app01 --stream\n" +
+		"datica -E \"<your_env_name>\" metrics cpu --json\n" +
+		"datica -E \"<your_env_name>\" metrics cpu db01 --csv -m 60\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
 			json := subCmd.BoolOpt("json", false, "Output the data as json")
 			csv := subCmd.BoolOpt("csv", false, "Output the data as csv")
 			text := subCmd.BoolOpt("text", true, "Output the data in plain text")
-			spark := subCmd.BoolOpt("spark", false, "Output the data using spark lines")
 			stream := subCmd.BoolOpt("stream", false, "Repeat calls once per minute until this process is interrupted.")
 			mins := subCmd.IntOpt("m mins", 1, "How many minutes worth of metrics to retrieve.")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdMetrics(*serviceName, CPU, *json, *csv, *text, *spark, *stream, *mins, New(settings), services.New(settings))
+				err := CmdMetrics(*serviceName, CPU, *json, *csv, *text, *stream, *mins, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "[SERVICE_NAME] [(--json | --csv | --text | --spark)] [--stream] [-m]"
+			subCmd.Spec = "[SERVICE_NAME] [(--json | --csv | --text)] [--stream] [-m]"
 		}
 	},
 }
@@ -82,37 +81,36 @@ var MemorySubCmd = models.Command{
 	ShortHelp: "Print service and environment memory metrics in your local time zone",
 	LongHelp: "`metrics memory` prints out memory metrics for your environment or individual services. " +
 		"You can print out metrics in csv, json, plain text, or spark lines format. " +
-		"If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. " +
+		"If you want plain text format, omit the `--json` and `--csv` flags. " +
 		"You can only stream metrics using plain text or spark lines formats. " +
 		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
 		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. " +
 		"Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" metrics memory\n" +
-		"datica -E \"<your_env_alias>\" metrics memory app01 --stream\n" +
-		"datica -E \"<your_env_alias>\" metrics memory --json\n" +
-		"datica -E \"<your_env_alias>\" metrics memory db01 --csv -m 60\n```",
+		"```\ndatica -E \"<your_env_name>\" metrics memory\n" +
+		"datica -E \"<your_env_name>\" metrics memory app01 --stream\n" +
+		"datica -E \"<your_env_name>\" metrics memory --json\n" +
+		"datica -E \"<your_env_name>\" metrics memory db01 --csv -m 60\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
 			json := subCmd.BoolOpt("json", false, "Output the data as json")
 			csv := subCmd.BoolOpt("csv", false, "Output the data as csv")
 			text := subCmd.BoolOpt("text", true, "Output the data in plain text")
-			spark := subCmd.BoolOpt("spark", false, "Output the data using spark lines")
 			stream := subCmd.BoolOpt("stream", false, "Repeat calls once per minute until this process is interrupted.")
 			mins := subCmd.IntOpt("m mins", 1, "How many minutes worth of metrics to retrieve.")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdMetrics(*serviceName, Memory, *json, *csv, *text, *spark, *stream, *mins, New(settings), services.New(settings))
+				err := CmdMetrics(*serviceName, Memory, *json, *csv, *text, *stream, *mins, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "[SERVICE_NAME] [(--json | --csv | --text | --spark)] [--stream] [-m]"
+			subCmd.Spec = "[SERVICE_NAME] [(--json | --csv | --text)] [--stream] [-m]"
 		}
 	},
 }
@@ -122,36 +120,35 @@ var NetworkInSubCmd = models.Command{
 	ShortHelp: "Print service and environment received network data metrics in your local time zone",
 	LongHelp: "`metrics network-in` prints out received network metrics for your environment or individual services. " +
 		"You can print out metrics in csv, json, plain text, or spark lines format. " +
-		"If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. " +
+		"If you want plain text format, omit the `--json` and `--csv` flags. " +
 		"You can only stream metrics using plain text or spark lines formats. " +
 		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
 		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" metrics network-in\n" +
-		"datica -E \"<your_env_alias>\" metrics network-in app01 --stream\n" +
-		"datica -E \"<your_env_alias>\" metrics network-in --json\n" +
-		"datica -E \"<your_env_alias>\" metrics network-in db01 --csv -m 60\n```",
+		"```\ndatica -E \"<your_env_name>\" metrics network-in\n" +
+		"datica -E \"<your_env_name>\" metrics network-in app01 --stream\n" +
+		"datica -E \"<your_env_name>\" metrics network-in --json\n" +
+		"datica -E \"<your_env_name>\" metrics network-in db01 --csv -m 60\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
 			json := subCmd.BoolOpt("json", false, "Output the data as json")
 			csv := subCmd.BoolOpt("csv", false, "Output the data as csv")
 			text := subCmd.BoolOpt("text", true, "Output the data in plain text")
-			spark := subCmd.BoolOpt("spark", false, "Output the data using spark lines")
 			stream := subCmd.BoolOpt("stream", false, "Repeat calls once per minute until this process is interrupted.")
 			mins := subCmd.IntOpt("m mins", 1, "How many minutes worth of metrics to retrieve.")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdMetrics(*serviceName, NetworkIn, *json, *csv, *text, *spark, *stream, *mins, New(settings), services.New(settings))
+				err := CmdMetrics(*serviceName, NetworkIn, *json, *csv, *text, *stream, *mins, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "[SERVICE_NAME] [(--json | --csv | --text | --spark)] [--stream] [-m]"
+			subCmd.Spec = "[SERVICE_NAME] [(--json | --csv | --text)] [--stream] [-m]"
 		}
 	},
 }
@@ -161,37 +158,36 @@ var NetworkOutSubCmd = models.Command{
 	ShortHelp: "Print service and environment transmitted network data metrics in your local time zone",
 	LongHelp: "`metrics network-out` prints out transmitted network metrics for your environment or individual services. " +
 		"You can print out metrics in csv, json, plain text, or spark lines format. " +
-		"If you want plain text format, simply omit the `--json`, `--csv`, and `--spark` flags. " +
+		"If you want plain text format, simply omit the `--json` and `--csv` flags. " +
 		"You can only stream metrics using plain text or spark lines formats. " +
 		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
 		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. " +
 		"Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" metrics network-out\n" +
-		"datica -E \"<your_env_alias>\" metrics network-out app01 --stream\n" +
-		"datica -E \"<your_env_alias>\" metrics network-out --json\n" +
-		"datica -E \"<your_env_alias>\" metrics network-out db01 --csv -m 60\n```",
+		"```\ndatica -E \"<your_env_name>\" metrics network-out\n" +
+		"datica -E \"<your_env_name>\" metrics network-out app01 --stream\n" +
+		"datica -E \"<your_env_name>\" metrics network-out --json\n" +
+		"datica -E \"<your_env_name>\" metrics network-out db01 --csv -m 60\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
 			json := subCmd.BoolOpt("json", false, "Output the data as json")
 			csv := subCmd.BoolOpt("csv", false, "Output the data as csv")
 			text := subCmd.BoolOpt("text", true, "Output the data in plain text")
-			spark := subCmd.BoolOpt("spark", false, "Output the data using spark lines")
 			stream := subCmd.BoolOpt("stream", false, "Repeat calls once per minute until this process is interrupted.")
 			mins := subCmd.IntOpt("m mins", 1, "How many minutes worth of metrics to retrieve.")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdMetrics(*serviceName, NetworkOut, *json, *csv, *text, *spark, *stream, *mins, New(settings), services.New(settings))
+				err := CmdMetrics(*serviceName, NetworkOut, *json, *csv, *text, *stream, *mins, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "[SERVICE_NAME] [(--json | --csv | --text | --spark)] [--stream] [-m]"
+			subCmd.Spec = "[SERVICE_NAME] [(--json | --csv | --text)] [--stream] [-m]"
 		}
 	},
 }

@@ -16,11 +16,11 @@ import (
 // name, arguments, and required/optional arguments and flags for the command.
 var Cmd = models.Command{
 	Name:      "status",
-	ShortHelp: "Get quick readout of the current status of your associated environment and all of its services",
+	ShortHelp: "Get quick readout of the current status of an environment and all of its services",
 	LongHelp: "`status` will give a quick readout of your environment's health. " +
 		"This includes your environment name, environment ID, and for each service the name, size, build status, deploy status, and service ID. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" status\ndatica -E \"<your_env_alias>\" status --historical\n```",
+		"```\ndatica -E \"<your_env_name>\" status\ndatica -E \"<your_env_name>\" status --historical\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			historical := cmd.BoolOpt("historical", false, "If this option is specified, a complete history of jobs will be reported")
@@ -28,7 +28,7 @@ var Cmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
 				err := CmdStatus(settings.EnvironmentID, New(settings, jobs.New(settings)), environments.New(settings), services.New(settings), *historical)

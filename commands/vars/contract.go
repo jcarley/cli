@@ -14,7 +14,7 @@ import (
 // name, arguments, and required/optional arguments and flags for the command.
 var Cmd = models.Command{
 	Name:      "vars",
-	ShortHelp: "Interaction with environment variables for the associated environment",
+	ShortHelp: "Interaction with environment variables for an environment",
 	LongHelp:  "The `vars` command allows you to manage environment variables for your code services. The vars command can not be run directly but has sub commands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
@@ -31,18 +31,18 @@ var ListSubCmd = models.Command{
 	LongHelp: "`vars list` prints out all known environment variables for the given code service. " +
 		"You can print out environment variables in JSON or YAML format through the `--json` or `--yaml` flags. " +
 		"Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" vars list code-1\n" +
-		"datica -E \"<your_env_alias>\" vars list code-1 --json\n```",
+		"```\ndatica -E \"<your_env_name>\" vars list code-1\n" +
+		"datica -E \"<your_env_name>\" vars list code-1 --json\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
-			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service containing the environment variables. Defaults to the associated service.")
+			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service containing the environment variables.")
 			json := subCmd.BoolOpt("json", false, "Output environment variables in JSON format")
 			yaml := subCmd.BoolOpt("yaml", false, "Output environment variables in YAML format")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
 				var formatter Formatter
@@ -53,12 +53,12 @@ var ListSubCmd = models.Command{
 				} else {
 					formatter = &PlainFormatter{}
 				}
-				err := CmdList(*serviceName, settings.ServiceID, formatter, New(settings), services.New(settings))
+				err := CmdList(*serviceName, formatter, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "[SERVICE_NAME] [--json | --yaml]"
+			subCmd.Spec = "SERVICE_NAME [--json | --yaml]"
 		}
 	},
 }
@@ -70,29 +70,30 @@ var SetSubCmd = models.Command{
 		"You can set/update 1 or more environment variables at a time with this command by repeating the `-v` option multiple times. " +
 		"Once new environment variables are added or values updated, a [redeploy](#redeploy) is required for the given code service to have access to the new values. " +
 		"The environment variables must be of the form `<key>=<value>`. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" vars set code-1 -v AWS_ACCESS_KEY_ID=1234 -v AWS_SECRET_ACCESS_KEY=5678\n```",
+		"```\ndatica -E \"<your_env_name>\" vars set code-1 -v AWS_ACCESS_KEY_ID=1234 -v AWS_SECRET_ACCESS_KEY=5678\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
-			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service on which the environment variables will be set. Defaults to the associated service.")
+			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service on which the environment variables will be set.")
 			variables := subCmd.Strings(cli.StringsOpt{
 				Name:      "v variable",
 				Value:     []string{},
 				Desc:      "The env variable to set or update in the form \"<key>=<value>\"",
 				HideValue: true,
 			})
+			fileName := subCmd.StringOpt("f file", "", "The path to a file to import environment variables from. This file can be in JSON, YAML, or KEY=VALUE format")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdSet(*serviceName, settings.ServiceID, *variables, New(settings), services.New(settings))
+				err := CmdSet(*serviceName, *variables, *fileName, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "[SERVICE_NAME] -v..."
+			subCmd.Spec = "SERVICE_NAME (-v... | -f)"
 		}
 	},
 }
@@ -100,28 +101,34 @@ var SetSubCmd = models.Command{
 var UnsetSubCmd = models.Command{
 	Name:      "unset",
 	ShortHelp: "Unset (delete) an existing environment variable",
-	LongHelp: "`vars unset` removes an environment variables from the given code service. " +
+	LongHelp: "`vars unset` removes environment variables from the given code service. " +
 		"Only the environment variable name is required to unset. " +
 		"Once environment variables are unset, a [redeploy](#redeploy) is required for the given code service to realize the variable was removed. " +
+		"You can unset any number of environment variables in one command. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" vars unset code-1 AWS_ACCESS_KEY_ID\n```",
+		"```\ndatica -E \"<your_env_name>\" vars unset code-1 AWS_ACCESS_KEY_ID AWS_SECRET_ACCES_KEY_ID\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
-			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service on which the environment variables will be unset. Defaults to the associated service.")
-			variable := subCmd.StringArg("VARIABLE", "", "The name of the environment variable to unset")
+			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service on which the environment variables will be unset.")
+			variables := subCmd.Strings(cli.StringsArg{
+				Name:      "VARIABLE",
+				Value:     []string{},
+				Desc:      "The names of environment variables to unset",
+				HideValue: true,
+			})
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdUnset(*serviceName, settings.ServiceID, *variable, New(settings), services.New(settings))
+				err := CmdUnset(*serviceName, *variables, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "[SERVICE_NAME] VARIABLE"
+			subCmd.Spec = "SERVICE_NAME VARIABLE..."
 		}
 	},
 }

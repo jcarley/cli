@@ -34,7 +34,7 @@ var AddSubCmd = models.Command{
 		"These keys are used for pushing code to your code services but are not required. " +
 		"You should be using personal SSH keys with the [keys](#keys) command unless you are pushing code from Continuous Integration or Continuous Deployment scenarios. " +
 		"Deploy keys are intended to be shared among an organization. Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" deploy-keys add app01_public ~/.ssh/app01_rsa.pub app01\n```",
+		"```\ndatica -E \"<your_env_name>\" deploy-keys add app01_public ~/.ssh/app01_rsa.pub app01\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name for the new key, for your own purposes")
@@ -44,7 +44,7 @@ var AddSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
 				err := CmdAdd(*name, *path, *serviceName, New(settings), services.New(settings))
@@ -61,7 +61,7 @@ var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List all deploy keys",
 	LongHelp: "`deploy-keys list` will list all of your previously uploaded deploy keys by name including the key's fingerprint in SHA256 format. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" deploy-keys list app01\n```",
+		"```\ndatica -E \"<your_env_name>\" deploy-keys list app01\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the code service to list deploy keys")
@@ -69,7 +69,7 @@ var ListSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
 				err := CmdList(*serviceName, New(settings), services.New(settings))
@@ -88,7 +88,7 @@ var RmSubCmd = models.Command{
 	LongHelp: "`deploy-keys rm` will remove a previously created deploy key by name. " +
 		"It is a good idea to rotate deploy keys on a set schedule as they are intended to be shared among an organization. " +
 		"Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_alias>\" deploy-keys rm app01_public app01\n```",
+		"```\ndatica -E \"<your_env_name>\" deploy-keys rm app01_public app01\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of the key to remove")
@@ -97,7 +97,7 @@ var RmSubCmd = models.Command{
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				if err := config.CheckRequiredAssociation(true, true, settings); err != nil {
+				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
 				err := CmdRm(*name, *serviceName, New(settings), services.New(settings))

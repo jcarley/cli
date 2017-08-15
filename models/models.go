@@ -2,11 +2,19 @@ package models
 
 import "github.com/jault3/mow.cli"
 
-// AssociatedEnv holds information about an associated environment
-type AssociatedEnv struct {
+// AssociatedEnvV1 holds information about an associated environment
+type AssociatedEnvV1 struct {
 	EnvironmentID string `json:"environmentId"`
 	ServiceID     string `json:"serviceId"`
 	Directory     string `json:"dir"`
+	Name          string `json:"name"`
+	Pod           string `json:"pod"`
+	OrgID         string `json:"organizationId"`
+}
+
+// AssociatedEnvV2 holds information about an associated environment
+type AssociatedEnvV2 struct {
+	EnvironmentID string `json:"environmentId"`
 	Name          string `json:"name"`
 	Pod           string `json:"pod"`
 	OrgID         string `json:"organizationId"`
@@ -17,10 +25,11 @@ type Cert struct {
 	PubKey  string `json:"sslCertFile"`
 	PrivKey string `json:"sslPKFile"`
 
-	Service    string `json:"service,omitempty"`
-	PubKeyID   int    `json:"sslCertFileId,omitempty"`
-	PrivKeyID  int    `json:"sslPKFileId,omitempty"`
-	Restricted bool   `json:"restricted,omitempty"`
+	Service     string            `json:"service,omitempty"`
+	PubKeyID    int               `json:"sslCertFileId,omitempty"`
+	PrivKeyID   int               `json:"sslPKFileId,omitempty"`
+	Restricted  bool              `json:"restricted,omitempty"`
+	LetsEncrypt LetsEncryptStatus `json:"letsEncrypt,omitempty"`
 }
 
 type Command struct {
@@ -119,6 +128,30 @@ type Invite struct {
 	Revoked  bool   `json:"revoked"`
 }
 
+// LetsEncryptStatus code
+type LetsEncryptStatus int
+
+const (
+	// NormalCert is a non-let's encrypt cert
+	NormalCert LetsEncryptStatus = iota
+	// Waiting verification and issuance
+	Waiting
+	// Valid certificate that has already been issued
+	Valid
+)
+
+func (l LetsEncryptStatus) String() string {
+	switch l {
+	case NormalCert:
+		return "This is not a Let's Encrypt certificate"
+	case Waiting:
+		return "Awaiting the certificate to be issued by Let's Encrypt"
+	case Valid:
+		return "Certificate successfully issued"
+	}
+	return ""
+}
+
 // LogHits contain ordering data for logs
 type LogHits struct {
 	Index  string              `json:"_index"`
@@ -137,6 +170,11 @@ type Login struct {
 // Logs hold the log values from a successful LogQuery
 type Logs struct {
 	Hits *Hits `json:"hits"`
+}
+
+type Maintenance struct {
+	UpstreamID string `json:"upstream"`
+	CreatedAt  string `json:"createdAt"`
 }
 
 type MemoryUsage struct {
@@ -199,9 +237,7 @@ type Payload struct {
 
 // Pod is a pod returned from the pod router
 type Pod struct {
-	Name                 string `json:"name"`
-	PHISafe              bool   `json:"phiSafe"`
-	ImportRequiresLength bool   `json:"importRequiresLength"`
+	Name string `json:"name"`
 }
 
 // Job job
@@ -255,6 +291,7 @@ type Service struct {
 	Label          string            `json:"label"`
 	Size           ServiceSize       `json:"size"`
 	Name           string            `json:"name"`
+	Environment    string            `json:"environment,omitempty"`
 	EnvVars        map[string]string `json:"environmentVariables,omitempty"`
 	Source         string            `json:"source,omitempty"`
 	LBIP           string            `json:"load_balancer_ip,omitempty"`
@@ -284,10 +321,12 @@ type ServiceSize struct {
 	CPU      int    `json:"cpu"`
 }
 
-// Settings holds various settings for the current context. All items with
+type Settings SettingsV2
+
+// SettingsV1 holds various settings for the current context. All items with
 // `json:"-"` are never persisted to disk but used in memory for the current
 // command.
-type Settings struct {
+type SettingsV1 struct {
 	AccountsHost    string      `json:"-"`
 	AuthHost        string      `json:"-"`
 	PaasHost        string      `json:"-"`
@@ -296,20 +335,48 @@ type Settings struct {
 	Version         string      `json:"-"`
 	HTTPManager     HTTPManager `json:"-"`
 
-	Username        string                   `json:"-"`
-	Password        string                   `json:"-"`
-	EnvironmentID   string                   `json:"-"` // the id of the environment used for the current command
-	ServiceID       string                   `json:"-"` // the id of the service used for the current command
-	Pod             string                   `json:"-"` // the pod used for the current command
-	EnvironmentName string                   `json:"-"` // the name of the environment used for the current command
-	OrgID           string                   `json:"-"` // the org ID the chosen environment for this commands belongs to
-	PrivateKeyPath  string                   `json:"private_key_path"`
-	SessionToken    string                   `json:"token"`
-	UsersID         string                   `json:"user_id"`
-	Environments    map[string]AssociatedEnv `json:"environments"`
-	Default         string                   `json:"default"`
-	Pods            *[]Pod                   `json:"pods"`
-	PodCheck        int64                    `json:"pod_check"`
+	Email           string                     `json:"-"`
+	Password        string                     `json:"-"`
+	EnvironmentID   string                     `json:"-"` // the id of the environment used for the current command
+	ServiceID       string                     `json:"-"` // the id of the service used for the current command
+	Pod             string                     `json:"-"` // the pod used for the current command
+	EnvironmentName string                     `json:"-"` // the name of the environment used for the current command
+	OrgID           string                     `json:"-"` // the org ID the chosen environment for this commands belongs to
+	PrivateKeyPath  string                     `json:"private_key_path"`
+	SessionToken    string                     `json:"token"`
+	UsersID         string                     `json:"user_id"`
+	Environments    map[string]AssociatedEnvV1 `json:"environments"`
+	Default         string                     `json:"default"`
+	Pods            *[]Pod                     `json:"pods"`
+	PodCheck        int64                      `json:"pod_check"`
+}
+
+// SettingsV2 holds various settings for the current context. All items with
+// `json:"-"` are never persisted to disk but used in memory for the current
+// command.
+type SettingsV2 struct {
+	AccountsHost    string      `json:"-"`
+	AuthHost        string      `json:"-"`
+	PaasHost        string      `json:"-"`
+	AuthHostVersion string      `json:"-"`
+	PaasHostVersion string      `json:"-"`
+	Version         string      `json:"-"`
+	HTTPManager     HTTPManager `json:"-"`
+	GivenEnvName    string      `json:"-"`
+
+	Email           string                     `json:"-"`
+	Password        string                     `json:"-"`
+	EnvironmentID   string                     `json:"-"` // the id of the environment used for the current command
+	Pod             string                     `json:"-"` // the pod used for the current command
+	EnvironmentName string                     `json:"-"` // the name of the environment used for the current command
+	OrgID           string                     `json:"-"` // the org ID the chosen environment for this commands belongs to
+	PrivateKeyPath  string                     `json:"private_key_path"`
+	SessionToken    string                     `json:"token"`
+	UsersID         string                     `json:"user_id"`
+	Environments    map[string]AssociatedEnvV2 `json:"environments"`
+	Pods            *[]Pod                     `json:"pods"`
+	PodCheck        int64                      `json:"pod_check"`
+	Format          string                     `json:"format"`
 }
 
 type Site struct {
@@ -334,7 +401,6 @@ type TempURL struct {
 
 // User is an authenticated User
 type User struct {
-	Username     string `json:"name"`
 	Email        string `json:"email"`
 	SessionToken string `json:"sessionToken"`
 	UsersID      string `json:"id"`
@@ -355,9 +421,4 @@ type Volume struct {
 type Workers struct {
 	Limit   int            `json:"worker_limit,omitempty"`
 	Workers map[string]int `json:"workers"`
-}
-
-type Maintenance struct {
-	UpstreamID string `json:"upstream"`
-	CreatedAt  string `json:"createdAt"`
 }

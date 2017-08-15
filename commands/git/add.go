@@ -14,7 +14,7 @@ func CmdAdd(svcName, remote string, force bool, ig IGit, is services.IServices) 
 		return err
 	}
 	if service == nil {
-		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services\" command.", svcName)
+		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services list\" command.", svcName)
 	}
 	if service.Source == "" {
 		return fmt.Errorf("No git remote found for the \"%s\" service.", svcName)
@@ -31,7 +31,7 @@ func CmdAdd(svcName, remote string, force bool, ig IGit, is services.IServices) 
 		}
 	}
 	if exists && !force {
-		return fmt.Errorf("A git remote named \"%s\" already exists, please specify --force to overwrite it", remote)
+		return fmt.Errorf("A git remote named \"%s\" already exists, please specify --force to overwrite it or use the -r (remote) option to name a different git remote", remote)
 	} else if exists {
 		err = ig.SetURL(remote, service.Source)
 		if err != nil {

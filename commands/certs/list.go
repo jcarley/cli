@@ -6,6 +6,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/daticahealth/cli/commands/services"
 	"github.com/daticahealth/cli/models"
+	"github.com/olekukonko/tablewriter"
 )
 
 func CmdList(ic ICerts, is services.IServices) error {
@@ -21,10 +22,21 @@ func CmdList(ic ICerts, is services.IServices) error {
 		logrus.Println("No certs found")
 		return nil
 	}
-	logrus.Println("NAME")
+
+	data := [][]string{{"NAME", "LET'S ENCRYPT STATUS"}}
 	for _, cert := range *certs {
-		logrus.Println(cert.Name)
+		data = append(data, []string{cert.Name, cert.LetsEncrypt.String()})
 	}
+
+	table := tablewriter.NewWriter(logrus.StandardLogger().Out)
+	table.SetBorder(false)
+	table.SetRowLine(false)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetAutoWrapText(false)
+	table.AppendBulk(data)
+	table.Render()
 	return nil
 }
 
