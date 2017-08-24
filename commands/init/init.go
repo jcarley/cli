@@ -84,7 +84,7 @@ func CmdInit(settings *models.Settings, p prompts.IPrompts) error {
 		for {
 			choice := p.CaptureInput("Enter your choice as a number: ")
 			i, err := strconv.ParseUint(choice, 10, 64)
-			if err != nil || i == 0 || i > uint64(len(*envs)) {
+			if err != nil || i == 0 || i > uint64(len(codeServices)) {
 				logrus.Printf("%s is not a valid number", choice)
 				continue
 			}
