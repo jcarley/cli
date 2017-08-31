@@ -16,12 +16,12 @@ Once downloaded, the CLI will automatically update itself when a new version bec
 
 ### Darwin (Apple Mac)
 
- * [datica\_4.0.0\_darwin\_amd64.zip](https://github.com/daticahealth/cli/releases/download/4.0.0/datica_4.0.0_darwin_amd64.zip)
+ * [datica\_4.0.1\_darwin\_amd64.zip](https://github.com/daticahealth/cli/releases/download/4.0.1/datica_4.0.1_darwin_amd64.zip)
 
 ### Linux
 
- * [datica\_4.0.0\_linux\_amd64.tar.gz](https://github.com/daticahealth/cli/releases/download/4.0.0/datica_4.0.0_linux_amd64.tar.gz)
+ * [datica\_4.0.1\_linux\_amd64.tar.gz](https://github.com/daticahealth/cli/releases/download/4.0.1/datica_4.0.1_linux_amd64.tar.gz)
 
 ### MS Windows
 
- * [datica\_4.0.0\_windows\_amd64.zip](https://github.com/daticahealth/cli/releases/download/4.0.0/datica_4.0.0_windows_amd64.zip)
+ * [datica\_4.0.1\_windows\_amd64.zip](https://github.com/daticahealth/cli/releases/download/4.0.1/datica_4.0.1_windows_amd64.zip)
