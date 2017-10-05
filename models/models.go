@@ -235,6 +235,11 @@ type Payload struct {
 	Environment map[string]string `json:"environment"`
 }
 
+// Description is the description of a job
+type Description struct {
+	HostName string `json:"hostName"`
+}
+
 // Pod is a pod returned from the pod router
 type Pod struct {
 	Name string `json:"name"`
@@ -391,7 +396,8 @@ type Site struct {
 
 // Spec is a job specification
 type Spec struct {
-	Payload *Payload `json:"payload"`
+	Payload     *Payload     `json:"payload"`
+	Description *Description `json:"description"`
 }
 
 // TempURL holds a URL for uploading or downloading files from a temporary URL

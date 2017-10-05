@@ -12,6 +12,7 @@ import (
 	"github.com/daticahealth/cli/commands/services"
 	"github.com/daticahealth/cli/commands/sites"
 	"github.com/daticahealth/cli/config"
+	"github.com/daticahealth/cli/lib/jobs"
 	"github.com/daticahealth/cli/lib/prompts"
 	"github.com/daticahealth/cli/models"
 )
@@ -22,14 +23,87 @@ type esVersion struct {
 	Number string `json:"number"`
 }
 
+type CMDLogQuery struct {
+	Query   string // default *
+	Follow  bool
+	Hours   int
+	Minutes int
+	Seconds int
+	Service string
+	JobID   string
+	Target  string
+}
+
 // CmdLogs is a way to stream logs from Kibana to your local terminal. This is
 // useful because Kibana is hard to look at because it splits every single
 // log statement into a separate block that spans multiple lines so it's
 // not very cohesive. This is intended to be similar to the `heroku logs`
 // command.
-func CmdLogs(queryString string, follow bool, hours, minutes, seconds int, envID string, settings *models.Settings, il ILogs, ip prompts.IPrompts, ie environments.IEnvironments, is services.IServices, isites sites.ISites) error {
-	if follow && (hours > 0 || minutes > 0 || seconds > 0) {
+func CmdLogs(query *CMDLogQuery, envID string, settings *models.Settings, il ILogs, ip prompts.IPrompts, ie environments.IEnvironments, is services.IServices, ij jobs.IJobs, isites sites.ISites) error {
+	if query.Follow && (query.Hours > 0 || query.Minutes > 0 || query.Seconds > 0) {
 		return fmt.Errorf("Specifying \"-f\" in combination with \"--hours\", \"--minutes\", or \"--seconds\" is unsupported.")
+	}
+	if len(query.JobID) > 0 && len(query.Target) > 0 {
+		fmt.Errof("Specifying \"--job-id\" in combination with \"--target\" is unsupported.")
+	}
+	if len(query.JobID) > 0 && len(query.Service) == 0 {
+		return fmt.Errorf("You must specify a service to query the logs for a particular job.")
+	}
+	if len(query.Target) > 0 && len(query.Service) == 0 {
+		return fmt.Errorf("You must specify a least a service to query the logs for a particular target")
+	}
+	var svc *models.Service
+	var hostNames []string
+	var fileName string
+	if len(query.JobID) > 0 || len(query.Target) > 0 {
+		t := time.Unix(startOfReadableHostNames, 0)
+		var err error
+		svc, err = is.RetrieveByLabel(query.Service)
+		if err != nil {
+			return err
+		}
+		if svc == nil {
+			return fmt.Erroff("Cannot find the specified service \"%s\".", query.Service)
+		}
+		if len(query.JobID) > 0 {
+			job, err := ij.Retrieve(query.JobID, svc.ID, true)
+			if err != nil {
+				return err
+			}
+			if job == nil {
+				return fmt.Erroff("Cannot find the specified job \"%s\".", query.JobID)
+			}
+			if len(job.Spec.Description.HostName) == 0 {
+				return fmt.Errorf("This job, \"%s\", does not have a valid host name and therefore its logs are not marked with its \"ID\".")
+			}
+			hostNames = []string{job.Spec.Description.HostName}
+		} else if len(query.Target) > 0 {
+			jobs, err := ij.RetrieveByTarget(svc.ID, query.Target, 1, 25)
+			if err != nil {
+				return err
+			}
+			if jobs == nil {
+				return fmt.Errorf("Cannot find any jobs with target \"%s\" for service \"%s\"", query.Target, svc.ID)
+			}
+			var totalCount, badCount int
+			for _, j := range jobs {
+				hostName := j.Spec.Description.HostName
+				if len(hostName) > 0 {
+					hostNames := append(hostNames, hostName)
+				} else {
+					badCount++
+				}
+				totalCount++
+			}
+			if badCount > 0 {
+				err := prompts.YesNo("", fmt.Sprintf("Of the %d jobs for the service \"%s\" that have a target of \"%s\" %d do not have a valid hostname to allow their logs to be queried. Would you like to proceed anyways? (y/n)", totalCount, query.Service, query.Target, badCount))
+				if err != nil {
+					return err
+				}
+			}
+		}
+	} else if len(query.Service) {
+
 	}
 	env, err := ie.Retrieve(envID)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 	"github.com/daticahealth/cli/commands/sites"
 	"github.com/daticahealth/cli/config"
 	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/jobs"
 	"github.com/daticahealth/cli/lib/prompts"
 	"github.com/daticahealth/cli/models"
 	"github.com/jault3/mow.cli"
@@ -34,6 +35,9 @@ var Cmd = models.Command{
 			hours := cmd.IntOpt("hours", 0, "The number of hours before now (in combination with minutes and seconds) to retrieve logs")
 			mins := cmd.IntOpt("minutes", 0, "The number of minutes before now (in combination with hours and seconds) to retrieve logs")
 			secs := cmd.IntOpt("seconds", 0, "The number of seconds before now (in combination with hours and minutes) to retrieve logs")
+			service := cmd.StringOpt("service", "", "Query logs for only a service by service name")
+			jobID := cmd.StringOpt("job-id", "", "Query logs for only a particular job by job id")
+			target := cmd.StringOpt("target", "", "Query logs for only a particular service by procfile target")
 			cmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -41,12 +45,22 @@ var Cmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdLogs(*query, *follow || *tail, *hours, *mins, *secs, settings.EnvironmentID, settings, New(settings), prompts.New(), environments.New(settings), services.New(settings), sites.New(settings))
+				cmdQuery := &logs.CMDLogQuery{
+					Query:   *query,
+					Follow:  *follow || *tail,
+					Hours:   *hours,
+					Minutes: *mins,
+					Seconds: *secs,
+					Service: *service,
+					JobID:   *jobID,
+					Target:  *target,
+				}
+				err := CmdLogs(cmdQuery, settings.EnvironmentID, settings, New(settings), prompts.New(), environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			cmd.Spec = "[QUERY] [(-f | -t)] [--hours] [--minutes] [--seconds]"
+			cmd.Spec = "[QUERY] [(-f | -t)] [--hours] [--minutes] [--seconds] [--service] [--job-id] [--target]"
 		}
 	},
 }
