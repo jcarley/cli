@@ -24,8 +24,8 @@ var Cmd = models.Command{
 		"```\ndatica -E \"<your_env_name>\" deploy container01 image01\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to deploy to (i.e. 'container01')")
-			imageName := cmd.StringArg("IMAGE_NAME", "", "The name of the image to deploy (i.e. 'image01')")
+			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to deploy to (e.g. 'container01')")
+			imageName := cmd.StringArg("IMAGE_NAME", "", "The name of the image to deploy (e.g. 'image01')")
 			cmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
