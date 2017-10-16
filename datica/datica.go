@@ -11,6 +11,7 @@ import (
 	"github.com/daticahealth/cli/commands/clear"
 	"github.com/daticahealth/cli/commands/console"
 	"github.com/daticahealth/cli/commands/db"
+	"github.com/daticahealth/cli/commands/deploy"
 	"github.com/daticahealth/cli/commands/deploykeys"
 	"github.com/daticahealth/cli/commands/domain"
 	"github.com/daticahealth/cli/commands/environments"
@@ -209,6 +210,7 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.CommandLong(clear.Cmd.Name, clear.Cmd.ShortHelp, clear.Cmd.LongHelp, clear.Cmd.CmdFunc(settings))
 	app.CommandLong(console.Cmd.Name, console.Cmd.ShortHelp, console.Cmd.LongHelp, console.Cmd.CmdFunc(settings))
 	app.CommandLong(db.Cmd.Name, db.Cmd.ShortHelp, db.Cmd.LongHelp, db.Cmd.CmdFunc(settings))
+	app.CommandLong(deploy.Cmd.Name, deploy.Cmd.ShortHelp, deploy.Cmd.LongHelp, deploy.Cmd.CmdFunc(settings))
 	app.CommandLong(deploykeys.Cmd.Name, deploykeys.Cmd.ShortHelp, deploykeys.Cmd.LongHelp, deploykeys.Cmd.CmdFunc(settings))
 	app.CommandLong(domain.Cmd.Name, domain.Cmd.ShortHelp, domain.Cmd.LongHelp, domain.Cmd.CmdFunc(settings))
 	app.CommandLong(environments.Cmd.Name, environments.Cmd.ShortHelp, environments.Cmd.LongHelp, environments.Cmd.CmdFunc(settings))
