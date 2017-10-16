@@ -17,9 +17,8 @@ import (
 var Cmd = models.Command{
 	Name:      "deploy",
 	ShortHelp: "Deploy a Docker image to a service.",
-	LongHelp: "`deploy` deploys a Docker image to the given service. " +
-		"For container services, this calls 'docker exec' using the specified image. " +
-		"All other service types cannot be deployed with this command. " +
+	LongHelp: "`deploy` deploys a Docker image for the given service. " +
+		"This command will only deploy for \"container\" services. " +
 		"Here is a sample command\n\n" +
 		"```\ndatica -E \"<your_env_name>\" deploy container01 image01\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {

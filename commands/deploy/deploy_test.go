@@ -47,7 +47,7 @@ func TestDeploy(t *testing.T) {
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "POST")
 			if strings.Contains(string(r.URL.Query().Get("release")), "/invalid/tag:name") {
-				w.WriteHeader(500)
+				w.WriteHeader(400)
 			} else {
 				w.WriteHeader(202)
 			}
