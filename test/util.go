@@ -19,6 +19,8 @@ const (
 	Pod       = "pod1"
 	SvcID     = "svc1"
 	SvcLabel  = "code1"
+	JobID     = "job1"
+	Target    = "target1"
 
 	AliasAlt     = "2"
 	EnvIDAlt     = "env2"
@@ -28,6 +30,8 @@ const (
 	PodAlt       = "pod2"
 	SvcIDAlt     = "svc2"
 	SvcLabelAlt  = "code2"
+	JobIDAlt     = "job2"
+	TargetAlt    = "target2"
 )
 
 func Setup() (*http.ServeMux, *httptest.Server, *url.URL) {
