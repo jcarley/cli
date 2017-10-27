@@ -16,7 +16,7 @@ import (
 // name, arguments, and required/optional arguments and flags for the command.
 var Cmd = models.Command{
 	Name:      "deploy",
-	ShortHelp: "Deploy a Docker image to a service.",
+	ShortHelp: "Deploy a Docker image to a container service.",
 	LongHelp: "`deploy` deploys a Docker image for the given service. " +
 		"This command will only deploy for \"container\" services. " +
 		"Here is a sample command\n\n" +
