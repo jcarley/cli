@@ -50,7 +50,7 @@ var ListSubCmd = models.Command{
 
 var StartSubCmd = models.Command{
 	Name:      "start",
-	ShortHelp: "Stop a specific job within a service",
+	ShortHelp: "Start a specific job within a service",
 	LongHelp: "`jobs start` will start a job that is configured but not currently running within a given service" +
 		"This command is useful for granual control of your services and their workers, tasks, etc." +
 		"```\ndatica -E \"<your_env_name>\" jobs start <your_service_name> <your_job_id>\n```",
@@ -83,7 +83,9 @@ var StopSubCmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to list jobs for")
-			jobID := subCmd.StringArg("JOB_ID", "", "The job ID for the job in service to be started")
+			jobID := subCmd.StringArg("JOB_ID", "", "The job ID for the job in service to be stopped")
+			force := subCmd.BoolOpt("f force", false, "Allow this command to be executed without prompting to confirm")
+
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -91,11 +93,13 @@ var StopSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdStop(*jobID, *serviceName, New(settings), services.New(settings), prompts.New())
+				err := CmdStop(*jobID, *serviceName, New(settings), services.New(settings), *force, prompts.New())
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
+			subCmd.Spec = "[SERVICE_NAME] [JOB_ID] [-f]"
+
 		}
 	},
 }

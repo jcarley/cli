@@ -8,11 +8,14 @@ import (
 	"github.com/daticahealth/cli/lib/prompts"
 )
 
-func CmdStop(jobID string, svcName string, ij IJobs, is services.IServices, ip prompts.IPrompts) error {
-	err := ip.YesNo(fmt.Sprintf("Stopping %s %s will immediately stop this job.", svcName, jobID), fmt.Sprintf("Are you sure you want to stop %s? (y/n) ", svcName))
-	if err != nil {
-		return err
+func CmdStop(jobID string, svcName string, ij IJobs, is services.IServices, force bool, ip prompts.IPrompts) error {
+	if !force {
+		err := ip.YesNo(fmt.Sprintf("Stopping %s %s will immediately stop this job.", svcName, jobID), fmt.Sprintf("Are you sure you want to stop %s? (y/n) ", svcName))
+		if err != nil {
+			return err
+		}
 	}
+
 	service, err := is.RetrieveByLabel(svcName)
 	if err != nil {
 		return err
