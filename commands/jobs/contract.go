@@ -28,7 +28,7 @@ var ListSubCmd = models.Command{
 	ShortHelp: "List all jobs for a service",
 	LongHelp: "`jobs list` prints out a list of all jobs in your environment and their current status." +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" services list <your_service_name>\n```",
+		"```\ndatica -E \"<your_env_name>\" jobs list <your_service_name>\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to list jobs for")
@@ -53,10 +53,10 @@ var StartSubCmd = models.Command{
 	ShortHelp: "Stop a specific job within a service",
 	LongHelp: "`jobs start` will start a job that is configured but not currently running within a given service" +
 		"This command is useful for granual control of your services and their workers, tasks, etc." +
-		"```\ndatica -E \"<your_env_name>\" jobs start code-1 <your_job_id>\n```",
+		"```\ndatica -E \"<your_env_name>\" jobs start <your_service_name> <your_job_id>\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
-			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to list releases for")
+			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to list jobs for")
 			jobID := subCmd.StringArg("JOB_ID", "", "The job ID for the job in service to be started")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
@@ -79,10 +79,10 @@ var StopSubCmd = models.Command{
 	ShortHelp: "Stop a specific job within a service",
 	LongHelp: "`jobs stop` will shut down a running job within a given service" +
 		"This command is useful for granual control of your services and their workers, tasks, etc." +
-		"```\ndatica -E \"<your_env_name>\" jobs stop code-1 <your_job_id>\n```",
+		"```\ndatica -E \"<your_env_name>\" jobs stop <your_service_name> <your_job_id>\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
-			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to list releases for")
+			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to list jobs for")
 			jobID := subCmd.StringArg("JOB_ID", "", "The job ID for the job in service to be started")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
