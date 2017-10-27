@@ -27,7 +27,7 @@ func CmdStop(jobID string, svcName string, ij IJobs, is services.IServices, forc
 	if err != nil {
 		return err
 	}
-	logrus.Printf("Job '%s' has been successfully stopped.", jobID)
+	logrus.Printf("Job '%s' will be stopped in 15 seconds.", jobID)
 	return nil
 }
 
