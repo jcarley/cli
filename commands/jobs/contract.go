@@ -78,7 +78,7 @@ var StopSubCmd = models.Command{
 	Name:      "stop",
 	ShortHelp: "Stop a specific job within a service",
 	LongHelp: "`jobs stop` will shut down a running job within a given service. " +
-		"This command is useful for granual control of your services and their workers, tasks, etc. " +
+		"This command is useful for granular control of your services and their workers, tasks, etc. " +
 		"```\ndatica -E \"<your_env_name>\" jobs stop <your_service_name> <your_job_id>\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
