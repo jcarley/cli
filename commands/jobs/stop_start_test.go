@@ -56,7 +56,7 @@ func TestJobsStop(t *testing.T) {
 		t.Logf("Data: %+v", data)
 
 		// test
-		err := CmdStop(data.jobID, data.svcName, New(settings), services.New(settings), &test.FakePrompts{})
+		err := CmdStop(data.jobID, data.svcName, New(settings), services.New(settings), false, &test.FakePrompts{})
 
 		// assert
 		if err != nil != data.expectErr {
