@@ -13,15 +13,27 @@ import (
 	"github.com/mitchellh/go-homedir"
 )
 
-// SettingsPath is the location of the datica config file.
 const (
 	settingsFormatV1 = "v1"
 	settingsFormatV2 = "v2"
 
 	OldSettingsFile = ".catalyze"
-	SettingsFile    = ".datica"
 	currentFormat   = settingsFormatV2
 )
+
+var SettingsFile = resolveSettingsPath()
+
+func resolveSettingsPath() string {
+	settingsPath := os.Getenv(DaticaConfigFile)
+	if len(settingsPath) == 0 {
+		home, err := homedir.Dir()
+		if err != nil {
+			panic(err)
+		}
+		settingsPath = filepath.Join(home, ".datica")
+	}
+	return settingsPath
+}
 
 // SettingsRetriever defines an interface for a class responsible for generating
 // a settings object used for most commands in the CLI. Some examples might be
@@ -37,22 +49,21 @@ type FileSettingsRetriever struct{}
 
 // GetSettings returns a Settings object for the current context
 func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authHost, ignoreAuthHostVersion, paasHost, ignorePaasHostVersion, email, password string) (*models.Settings, error) {
-	HomeDir, err := homedir.Dir()
+	home, err := homedir.Dir()
 	if err != nil {
 		return nil, err
 	}
-
-	if _, err = os.Stat(filepath.Join(HomeDir, OldSettingsFile)); err == nil {
+	if _, err = os.Stat(filepath.Join(home, OldSettingsFile)); err == nil {
 		logrus.Debugln("Migrating settings file from .catalyze to .datica")
-		err = os.Rename(filepath.Join(HomeDir, OldSettingsFile), filepath.Join(HomeDir, SettingsFile))
+		err = os.Rename(filepath.Join(home, OldSettingsFile), SettingsFile)
 		if err != nil {
-			return nil, fmt.Errorf("Error encountered migrating the settings file from .catalyze to .datica: %s. To fix this, please run \"mv %s %s\".", err, filepath.Join(HomeDir, OldSettingsFile), filepath.Join(HomeDir, SettingsFile))
+			return nil, fmt.Errorf("Error encountered migrating the settings file from .catalyze to .datica: %s. To fix this, please run \"mv %s %s\".", err, filepath.Join(home, OldSettingsFile), SettingsFile)
 		}
 	}
 
-	file, err := os.Open(filepath.Join(HomeDir, SettingsFile))
+	file, err := os.Open(SettingsFile)
 	if os.IsNotExist(err) {
-		file, err = os.Create(filepath.Join(HomeDir, SettingsFile))
+		file, err = os.Create(SettingsFile)
 	}
 	defer file.Close()
 	if err != nil {
@@ -156,12 +167,8 @@ func migrateFromV1(file *os.File) (models.Settings, error) {
 
 // SaveSettings persists the settings to disk
 func SaveSettings(settings *models.Settings) error {
-	HomeDir, err := homedir.Dir()
-	if err != nil {
-		return err
-	}
 	b, _ := json.Marshal(&settings)
-	return ioutil.WriteFile(filepath.Join(HomeDir, SettingsFile), b, 0644)
+	return ioutil.WriteFile(SettingsFile, b, 0644)
 }
 
 // SetGivenEnv takes the given env name and finds it in the env list

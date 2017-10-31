@@ -48,6 +48,8 @@ const (
 	LogLevelEnvVar = "DATICA_LOG_LEVEL"
 	// SkipVerifyEnvVar is the env variable used to accept invalid SSL certificates
 	SkipVerifyEnvVar = "SKIP_VERIFY"
+	// DaticaConfigFile points the CLI at a .datica file
+	DaticaConfigFile = "DATICA_CONFIG_FILE"
 
 	// DaticaUsernameEnvVarDeprecated is the deprecated env variable used to override the username
 	DaticaUsernameEnvVarDeprecated = "DATICA_USERNAME"
