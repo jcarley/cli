@@ -17,7 +17,7 @@ var Cmd = models.Command{
 	ShortHelp: "Tasks for managing service files",
 	LongHelp: "The `files` command gives access to service files on your environment's services. " +
 		"Service files can include Nginx configs, SSL certificates, and any other file that might be injected into your running service. " +
-		"The files command can not be run directly but has sub commands.",
+		"The files command can not be run directly but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.CommandLong(DownloadSubCmd.Name, DownloadSubCmd.ShortHelp, DownloadSubCmd.LongHelp, DownloadSubCmd.CmdFunc(settings))

@@ -16,7 +16,7 @@ import (
 var Cmd = models.Command{
 	Name:      "certs",
 	ShortHelp: "Manage your SSL certificates and domains",
-	LongHelp:  "The `certs` command gives access to certificate and private key management for public facing services. The certs command cannot be run directly but has sub commands.",
+	LongHelp:  "The `certs` command gives access to certificate and private key management for public facing services. The certs command cannot be run directly but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.CommandLong(CreateSubCmd.Name, CreateSubCmd.ShortHelp, CreateSubCmd.LongHelp, CreateSubCmd.CmdFunc(settings))

@@ -24,7 +24,7 @@ import (
 var Cmd = models.Command{
 	Name:      "db",
 	ShortHelp: "Tasks for databases",
-	LongHelp:  "The `db` command gives access to backup, import, and export services for databases. The db command can not be run directly but has sub commands.",
+	LongHelp:  "The `db` command gives access to backup, import, and export services for databases. The db command can not be run directly but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.CommandLong(BackupSubCmd.Name, BackupSubCmd.ShortHelp, BackupSubCmd.LongHelp, BackupSubCmd.CmdFunc(settings))
