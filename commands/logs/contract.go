@@ -40,6 +40,7 @@ var Cmd = models.Command{
 		"When using the `-f` option, hit ctrl-c to stop. Here are some sample commands\n\n" +
 		"```\ndatica -E \"<your_env_name>\" logs --hours=6 --minutes=30\n" +
 		"datica -E \"<your_env_name>\" logs -f\n" +
+		"datica -E \"<your_env_name>\" logs --service=\"<your_service_name>\"\n" +
 		"datica -E \"<your_env_name>\" logs --service=\"<your_service_name>\" --job-id=\"<your_job_id>\"\n```",
 	// TODO: add documentation here
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
@@ -75,7 +76,7 @@ var Cmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 			}
-			cmd.Spec = "[QUERY] [(-f | -t)] [--hours] [--minutes] [--seconds] [--service] [--job-id] [--target]"
+			cmd.Spec = "[QUERY] [(-f | -t)] [--hours] [--minutes] [--seconds] [--service (--job-id | --target)]"
 		}
 	},
 }

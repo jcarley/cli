@@ -157,7 +157,6 @@ func muxSetup(mux *http.ServeMux, t *testing.T, serviceType string, createdAt []
 		// RetrieveByTarget/Type
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "GET")
-			// if query.Target == test.Target {
 			var jobs []string
 			for i, created := range createdAt {
 				jobID := test.JobID
@@ -168,10 +167,6 @@ func muxSetup(mux *http.ServeMux, t *testing.T, serviceType string, createdAt []
 			}
 			jobsJSON := fmt.Sprintf("[%s]", strings.Join(jobs, ","))
 			fmt.Fprint(w, jobsJSON)
-			// } else {
-			//
-			// 	fmt.Fprint(w, "")
-			// }
 		},
 	)
 	mux.HandleFunc("/environments",
