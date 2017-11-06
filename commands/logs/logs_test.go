@@ -98,41 +98,6 @@ func (l *SLogsMock) Watch(queryString, domain string) error {
 	return errors.New("Run Stream")
 }
 
-type SPromptsMock struct{}
-
-// EmailPassword prompts a user to enter their email and password.
-func (p *SPromptsMock) EmailPassword(existingEmail, existingPassword string) (string, string, error) {
-	return "email", "password", nil
-}
-
-func (p *SPromptsMock) KeyPassphrase(filepath string) string {
-	return "path/to/file"
-}
-
-func (p *SPromptsMock) PHI() error {
-	return nil
-}
-
-func (p *SPromptsMock) YesNo(msg, prompt string) error {
-	return nil
-}
-
-func (p *SPromptsMock) Password(msg string) string {
-	return "password"
-}
-
-func (p *SPromptsMock) OTP(preferredMode string) string {
-	return "token"
-}
-
-func (p *SPromptsMock) GenericPrompt(msg, prompt string, validOptions []string) string {
-	return "y"
-}
-
-func (p *SPromptsMock) CaptureInput(msg string) string {
-	return "y"
-}
-
 func muxSetup(mux *http.ServeMux, t *testing.T, serviceType string, createdAt []string, query *CMDLogQuery) {
 	mux.HandleFunc("/environments/"+test.EnvID+"/services/",
 		// Retrieve services
@@ -210,7 +175,7 @@ func TestLogsService(t *testing.T) {
 	ilogs := &SLogsMock{
 		Settings: settings,
 	}
-	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &SPromptsMock{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
+	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &test.FakePrompts{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -231,7 +196,7 @@ func TestLogsJobID(t *testing.T) {
 	ilogs := &SLogsMock{
 		Settings: settings,
 	}
-	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &SPromptsMock{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
+	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &test.FakePrompts{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -252,7 +217,7 @@ func TestLogsTarget(t *testing.T) {
 	ilogs := &SLogsMock{
 		Settings: settings,
 	}
-	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &SPromptsMock{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
+	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &test.FakePrompts{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -272,7 +237,7 @@ func TestLogsStream(t *testing.T) {
 	ilogs := &SLogsMock{
 		Settings: settings,
 	}
-	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &SPromptsMock{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
+	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &test.FakePrompts{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -292,7 +257,7 @@ func TestLogsBadService(t *testing.T) {
 	ilogs := &SLogsMock{
 		Settings: settings,
 	}
-	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &SPromptsMock{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
+	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &test.FakePrompts{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
 	expectedErr := fmt.Sprintf("Cannot find the specified service \"%s\".", cmdQuery.Service)
 	if err == nil {
 		t.Fatalf("Expected: %s\n", expectedErr)
@@ -315,7 +280,7 @@ func TestLogsBadRequestMissingService(t *testing.T) {
 	ilogs := &SLogsMock{
 		Settings: settings,
 	}
-	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &SPromptsMock{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
+	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &test.FakePrompts{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
 	expectedErr := "You must specify a code service to query the logs for a particular target"
 	if err == nil {
 		t.Fatalf("Expected: %s\n", expectedErr)
@@ -339,7 +304,7 @@ func TestLogsBadRequestTargetAndJobID(t *testing.T) {
 	ilogs := &SLogsMock{
 		Settings: settings,
 	}
-	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &SPromptsMock{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
+	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &test.FakePrompts{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
 	expectedErr := "Specifying \"--job-id\" in combination with \"--target\" is unsupported."
 	if err == nil {
 		t.Fatalf("Expected: %s\n", expectedErr)
@@ -363,7 +328,7 @@ func TestLogsBadRequestTargetNonCodeService(t *testing.T) {
 	ilogs := &SLogsMock{
 		Settings: settings,
 	}
-	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &SPromptsMock{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
+	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &test.FakePrompts{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
 	expectedErr := "Cannot specifiy a target for a non-code service type"
 	if err == nil {
 		t.Fatalf("Expected: %s\n", expectedErr)
@@ -387,7 +352,7 @@ func TestLogsBadServiceWithTarget(t *testing.T) {
 	ilogs := &SLogsMock{
 		Settings: settings,
 	}
-	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &SPromptsMock{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
+	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &test.FakePrompts{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
 	expectedErr := fmt.Sprintf("Cannot find the specified service \"%s\".", cmdQuery.Service)
 	if err == nil {
 		t.Fatalf("Expected: %s\n", expectedErr)
@@ -411,7 +376,7 @@ func TestLogsBadJobID(t *testing.T) {
 	ilogs := &SLogsMock{
 		Settings: settings,
 	}
-	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &SPromptsMock{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
+	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &test.FakePrompts{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
 	expectedErr := fmt.Sprintf("Cannot find the specified job \"%s\".", cmdQuery.JobID)
 	if err == nil {
 		t.Fatalf("Expected: %s\n", expectedErr)
@@ -435,7 +400,7 @@ func TestLogsBadTarget(t *testing.T) {
 	ilogs := &SLogsMock{
 		Settings: settings,
 	}
-	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &SPromptsMock{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
+	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &test.FakePrompts{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
 	expectedErr := fmt.Sprintf("Cannot find any jobs with target \"%s\" for service \"%s\"", cmdQuery.Target, test.SvcID)
 	if err == nil {
 		t.Fatalf("Expected: %s\n", expectedErr)
@@ -459,7 +424,7 @@ func TestLogsNoValidHostNames(t *testing.T) {
 	ilogs := &SLogsMock{
 		Settings: settings,
 	}
-	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &SPromptsMock{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
+	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &test.FakePrompts{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
 	expectedErr := fmt.Sprintf(`All %d jobs for the service "%s"%s do not have valid hostnames to allow their logs to be queried. Redeploy the service if you would like to use this functionality.`, 2, cmdQuery.Service, fmt.Sprintf(` that have a target of "%s"`, cmdQuery.Target))
 	if err == nil || err.Error() != expectedErr {
 		t.Fatalf("Expected: %s\nGot: %s", expectedErr, err)
@@ -482,7 +447,7 @@ func TestLogsOneValidHostName(t *testing.T) {
 		Settings: settings,
 	}
 
-	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &SPromptsMock{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
+	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &test.FakePrompts{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
