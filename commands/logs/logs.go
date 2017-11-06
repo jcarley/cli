@@ -45,15 +45,9 @@ func CmdLogs(query *CMDLogQuery, envID string, settings *models.Settings, il ILo
 		return fmt.Errorf("You must specify a code service to query the logs for a particular target")
 	}
 	var hostNames []string
-	//TODO: Get from service label if no jobID or target defined
-	//Replace all non alphanumeric characters with underscores
-	//Must check service type, not all filnames are defined the same
-	//If not code or  custom service, then fall back to hostName
-	//Get all deploy jobs for service, check if host names exist. If not, then can't do this command
 	var fileName string
 	isServiceQuery := false
 
-	// TODO: Fix tests for these cases (commented out to make go not freak out)
 	if len(query.Service) > 0 {
 		isServiceQuery = true
 		svc, err := is.RetrieveByLabel(query.Service)
