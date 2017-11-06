@@ -25,18 +25,6 @@ type esVersion struct {
 	Number string `json:"number"`
 }
 
-// type CMDLogQuery struct {
-// 	Query    string // default *
-// 	Follow   bool
-// 	Hours    int
-// 	Minutes  int
-// 	Seconds  int
-// 	Service  string
-// 	JobID    string
-// 	Target   string
-// 	FileName string
-// }
-
 // CmdLogs is a way to stream logs from Kibana to your local terminal. This is
 // useful because Kibana is hard to look at because it splits every single
 // log statement into a separate block that spans multiple lines so it's

@@ -23,19 +23,6 @@ type SLogsMock struct {
 }
 
 func (l *SLogsMock) RetrieveElasticsearchVersion(domain string) (string, error) {
-	// headers := map[string][]string{"Cookie": {"sessionToken=" + url.QueryEscape(l.Settings.SessionToken)}}
-	// resp, statusCode, err := l.Settings.HTTPManager.Get(nil, fmt.Sprintf("https://%s/__es/", domain), headers)
-	// if err != nil {
-	// 	return "", err
-	// }
-	// var wrapper struct {
-	// 	Version esVersion `json:"version"`
-	// }
-	// err = l.Settings.HTTPManager.ConvertResp(resp, statusCode, &wrapper)
-	// if err != nil {
-	// 	return "", err
-	// }
-	// return wrapper.Version.Number, nil
 	return "5", nil
 }
 
@@ -47,10 +34,6 @@ func (l *SLogsMock) Output(queryString, domain string, generator queryGenerator,
 		appLogsValue = "supervisord"
 	}
 
-	// urlString := fmt.Sprintf("https://%s/__es", domain)
-
-	// headers := map[string][]string{"Cookie": {"sessionToken=" + url.QueryEscape(l.Settings.SessionToken)}}
-
 	logrus.Println("        @timestamp       -        message")
 	for {
 		queryBytes, err := generator(queryString, appLogsIdentifier, appLogsValue, startTimestamp, from, hostNames, fileName)
@@ -60,10 +43,6 @@ func (l *SLogsMock) Output(queryString, domain string, generator queryGenerator,
 			return -1, errors.New("Error generating query")
 		}
 
-		// resp, statusCode, err := l.Settings.HTTPManager.Get(queryBytes, fmt.Sprintf("%s/_search", urlString), headers)
-		// if err != nil {
-		// 	return from, err
-		// }
 		var logs models.Logs
 		var hits models.Hits
 		logHits := []models.LogHits{}
@@ -82,10 +61,6 @@ func (l *SLogsMock) Output(queryString, domain string, generator queryGenerator,
 		hits.MaxScore = 2.3
 		hits.Total = 1
 		logs.Hits = &hits
-		// err = l.Settings.HTTPManager.ConvertResp(resp, statusCode, &logs)
-		// if err != nil {
-		// 	return from, err
-		// }
 
 		end := time.Time{}
 		for _, lh := range *logs.Hits.Hits {
