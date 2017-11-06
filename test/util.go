@@ -19,7 +19,7 @@ const (
 	Pod       = "pod1"
 	SvcID     = "svc1"
 	SvcLabel  = "code1"
-	JobID     = "job1"
+	JobID     = "12345678"
 	Target    = "target1"
 
 	AliasAlt     = "2"
@@ -30,8 +30,11 @@ const (
 	PodAlt       = "pod2"
 	SvcIDAlt     = "svc2"
 	SvcLabelAlt  = "code2"
-	JobIDAlt     = "job2"
+	JobIDAlt     = "abcdefgh"
 	TargetAlt    = "target2"
+
+	GoodDate = "2017-09-24T17:23:04.999999999Z07:00"
+	BadDate  = "2017-09-22T17:23:04.999999999Z07:00"
 )
 
 func Setup() (*http.ServeMux, *httptest.Server, *url.URL) {

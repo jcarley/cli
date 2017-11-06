@@ -159,6 +159,7 @@ type LogHits struct {
 	ID     string              `json:"_id"`
 	Score  float64             `json:"_score"`
 	Fields map[string][]string `json:"fields"`
+	Source map[string]string   `json:"_source"`
 }
 
 // Login is used for making an authentication request
@@ -233,11 +234,6 @@ type OrgUser struct {
 // Payload is the payload of a job
 type Payload struct {
 	Environment map[string]string `json:"environment"`
-}
-
-// Description is the description of a job
-type Description struct {
-	HostName string `json:"hostName"`
 }
 
 // Pod is a pod returned from the pod router
@@ -396,8 +392,7 @@ type Site struct {
 
 // Spec is a job specification
 type Spec struct {
-	Payload     *Payload     `json:"payload"`
-	Description *Description `json:"description"`
+	Payload *Payload `json:"payload"`
 }
 
 // TempURL holds a URL for uploading or downloading files from a temporary URL

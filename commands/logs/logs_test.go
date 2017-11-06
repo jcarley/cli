@@ -158,7 +158,7 @@ func (p *SPromptsMock) CaptureInput(msg string) string {
 	return "y"
 }
 
-func muxSetup(mux *http.ServeMux, t *testing.T, serviceType string, hostNames []string, query *CMDLogQuery) {
+func muxSetup(mux *http.ServeMux, t *testing.T, serviceType string, createdAt []string, query *CMDLogQuery) {
 	mux.HandleFunc("/environments/"+test.EnvID+"/services/",
 		// Retrieve services
 		func(w http.ResponseWriter, r *http.Request) {
@@ -171,15 +171,7 @@ func muxSetup(mux *http.ServeMux, t *testing.T, serviceType string, hostNames []
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "GET")
 			if query.JobID == test.JobID {
-				specJSON := fmt.Sprintf(`{
-						"payload": {
-							"environment": {"id":"%s","name":"%s","namespace":"%s","organizationId":"%s"}
-						},
-						"description": {
-							"hostName": "%s"
-						}
-					}`, test.EnvID, test.EnvName, test.Namespace, test.OrgID, hostNames[0])
-				jobJSON := fmt.Sprintf(`{"id":"%s","type":"%s","target":"%s","status":"happy","spec":%s}`, test.JobID, "deploy", test.Target, specJSON)
+				jobJSON := fmt.Sprintf(`{"id":"%s","type":"%s","target":"%s","status":"happy", "created_at":"%s"}`, test.JobID, "deploy", test.Target, createdAt[0])
 				fmt.Fprint(w, jobJSON)
 			} else {
 				fmt.Fprint(w, "")
@@ -187,31 +179,24 @@ func muxSetup(mux *http.ServeMux, t *testing.T, serviceType string, hostNames []
 		},
 	)
 	mux.HandleFunc("/environments/"+test.EnvID+"/services/"+test.SvcID+"/jobs",
-		// RetrieveByTarget
+		// RetrieveByTarget/Type
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "GET")
-			if query.Target == test.Target {
-				var jobs []string
-				for i, hostName := range hostNames {
-					specJSON := fmt.Sprintf(`{
-							"payload": {
-								"environment": {"id":"%s","name":"%s","namespace":"%s","organizationId":"%s"}
-							},
-							"description": {
-								"hostName": "%s"
-							}
-						}`, test.EnvID, test.EnvName, test.Namespace, test.OrgID, hostName)
-					jobID := test.JobID
-					if i > 0 {
-						jobID = test.JobIDAlt
-					}
-					jobs = append(jobs, fmt.Sprintf(`{"id":"%s","type":"%s","target":"%s","status":"happy","spec":%s}`, jobID, "worker", test.Target, specJSON))
+			// if query.Target == test.Target {
+			var jobs []string
+			for i, created := range createdAt {
+				jobID := test.JobID
+				if i > 0 {
+					jobID = test.JobIDAlt
 				}
-				jobsJSON := fmt.Sprintf("[%s]", strings.Join(jobs, ","))
-				fmt.Fprint(w, jobsJSON)
-			} else {
-				fmt.Fprint(w, "")
+				jobs = append(jobs, fmt.Sprintf(`{"id":"%s","type":"%s","target":"%s","status":"happy","created_at":"%s"}`, jobID, "worker", test.Target, created))
 			}
+			jobsJSON := fmt.Sprintf("[%s]", strings.Join(jobs, ","))
+			fmt.Fprint(w, jobsJSON)
+			// } else {
+			//
+			// 	fmt.Fprint(w, "")
+			// }
 		},
 	)
 	mux.HandleFunc("/environments",
@@ -250,7 +235,7 @@ func TestLogsService(t *testing.T) {
 		Follow:  false,
 		Service: test.SvcLabel,
 	}
-	muxSetup(mux, t, "code", []string{"hostinLikaBoss"}, &cmdQuery)
+	muxSetup(mux, t, "code", []string{test.GoodDate}, &cmdQuery)
 
 	ilogs := &SLogsMock{
 		Settings: settings,
@@ -271,7 +256,7 @@ func TestLogsJobID(t *testing.T) {
 		Service: test.SvcLabel,
 		JobID:   test.JobID,
 	}
-	muxSetup(mux, t, "code", []string{"hostinLikaBoss"}, &cmdQuery)
+	muxSetup(mux, t, "code", []string{test.GoodDate}, &cmdQuery)
 
 	ilogs := &SLogsMock{
 		Settings: settings,
@@ -292,7 +277,7 @@ func TestLogsTarget(t *testing.T) {
 		Service: test.SvcLabel,
 		Target:  test.Target,
 	}
-	muxSetup(mux, t, "code", []string{"hostinLikaBoss", "oofOwieOuchHost"}, &cmdQuery)
+	muxSetup(mux, t, "code", []string{test.GoodDate, test.GoodDate}, &cmdQuery)
 
 	ilogs := &SLogsMock{
 		Settings: settings,
@@ -312,7 +297,7 @@ func TestLogsStream(t *testing.T) {
 		Follow:  true,
 		Service: test.SvcLabel,
 	}
-	muxSetup(mux, t, "code", []string{"hostinLikaBoss"}, &cmdQuery)
+	muxSetup(mux, t, "code", []string{test.GoodDate}, &cmdQuery)
 
 	ilogs := &SLogsMock{
 		Settings: settings,
@@ -332,7 +317,7 @@ func TestLogsBadService(t *testing.T) {
 		Follow:  false,
 		Service: "BadServiceLabel",
 	}
-	muxSetup(mux, t, "code", []string{"hostinLikaBoss"}, &cmdQuery)
+	muxSetup(mux, t, "code", []string{test.BadDate}, &cmdQuery)
 
 	ilogs := &SLogsMock{
 		Settings: settings,
@@ -355,7 +340,7 @@ func TestLogsBadRequestMissingService(t *testing.T) {
 		Follow: false,
 		Target: test.Target,
 	}
-	muxSetup(mux, t, "code", []string{"hostinLikaBoss"}, &cmdQuery)
+	muxSetup(mux, t, "code", []string{test.GoodDate}, &cmdQuery)
 
 	ilogs := &SLogsMock{
 		Settings: settings,
@@ -379,7 +364,7 @@ func TestLogsBadRequestTargetAndJobID(t *testing.T) {
 		Target: test.Target,
 		JobID:  test.JobID,
 	}
-	muxSetup(mux, t, "code", []string{"hostinLikaBoss"}, &cmdQuery)
+	muxSetup(mux, t, "code", []string{test.GoodDate}, &cmdQuery)
 
 	ilogs := &SLogsMock{
 		Settings: settings,
@@ -403,7 +388,7 @@ func TestLogsBadRequestTargetNonCodeService(t *testing.T) {
 		Service: test.SvcLabel,
 		Target:  test.Target,
 	}
-	muxSetup(mux, t, "database", []string{"hostinLikaBoss"}, &cmdQuery)
+	muxSetup(mux, t, "database", []string{test.GoodDate}, &cmdQuery)
 
 	ilogs := &SLogsMock{
 		Settings: settings,
@@ -427,7 +412,7 @@ func TestLogsBadServiceWithTarget(t *testing.T) {
 		Service: "BadServiceLabel",
 		Target:  test.Target,
 	}
-	muxSetup(mux, t, "code", []string{"hostinLikaBoss"}, &cmdQuery)
+	muxSetup(mux, t, "code", []string{test.GoodDate}, &cmdQuery)
 
 	ilogs := &SLogsMock{
 		Settings: settings,
@@ -451,7 +436,7 @@ func TestLogsBadJobID(t *testing.T) {
 		Service: test.SvcLabel,
 		JobID:   "BadJobID",
 	}
-	muxSetup(mux, t, "code", []string{"hostinLikaBoss"}, &cmdQuery)
+	muxSetup(mux, t, "code", []string{test.GoodDate}, &cmdQuery)
 
 	ilogs := &SLogsMock{
 		Settings: settings,
@@ -475,7 +460,7 @@ func TestLogsBadTarget(t *testing.T) {
 		Service: test.SvcLabel,
 		Target:  "BadTarget",
 	}
-	muxSetup(mux, t, "code", []string{"hostinLikaBoss"}, &cmdQuery)
+	muxSetup(mux, t, "code", []string{test.GoodDate}, &cmdQuery)
 
 	ilogs := &SLogsMock{
 		Settings: settings,
@@ -499,16 +484,14 @@ func TestLogsNoValidHostNames(t *testing.T) {
 		Service: test.SvcLabel,
 		Target:  test.Target,
 	}
-	muxSetup(mux, t, "code", []string{"", ""}, &cmdQuery)
+	muxSetup(mux, t, "code", []string{test.BadDate, test.BadDate}, &cmdQuery)
 
 	ilogs := &SLogsMock{
 		Settings: settings,
 	}
 	err := CmdLogs(&cmdQuery, settings.EnvironmentID, settings, ilogs, &SPromptsMock{}, environments.New(settings), services.New(settings), jobs.New(settings), sites.New(settings))
-	expectedErr := fmt.Sprintf(`All %d jobs for the service "%s"%s do not have valid hostnames to allow their logs to be queried. Unable to proceed`, 2, cmdQuery.Service, fmt.Sprintf(` that have a target of "%s"`, cmdQuery.Target))
-	if err == nil {
-		t.Fatalf("Expected: %s\n", expectedErr)
-	} else if err.Error() != expectedErr {
+	expectedErr := fmt.Sprintf(`All %d jobs for the service "%s"%s do not have valid hostnames to allow their logs to be queried. Redeploy the service if you would like to use this functionality.`, 2, cmdQuery.Service, fmt.Sprintf(` that have a target of "%s"`, cmdQuery.Target))
+	if err == nil || err.Error() != expectedErr {
 		t.Fatalf("Expected: %s\nGot: %s", expectedErr, err)
 	}
 }
@@ -523,7 +506,7 @@ func TestLogsOneValidHostName(t *testing.T) {
 		Service: test.SvcLabel,
 		Target:  test.Target,
 	}
-	muxSetup(mux, t, "code", []string{"", "developersdevelopersdevelopersdevelopers", "", ""}, &cmdQuery)
+	muxSetup(mux, t, "code", []string{test.BadDate, test.GoodDate, test.BadDate, test.BadDate}, &cmdQuery)
 
 	ilogs := &SLogsMock{
 		Settings: settings,

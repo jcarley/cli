@@ -19,6 +19,7 @@ import (
 )
 
 const size = 50
+const hostNameFeatureReleaseDate = "2017-09-23T00:00:00.0Z07:00"
 
 type esVersion struct {
 	Number string `json:"number"`
@@ -55,7 +56,6 @@ func CmdLogs(query *CMDLogQuery, envID string, settings *models.Settings, il ILo
 	if len(query.Target) > 0 && len(query.Service) == 0 {
 		return fmt.Errorf("You must specify a code service to query the logs for a particular target")
 	}
-	var svcID string
 	var hostNames []string
 	//TODO: Get from service label if no jobID or target defined
 	//Replace all non alphanumeric characters with underscores
@@ -63,8 +63,11 @@ func CmdLogs(query *CMDLogQuery, envID string, settings *models.Settings, il ILo
 	//If not code or  custom service, then fall back to hostName
 	//Get all deploy jobs for service, check if host names exist. If not, then can't do this command
 	var fileName string
-	if len(query.JobID) > 0 || len(query.Target) > 0 {
-		// t := time.Unix(startOfReadableHostNames, 0)
+	isServiceQuery := false
+
+	// TODO: Fix tests for these cases (commented out to make go not freak out)
+	if len(query.Service) > 0 {
+		isServiceQuery = true
 		svc, err := is.RetrieveByLabel(query.Service)
 		if err != nil {
 			return err
@@ -72,76 +75,89 @@ func CmdLogs(query *CMDLogQuery, envID string, settings *models.Settings, il ILo
 		if svc == nil {
 			return fmt.Errorf("Cannot find the specified service \"%s\".", query.Service)
 		}
-		svcID = svc.ID
+
+		var jobs []models.Job
 		if len(query.JobID) > 0 {
-			job, err := ij.Retrieve(query.JobID, svc.ID, true)
+			job, err := ij.Retrieve(query.JobID, svc.ID, false)
 			if err != nil {
 				return err
 			}
 			if job == nil || job.ID != query.JobID {
 				return fmt.Errorf("Cannot find the specified job \"%s\".", query.JobID)
 			}
-			if len(job.Spec.Description.HostName) == 0 {
-				return fmt.Errorf("This job, \"%s\", does not have a valid host name and therefore its logs are not marked with its \"ID\".", job.ID)
-			}
-			hostNames = []string{job.Spec.Description.HostName}
+			jobs = append(jobs, *job)
 		} else if len(query.Target) > 0 {
 			if svc.Type != "code" {
 				return fmt.Errorf("Cannot specifiy a target for a non-code service type")
 			}
-			jobs, err := ij.RetrieveByTarget(svcID, query.Target, 1, 25)
+			jobsPointer, err := ij.RetrieveByTarget(svc.ID, query.Target, 1, 25)
 			if err != nil {
 				return err
 			}
-			if jobs == nil || len(*jobs) == 0 {
-				return fmt.Errorf("Cannot find any jobs with target \"%s\" for service \"%s\"", query.Target, svcID)
+			jobs = *jobsPointer
+			if jobs == nil || len(jobs) == 0 {
+				return fmt.Errorf("Cannot find any jobs with target \"%s\" for service \"%s\"", query.Target, svc.ID)
 			}
-			hostNames, err = getHostNames(jobs, query, ip)
+		} else {
+			//TODO: Make better retrieve function? May need to create a new podAPI route for this, or edit the current one
+			deployJobs, err := ij.RetrieveByType(svc.ID, "deploy", 1, 25)
 			if err != nil {
 				return err
 			}
+			workerJobs, err := ij.RetrieveByType(svc.ID, "worker", 1, 25)
+			if err != nil {
+				return err
+			}
+			jobs = append(*deployJobs, *workerJobs...)
+			if jobs == nil || len(jobs) == 0 {
+				return fmt.Errorf("Cannot find any jobs for service \"%s\"", svc.ID)
+			}
 		}
-	} else if len(query.Service) > 0 {
-		svc, err := is.RetrieveByLabel(query.Service)
-		if err != nil {
-			return err
+
+		var validJobs []models.Job
+		badCount := 0
+		for _, job := range jobs {
+			if job.CreatedAt >= hostNameFeatureReleaseDate {
+				validJobs = append(validJobs, job)
+			} else {
+				badCount++
+			}
 		}
-		if svc == nil {
-			return fmt.Errorf("Cannot find the specified service \"%s\".", query.Service)
-		}
-		svcID = svc.ID
-		reg, err := regexp.Compile("[^a-zA-Z0-9]+")
-		if err != nil {
-			return err
-		}
-		switch svc.Type {
-		case "app":
-			{
+
+		if badCount > 0 {
+			totalJobs := len(jobs)
+			if svc.Type != "code" {
+				return fmt.Errorf("\"%s\" was deployed before service logging was added. If you would like to use this functionality, please redeploy the service", svc.Label)
+			} else if len(query.JobID) == 0 && len(query.Target) == 0 {
+				reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+				if err != nil {
+					return err
+				}
 				fileName = "/data/log/app/" + reg.ReplaceAllString(svc.Label, "_") + "/current"
-			}
-		case "custom":
-			{
-				fileName = "/data/log/custom/" + reg.ReplaceAllString(svc.Label, "_") + "/current"
-			}
-		default:
-			{
-				jobs, err := ij.RetrieveByType(svcID, "deploy", 1, 25)
-				if err != nil {
-					return err
+			} else {
+				targetString := ""
+				if len(query.Target) > 0 {
+					targetString = fmt.Sprintf(` that have a target of "%s"`, query.Target)
 				}
-				if jobs == nil {
-					return fmt.Errorf("Cannot find any deploy jobs for service \"%s\"", svcID)
-				}
-				hostNames, err = getHostNames(jobs, query, ip)
-				if err != nil {
-					return err
+
+				if badCount < totalJobs {
+					prompt := fmt.Sprintf("Of the %d jobs for the service \"%s\"%s %d do not have a valid hostname to allow their logs to be queried. Would you like to proceed anyways?", totalJobs, query.Service, targetString, badCount)
+					err := ip.YesNo("(y/n)", prompt)
+					if err != nil {
+						return err
+					}
+					hostNames = buildHostNames(jobs, svc.Label)
+				} else {
+					return fmt.Errorf(`All %d jobs for the service "%s"%s do not have valid hostnames to allow their logs to be queried. Redeploy the service if you would like to use this functionality.`, totalJobs, query.Service, targetString)
 				}
 			}
+		} else {
+			hostNames = buildHostNames(jobs, svc.Label)
 		}
 	}
+
 	env, err := ie.Retrieve(envID)
 	if err != nil {
-		fmt.Println("Err retruevug env")
 		return err
 	}
 	serviceProxy, err := is.RetrieveByLabel("service_proxy")
@@ -167,7 +183,7 @@ func CmdLogs(query *CMDLogQuery, envID string, settings *models.Settings, il ILo
 		version = ""
 	}
 	generator := chooseQueryGenerator(version)
-	if query.Follow {
+	if query.Follow && !isServiceQuery {
 		if err = il.Watch(query.Query, domain); err != nil {
 			logrus.Debugf("Error attempting to stream logs from logwatch: %s", err)
 		} else {
@@ -211,7 +227,7 @@ func (l *SLogs) Output(queryString, domain string, generator queryGenerator, fro
 		appLogsValue = "supervisord"
 	}
 
-	urlString := fmt.Sprintf("https://%s/__es", domain)
+	urlString := fmt.Sprintf("https://%s/__es/logstash-*", domain)
 
 	headers := map[string][]string{"Cookie": {"sessionToken=" + url.QueryEscape(l.Settings.SessionToken)}}
 
@@ -236,9 +252,10 @@ func (l *SLogs) Output(queryString, domain string, generator queryGenerator, fro
 
 		end := time.Time{}
 		for _, lh := range *logs.Hits.Hits {
-			if len(lh.Fields) != 0 {
-				logrus.Printf("%s - %s", lh.Fields["@timestamp"][0], lh.Fields["message"][0])
-				end, _ = time.Parse(time.RFC3339Nano, lh.Fields["@timestamp"][0])
+			timestamp, message := getLogData(lh)
+			if len(timestamp) != 0 && len(message) != 0 { // QUESTION: Do we care if the timestamp is missing? Would that ever happen?
+				logrus.Printf("%s - %s", timestamp, message)
+				end, _ = time.Parse(time.RFC3339Nano, timestamp)
 			}
 		}
 		amount := len(*logs.Hits.Hits)
@@ -265,39 +282,23 @@ func (l *SLogs) Stream(queryString, domain string, generator queryGenerator, fro
 	}
 }
 
-func getHostNames(jobs *[]models.Job, query *CMDLogQuery, ip prompts.IPrompts) ([]string, error) {
-	var totalCount, badCount int
+func buildHostNames(jobs []models.Job, serviceLabel string) []string {
 	var hostNames []string
-	fmt.Printf("Jobs: %d\n", len(*jobs))
-	for _, j := range *jobs {
-		// TODO: Spec not getting filled
-		fmt.Printf("SPEC: %s\n", j.Spec)
-		fmt.Printf("Job: %v\n", j)
-		if j.Spec != nil {
-			hostName := j.Spec.Description.HostName
-			if len(hostName) > 0 {
-				hostNames = append(hostNames, hostName)
-			} else {
-				badCount++
-			}
+	for _, job := range jobs {
+		if job.Type == "deploy" {
+			hostNames = append(hostNames, fmt.Sprintf("%s-%s", serviceLabel, job.ID[:6]))
 		} else {
-			badCount++
-		}
-		totalCount++
-	}
-	if badCount > 0 {
-		targetString := ""
-		if len(query.Target) > 0 {
-			targetString = fmt.Sprintf(` that have a target of "%s"`, query.Target)
-		}
-		if badCount == totalCount {
-			return nil, fmt.Errorf(`All %d jobs for the service "%s"%s do not have valid hostnames to allow their logs to be queried. Unable to proceed`, totalCount, query.Service, targetString)
-		}
-		prompt := fmt.Sprintf("Of the %d jobs for the service \"%s\"%s %d do not have a valid hostname to allow their logs to be queried. Would you like to proceed anyways?", totalCount, query.Service, targetString, badCount)
-		err := ip.YesNo("(y/n)", prompt)
-		if err != nil {
-			return nil, err
+			hostNames = append(hostNames, fmt.Sprintf("%s-%s-%s", serviceLabel, job.Target, job.ID[:6]))
 		}
 	}
-	return hostNames, nil
+	return hostNames
+}
+
+func getLogData(lh models.LogHits) (string, string) {
+	timestamp, tsOk := lh.Fields["@timestamp"]
+	message, msgOk := lh.Fields["message"]
+	if tsOk && msgOk {
+		return timestamp[0], message[0]
+	}
+	return lh.Source["@timestamp"], lh.Source["message"]
 }
