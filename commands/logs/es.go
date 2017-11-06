@@ -15,7 +15,6 @@ func chooseQueryGenerator(version string) queryGenerator {
 	} else if strings.HasPrefix(version, "2.") {
 		generator = generateES2Query
 	}
-	fmt.Printf("Version: %s\n", version)
 	return generator
 }
 
