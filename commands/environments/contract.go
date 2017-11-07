@@ -14,7 +14,7 @@ import (
 var Cmd = models.Command{
 	Name:      "environments",
 	ShortHelp: "Manage environments for which you have access",
-	LongHelp:  "The `environments` command allows you to manage your environments. The environments command can not be run directly but has sub commands.",
+	LongHelp:  "The `environments` command allows you to manage your environments. The environments command can not be run directly but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))

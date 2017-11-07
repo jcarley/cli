@@ -17,7 +17,7 @@ var Cmd = models.Command{
 		"SSH keys can be used for authentication and pushing code to the Datica platform. " +
 		"Any SSH keys added to your user account should not be shared but be treated as private SSH keys. " +
 		"Any SSH key uploaded to your user account will be able to be used with all code services and environments that you have access to. " +
-		"The keys command can not be run directly but has sub commands.",
+		"The keys command can not be run directly but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.CommandLong(AddSubCmd.Name, AddSubCmd.ShortHelp, AddSubCmd.LongHelp, AddSubCmd.CmdFunc(settings))

@@ -18,7 +18,7 @@ var Cmd = models.Command{
 	ShortHelp: "Tasks for updating sites, including hostnames, SSL certificates, and private keys",
 	LongHelp: "The `sites` command gives access to hostname and SSL certificate usage for public facing services. " +
 		"`sites` are different from `certs` in that `sites` use an instance of a `cert` and are associated with a single service. " +
-		"`certs` can be used by multiple sites. The sites command can not be run directly but has sub commands.",
+		"`certs` can be used by multiple sites. The sites command can not be run directly but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.CommandLong(CreateSubCmd.Name, CreateSubCmd.ShortHelp, CreateSubCmd.LongHelp, CreateSubCmd.CmdFunc(settings))

@@ -26,7 +26,7 @@ var Cmd = models.Command{
 	ShortHelp: "Print service and environment metrics in your local time zone",
 	LongHelp: "The `metrics` command gives access to environment metrics or individual service metrics through a variety of formats. " +
 		"This is useful for checking on the status and performance of your application or environment as a whole. " +
-		"The metrics command cannot be run directly but has sub commands.",
+		"The metrics command cannot be run directly but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.CommandLong(CPUSubCmd.Name, CPUSubCmd.ShortHelp, CPUSubCmd.LongHelp, CPUSubCmd.CmdFunc(settings))

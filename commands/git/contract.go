@@ -16,7 +16,7 @@ var Cmd = models.Command{
 	Name:      "git-remote",
 	ShortHelp: "Manage git remotes to Datica code services",
 	LongHelp: "The `git-remote` command allows you to interact with code service remote git URLs. " +
-		"The git-remote command can not be run directly but has sub commands.",
+		"The git-remote command can not be run directly but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.CommandLong(AddSubCmd.Name, AddSubCmd.ShortHelp, AddSubCmd.LongHelp, AddSubCmd.CmdFunc(settings))

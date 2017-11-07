@@ -16,7 +16,7 @@ var Cmd = models.Command{
 	Name:      "users",
 	ShortHelp: "Manage users who have access to the given organization",
 	LongHelp: "The `users` command allows you to manage who has access to your environment through the organization that owns the environment. " +
-		"The users command can not be run directly but has three sub commands.",
+		"The users command can not be run directly but has three subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))

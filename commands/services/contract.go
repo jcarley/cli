@@ -16,7 +16,7 @@ import (
 var Cmd = models.Command{
 	Name:      "services",
 	ShortHelp: "Perform operations on an environment's services",
-	LongHelp:  "The `services` command allows you to manage your services. The services command cannot be run directly but has sub commands.",
+	LongHelp:  "The `services` command allows you to manage your services. The services command cannot be run directly but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))
