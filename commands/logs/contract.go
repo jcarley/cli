@@ -76,7 +76,7 @@ var Cmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 			}
-			cmd.Spec = "[QUERY] [(-f | -t)] [--hours] [--minutes] [--seconds] [--service (--job-id | --target)]"
+			cmd.Spec = "[QUERY] [(-f | -t)] [--hours] [--minutes] [--seconds] [--service [(--job-id | --target)]]"
 		}
 	},
 }
