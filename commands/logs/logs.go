@@ -122,11 +122,10 @@ func CmdLogs(query *CMDLogQuery, envID string, settings *models.Settings, il ILo
 					targetString = fmt.Sprintf(` that have a target of "%s"`, query.Target)
 				}
 
-				if badCount < totalJobs {
-					//NOTE: This code path will most likely never be reached. Either all jobs should have valid hostnames, or none of them will
+				if badCount < totalJobs { //NOTE: This code path will most likely never be reached. Either all jobs should have valid hostnames, or none of them will
+					defer logrus.Println("To view logs for all jobs, please redeploy the service.")
 					prompt := fmt.Sprintf("Of the %d jobs for the service \"%s\"%s %d do not have a valid hostname to allow their logs to be queried. Would you like to proceed anyways?", totalJobs, query.Service, targetString, badCount)
 					err := ip.YesNo("(y/n)", prompt)
-					logrus.Println("To view logs for all jobs, please redeploy the service.")
 					if err != nil {
 						return err
 					}
