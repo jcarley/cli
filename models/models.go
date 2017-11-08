@@ -159,6 +159,7 @@ type LogHits struct {
 	ID     string              `json:"_id"`
 	Score  float64             `json:"_score"`
 	Fields map[string][]string `json:"fields"`
+	Source map[string]string   `json:"_source"`
 }
 
 // Login is used for making an authentication request
