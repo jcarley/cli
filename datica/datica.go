@@ -17,6 +17,7 @@ import (
 	"github.com/daticahealth/cli/commands/environments"
 	"github.com/daticahealth/cli/commands/files"
 	"github.com/daticahealth/cli/commands/git"
+	"github.com/daticahealth/cli/commands/images"
 	initcmd "github.com/daticahealth/cli/commands/init"
 	"github.com/daticahealth/cli/commands/invites"
 	"github.com/daticahealth/cli/commands/jobs"
@@ -34,6 +35,7 @@ import (
 	"github.com/daticahealth/cli/commands/ssl"
 	"github.com/daticahealth/cli/commands/status"
 	"github.com/daticahealth/cli/commands/supportids"
+	"github.com/daticahealth/cli/commands/tags"
 	"github.com/daticahealth/cli/commands/update"
 	"github.com/daticahealth/cli/commands/users"
 	"github.com/daticahealth/cli/commands/vars"
@@ -213,6 +215,8 @@ func InitCLI(app *cli.Cli, settings *models.Settings) {
 	app.CommandLong(db.Cmd.Name, db.Cmd.ShortHelp, db.Cmd.LongHelp, db.Cmd.CmdFunc(settings))
 	app.CommandLong(deploy.Cmd.Name, deploy.Cmd.ShortHelp, deploy.Cmd.LongHelp, deploy.Cmd.CmdFunc(settings))
 	app.CommandLong(deploykeys.Cmd.Name, deploykeys.Cmd.ShortHelp, deploykeys.Cmd.LongHelp, deploykeys.Cmd.CmdFunc(settings))
+	app.CommandLong(images.Cmd.Name, images.Cmd.ShortHelp, images.Cmd.LongHelp, images.Cmd.CmdFunc(settings))
+	app.CommandLong(tags.Cmd.Name, tags.Cmd.ShortHelp, tags.Cmd.LongHelp, tags.Cmd.CmdFunc(settings))
 	app.CommandLong(domain.Cmd.Name, domain.Cmd.ShortHelp, domain.Cmd.LongHelp, domain.Cmd.CmdFunc(settings))
 	app.CommandLong(environments.Cmd.Name, environments.Cmd.ShortHelp, environments.Cmd.LongHelp, environments.Cmd.CmdFunc(settings))
 	app.CommandLong(files.Cmd.Name, files.Cmd.ShortHelp, files.Cmd.LongHelp, files.Cmd.CmdFunc(settings))
