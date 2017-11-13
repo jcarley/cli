@@ -1,7 +1,6 @@
 package images
 
 import (
-	"errors"
 	"sort"
 
 	"github.com/Sirupsen/logrus"
@@ -13,9 +12,6 @@ func cmdImageList(envID string, ie environments.IEnvironments, ii images.IImages
 	env, err := ie.Retrieve(envID)
 	if err != nil {
 		return err
-	}
-	if !env.DockerRegistryEnabled {
-		return errors.New("This environment does not have registry support enabled.")
 	}
 	images, err := ii.ListImages()
 	if err != nil {

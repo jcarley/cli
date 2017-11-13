@@ -68,12 +68,11 @@ type EncryptionStore struct {
 
 // Environment environment
 type Environment struct {
-	ID                    string `json:"id,omitempty"`
-	Name                  string `json:"name"`
-	Pod                   string `json:"pod,omitempty"`
-	Namespace             string `json:"namespace,omitempty"`
-	OrgID                 string `json:"organizationId"`
-	DockerRegistryEnabled bool   `json:"docker_registry_enabled"`
+	ID        string `json:"id,omitempty"`
+	Name      string `json:"name"`
+	Pod       string `json:"pod,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
+	OrgID     string `json:"organizationId"`
 }
 
 // Error is a wrapper around an array of errors from the API

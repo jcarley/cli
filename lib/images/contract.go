@@ -6,7 +6,6 @@ import "github.com/daticahealth/cli/models"
 type IImages interface {
 	ListImages() (*[]string, error)
 	ListTags(imageName string) (*[]string, error)
-	DeleteTag(imageName, tagName string) error
 }
 
 // SImages is a concrete implementation of IImages
