@@ -20,11 +20,3 @@ func cmdTagList(ii images.IImages, image string) error {
 	}
 	return nil
 }
-
-func cmdTagDelete(ii images.IImages, image, tag string) error {
-	err := ii.DeleteTag(image, tag)
-	if err == nil {
-		logrus.Println("Tag deleted successfully.")
-	}
-	return err
-}

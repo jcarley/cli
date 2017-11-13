@@ -19,10 +19,8 @@ const (
 	Pod       = "pod1"
 	SvcID     = "svc1"
 	SvcLabel  = "code1"
-	JobID     = "12345678"
+	JobID     = "00000000-0000-0000-0000-aaaaaaaaaaaa"
 	Target    = "target1"
-
-	JobID = "00000000-0000-0000-0000-aaaaaaaaaaaa"
 
 	AliasAlt     = "2"
 	EnvIDAlt     = "env2"
