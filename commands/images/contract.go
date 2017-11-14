@@ -31,7 +31,8 @@ var listCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List images available for an environment",
 	LongHelp: "`images list` lists available images for an environment. " +
-		"These images must be pushed to the registry for the environment in order to show. ",
+		"These images must be pushed to the registry for the environment in order to show. Example:\n" +
+		"```\ndatica -E \"<your_env_name>\" images list```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {
