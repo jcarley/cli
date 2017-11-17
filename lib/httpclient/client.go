@@ -97,6 +97,17 @@ func (m *TLSHTTPManager) ConvertResp(b []byte, statusCode int, s interface{}) er
 	return json.Unmarshal(b, s)
 }
 
+// ConvertError takes in a response from one of the httpclient methods and converts it
+// to a usable error object.
+func (m *TLSHTTPManager) ConvertError(b []byte, statusCode int) (*models.Error, error) {
+	if !m.isError(statusCode) {
+		return nil, errors.New("tried to convert a non-error response into an error")
+	}
+	var resp models.Error
+	err := json.Unmarshal(b, &resp)
+	return &resp, err
+}
+
 // isError checks if an HTTP response code is outside of the "OK" range.
 func (m *TLSHTTPManager) isError(statusCode int) bool {
 	return statusCode < 200 || statusCode >= 300
