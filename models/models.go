@@ -109,6 +109,7 @@ type Hits struct {
 type HTTPManager interface {
 	GetHeaders(sessionToken, version, pod, userID string) map[string][]string
 	ConvertResp(b []byte, statusCode int, s interface{}) error
+	ConvertError(b []byte, statuseCode int) (*Error, error)
 	Get(body []byte, url string, headers map[string][]string) ([]byte, int, error)
 	Post(body []byte, url string, headers map[string][]string) ([]byte, int, error)
 	PostFile(filepath string, url string, headers map[string][]string) ([]byte, int, error)
