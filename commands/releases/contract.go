@@ -89,13 +89,12 @@ var UpdateSubCmd = models.Command{
 	LongHelp: "`releases update` allows you to rename or add notes to an existing release. " +
 		"By default, releases are named with the git SHA of the commit used to create the release. " +
 		"Renaming them allows you to organize your releases. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" releases update code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883 --notes \"This is a stable build\" --release v1\n```",
+		"```\ndatica -E \"<your_env_name>\" releases update code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883 --notes \"This is a stable build\"\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to update a release for")
 			releaseName := cmd.StringArg("RELEASE_NAME", "", "The name of the release to update")
-			notes := cmd.StringOpt("n notes", "", "The new notes to save on the release. If omitted, notes will be unchanged.")
-			newReleaseName := cmd.StringOpt("r release", "", "The new name of the release. If omitted, the release name will be unchanged.")
+			notes := cmd.StringOpt("n notes", "", "The new notes to save on the release.")
 			cmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -103,12 +102,12 @@ var UpdateSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdUpdate(*serviceName, *releaseName, *notes, *newReleaseName, New(settings), services.New(settings))
+				err := CmdUpdate(*serviceName, *releaseName, *notes, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err)
 				}
 			}
-			cmd.Spec = "SERVICE_NAME RELEASE_NAME [--notes] [--release]"
+			cmd.Spec = "SERVICE_NAME RELEASE_NAME [--notes]"
 		}
 	},
 }
@@ -117,7 +116,7 @@ type IReleases interface {
 	List(svcID string) (*[]models.Release, error)
 	Retrieve(releaseName, svcID string) (*models.Release, error)
 	Rm(releaseName, svcID string) error
-	Update(releaseName, svcID, notes, newReleaseName string) error
+	Update(releaseName, svcID, notes string) error
 }
 
 type SReleases struct {

@@ -11,12 +11,9 @@ import (
 	"github.com/daticahealth/cli/models"
 )
 
-func CmdUpdate(svcName, releaseName, notes, newReleaseName string, ir IReleases, is services.IServices) error {
+func CmdUpdate(svcName, releaseName, notes string, ir IReleases, is services.IServices) error {
 	if strings.ContainsAny(releaseName, config.InvalidChars) {
 		return fmt.Errorf("Invalid existing release name. Names must not contain the following characters: %s", config.InvalidChars)
-	}
-	if strings.ContainsAny(newReleaseName, config.InvalidChars) {
-		return fmt.Errorf("Invalid updated release name. Names must not contain the following characters: %s", config.InvalidChars)
 	}
 	service, err := is.RetrieveByLabel(svcName)
 	if err != nil {
@@ -25,7 +22,7 @@ func CmdUpdate(svcName, releaseName, notes, newReleaseName string, ir IReleases,
 	if service == nil {
 		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services list\" command.", svcName)
 	}
-	err = ir.Update(releaseName, service.ID, notes, newReleaseName)
+	err = ir.Update(releaseName, service.ID, notes)
 	if err != nil {
 		return err
 	}
@@ -33,9 +30,9 @@ func CmdUpdate(svcName, releaseName, notes, newReleaseName string, ir IReleases,
 	return nil
 }
 
-func (r *SReleases) Update(releaseName, svcID, notes, newReleaseName string) error {
+func (r *SReleases) Update(releaseName, svcID, notes string) error {
 	rls := models.Release{
-		Name:  newReleaseName,
+		Name:  releaseName,
 		Notes: notes,
 	}
 	b, err := json.Marshal(rls)
