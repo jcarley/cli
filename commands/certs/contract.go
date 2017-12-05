@@ -16,7 +16,7 @@ import (
 var Cmd = models.Command{
 	Name:      "certs",
 	ShortHelp: "Manage your SSL certificates and domains",
-	LongHelp:  "The `certs` command gives access to certificate and private key management for public facing services. The certs command cannot be run directly but has subcommands.",
+	LongHelp:  "The <code>certs</code> command gives access to certificate and private key management for public facing services. The certs command cannot be run directly but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.CommandLong(CreateSubCmd.Name, CreateSubCmd.ShortHelp, CreateSubCmd.LongHelp, CreateSubCmd.CmdFunc(settings))
@@ -30,18 +30,18 @@ var Cmd = models.Command{
 var CreateSubCmd = models.Command{
 	Name:      "create",
 	ShortHelp: "Create a new domain with an SSL certificate and private key or create a Let's Encrypt certificate",
-	LongHelp: "`certs create` allows you to upload an SSL certificate and private key which can be used to secure your public facing code service. " +
+	LongHelp: "<code>certs create</code> allows you to upload an SSL certificate and private key which can be used to secure your public facing code service. " +
 		"Alternatively, you may opt to create a Let's Encrypt certificate. When creating a Let's Encrypt certificate, you only need to provide the certificate name along with the \"-l\" flag. " +
 		"Let's Encrypt certificates are issued asynchronously and may not be available immediately. Use the [certs list](#certs-list) command to check on the issuance status. " +
 		"Once issued, Let's Encrypt certificates automatically renew before expiring. " +
 		"Cert creation can be done at any time, even after environment provisioning, but must be done before [creating a site](#sites-create). " +
-		"When uploading a custom cert, the CLI will check to ensure the certificate and private key match. If you are using a self signed cert, pass in the `-s` flag and the hostname check will be skipped. " +
+		"When uploading a custom cert, the CLI will check to ensure the certificate and private key match. If you are using a self signed cert, pass in the <code>-s</code> flag and the hostname check will be skipped. " +
 		"Datica requires that your certificate file include your own certificate, intermediate certificates, and the root certificate in that order. " +
 		"If you only include your certificate, the CLI will attempt to resolve this and fetch intermediate and root certificates for you. " +
-		"It is advised that you create a full chain before running this command as the `-r` flag is accomplished on a \"best effort\" basis.\n\n" +
+		"It is advised that you create a full chain before running this command as the <code>-r</code> flag is accomplished on a \"best effort\" basis.\n\n" +
 		"Here are a few sample commands\n\n" +
-		"```\ndatica -E \"<your_env_name>\" certs create wildcard_mysitecom ~/path/to/cert.pem ~/path/to/priv.key\n" +
-		"datica -E \"<your_env_name>\" certs create my.site.com --lets-encrypt\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" certs create wildcard_mysitecom ~/path/to/cert.pem ~/path/to/priv.key\n" +
+		"datica -E \"<your_env_name>\" certs create my.site.com --lets-encrypt\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of this SSL certificate plus private key pair")
@@ -70,11 +70,11 @@ var CreateSubCmd = models.Command{
 var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List all existing domains that have SSL certificate and private key pairs",
-	LongHelp: "`certs list` lists all of the available certs you have created on your environment. " +
-		"The displayed names are the names that should be used as the `CERT_NAME` parameter in the [sites create](#sites-create) command. " +
+	LongHelp: "<code>certs list</code> lists all of the available certs you have created on your environment. " +
+		"The displayed names are the names that should be used as the <code>CERT_NAME</code> parameter in the [sites create](#sites-create) command. " +
 		"If any certs are Let's Encrypt certs, the issuance status will also be shown. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" certs list\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" certs list\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
@@ -96,8 +96,8 @@ var ListSubCmd = models.Command{
 var RmSubCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Remove an existing domain and its associated SSL certificate and private key pair",
-	LongHelp: "`certs rm` allows you to delete old certificate and private key pairs. Only certs that are not in use by a site can be deleted. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" certs rm mywebsite.com\n```",
+	LongHelp: "<code>certs rm</code> allows you to delete old certificate and private key pairs. Only certs that are not in use by a site can be deleted. Here is a sample command\n\n" +
+		"<pre>\ndatica -E \"<your_env_name>\" certs rm mywebsite.com\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of the certificate to remove")
@@ -121,11 +121,11 @@ var RmSubCmd = models.Command{
 var UpdateSubCmd = models.Command{
 	Name:      "update",
 	ShortHelp: "Update the SSL certificate and private key pair for an existing domain",
-	LongHelp: "`certs update` works nearly identical to the [certs create](#certs-create) command. " +
-		"All rules regarding self signed certs and certificate resolution from the `certs create` command apply to the `certs update` command. " +
+	LongHelp: "<code>certs update</code> works nearly identical to the [certs create](#certs-create) command. " +
+		"All rules regarding self signed certs and certificate resolution from the <code>certs create</code> command apply to the <code>certs update</code> command. " +
 		"Let's Encrypt certs cannot be updated since they are automatically renewed before expiring. " +
 		"This is useful for when your certificates have expired and you need to upload new ones. Update your certs and then redeploy your service_proxy. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" certs update mywebsite.com ~/path/to/new/cert.pem ~/path/to/new/priv.key\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" certs update mywebsite.com ~/path/to/new/cert.pem ~/path/to/new/priv.key\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of this SSL certificate and private key pair")

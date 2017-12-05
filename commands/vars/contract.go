@@ -15,7 +15,7 @@ import (
 var Cmd = models.Command{
 	Name:      "vars",
 	ShortHelp: "Interaction with environment variables for an environment",
-	LongHelp:  "The `vars` command allows you to manage environment variables for your code services. The vars command can not be run directly but has subcommands.",
+	LongHelp:  "The <code>vars</code> command allows you to manage environment variables for your code services. The vars command can not be run directly but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))
@@ -28,11 +28,11 @@ var Cmd = models.Command{
 var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List all environment variables",
-	LongHelp: "`vars list` prints out all known environment variables for the given code service. " +
-		"You can print out environment variables in JSON or YAML format through the `--json` or `--yaml` flags. " +
+	LongHelp: "<code>vars list</code> prints out all known environment variables for the given code service. " +
+		"You can print out environment variables in JSON or YAML format through the <code>--json</code> or <code>--yaml</code> flags. " +
 		"Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_name>\" vars list code-1\n" +
-		"datica -E \"<your_env_name>\" vars list code-1 --json\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" vars list code-1\n" +
+		"datica -E \"<your_env_name>\" vars list code-1 --json\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service containing the environment variables.")
@@ -66,11 +66,11 @@ var ListSubCmd = models.Command{
 var SetSubCmd = models.Command{
 	Name:      "set",
 	ShortHelp: "Set one or more new environment variables or update the values of existing ones",
-	LongHelp: "`vars set` allows you to add new environment variables or update the value of an existing environment variable on the given code service. " +
-		"You can set/update 1 or more environment variables at a time with this command by repeating the `-v` option multiple times. " +
+	LongHelp: "<code>vars set</code> allows you to add new environment variables or update the value of an existing environment variable on the given code service. " +
+		"You can set/update 1 or more environment variables at a time with this command by repeating the <code>-v</code> option multiple times. " +
 		"Once new environment variables are added or values updated, a [redeploy](#redeploy) is required for the given code service to have access to the new values. " +
-		"The environment variables must be of the form `<key>=<value>`. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" vars set code-1 -v AWS_ACCESS_KEY_ID=1234 -v AWS_SECRET_ACCESS_KEY=5678\n```",
+		"The environment variables must be of the form <code><key>=<value></code>. Here is a sample command\n\n" +
+		"<pre>\ndatica -E \"<your_env_name>\" vars set code-1 -v AWS_ACCESS_KEY_ID=1234 -v AWS_SECRET_ACCESS_KEY=5678\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service on which the environment variables will be set.")
@@ -101,12 +101,12 @@ var SetSubCmd = models.Command{
 var UnsetSubCmd = models.Command{
 	Name:      "unset",
 	ShortHelp: "Unset (delete) an existing environment variable",
-	LongHelp: "`vars unset` removes environment variables from the given code service. " +
+	LongHelp: "<code>vars unset</code> removes environment variables from the given code service. " +
 		"Only the environment variable name is required to unset. " +
 		"Once environment variables are unset, a [redeploy](#redeploy) is required for the given code service to realize the variable was removed. " +
 		"You can unset any number of environment variables in one command. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" vars unset code-1 AWS_ACCESS_KEY_ID AWS_SECRET_ACCES_KEY_ID\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" vars unset code-1 AWS_ACCESS_KEY_ID AWS_SECRET_ACCES_KEY_ID\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service on which the environment variables will be unset.")

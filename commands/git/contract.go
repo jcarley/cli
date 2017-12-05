@@ -15,7 +15,7 @@ import (
 var Cmd = models.Command{
 	Name:      "git-remote",
 	ShortHelp: "Manage git remotes to Datica code services",
-	LongHelp: "The `git-remote` command allows you to interact with code service remote git URLs. " +
+	LongHelp: "The <code>git-remote</code> command allows you to interact with code service remote git URLs. " +
 		"The git-remote command can not be run directly but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
@@ -28,9 +28,9 @@ var Cmd = models.Command{
 var AddSubCmd = models.Command{
 	Name:      "add",
 	ShortHelp: "Add the git remote for the given code service to the local git repo",
-	LongHelp: "`git-remote add` adds the proper git remote to a local git repository with the given remote name and service. " +
+	LongHelp: "<code>git-remote add</code> adds the proper git remote to a local git repository with the given remote name and service. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" git-remote add code-1 -r datica-code-1\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" git-remote add code-1 -r datica-code-1\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to add a git remote for")
@@ -56,10 +56,10 @@ var AddSubCmd = models.Command{
 var ShowSubCmd = models.Command{
 	Name:      "show",
 	ShortHelp: "Print out the git remote for a given code service",
-	LongHelp: "`git-remote show` prints out the git remote URL for the given service. " +
+	LongHelp: "<code>git-remote show</code> prints out the git remote URL for the given service. " +
 		"This can be used to do a manual push or use the git remote for another purpose such as a CI integration. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" git-remote show code-1\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" git-remote show code-1\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to add a git remote for")
