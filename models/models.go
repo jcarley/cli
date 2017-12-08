@@ -312,6 +312,8 @@ type ServiceFile struct {
 	Name           string `json:"name"`
 	UID            int    `json:"uid"`
 	EnableDownload bool   `json:"enable_download"`
+	CreatedAt      string `json:"created_at"`
+	UpdatedAt      string `json:"updated_at"`
 }
 
 // ServiceSize holds size information for a service

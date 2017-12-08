@@ -10,11 +10,13 @@ import (
 )
 
 var listTests = []struct {
-	svcName   string
-	expectErr bool
+	svcName        string
+	showTimestamps bool
+	expectErr      bool
 }{
-	{test.SvcLabel, false},
-	{"invalid-svc", true},
+	{test.SvcLabel, false, false},
+	{test.SvcLabel, true, false},
+	{"invalid-svc", false, true},
 }
 
 func TestList(t *testing.T) {
@@ -30,7 +32,7 @@ func TestList(t *testing.T) {
 	mux.HandleFunc("/environments/"+test.EnvID+"/services/"+test.SvcID+"/files",
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "GET")
-			fmt.Fprint(w, fmt.Sprintf(`[{"id":1,"name":"%s"}]`, fileName))
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":1,"name":"%s","created_at":"%s","updated_at":"%s"}]`, fileName, "2016-11-16T16:31:12", "2017-11-16T16:31:12"))
 		},
 	)
 
@@ -38,7 +40,7 @@ func TestList(t *testing.T) {
 		t.Logf("Data: %+v", data)
 
 		// test
-		err := CmdList(data.svcName, New(settings), services.New(settings))
+		err := CmdList(data.svcName, data.showTimestamps, New(settings), services.New(settings))
 
 		// assert
 		if err != nil != data.expectErr {
