@@ -67,6 +67,7 @@ var ListSubCmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			svcName := subCmd.StringArg("SERVICE_NAME", "service_proxy", "The name of the service to list files for")
+			showTimestamps := subCmd.BoolOpt("t showTimestamps", false, "Show when each file was created and most recently updated")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -74,12 +75,12 @@ var ListSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdList(*svcName, New(settings), services.New(settings))
+				err := CmdList(*svcName, *showTimestamps, New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "[SERVICE_NAME]"
+			subCmd.Spec = "[SERVICE_NAME] [-t]"
 		}
 	},
 }
