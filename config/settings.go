@@ -125,7 +125,7 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authH
 func StoreEnvironments(envs *[]models.Environment, settings *models.Settings) {
 	settings.Environments = map[string]models.AssociatedEnvV2{}
 	for _, env := range *envs {
-		settings.Environments[env.Name] = models.AssociatedEnvV2{
+		settings.Environments[env.ID] = models.AssociatedEnvV2{
 			EnvironmentID: env.ID,
 			Name:          env.Name,
 			Pod:           env.Pod,
@@ -175,11 +175,11 @@ func SaveSettings(settings *models.Settings) error {
 // in the given settings object. It then populates the EnvironmentID and
 // ServiceID on the settings object with appropriate values.
 func SetGivenEnv(envName string, settings *models.Settings) {
-	for eName, e := range settings.Environments {
-		if eName == envName {
+	for envID, e := range settings.Environments {
+		if e.Name == envName || envID == envName {
 			settings.EnvironmentID = e.EnvironmentID
 			settings.Pod = e.Pod
-			settings.EnvironmentName = envName
+			settings.EnvironmentName = e.Name
 			settings.OrgID = e.OrgID
 			break
 		}
