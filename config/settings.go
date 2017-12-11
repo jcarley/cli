@@ -125,7 +125,7 @@ func (s FileSettingsRetriever) GetSettings(envName, svcName, accountsHost, authH
 func StoreEnvironments(envs *[]models.Environment, settings *models.Settings) {
 	settings.Environments = map[string]models.AssociatedEnvV2{}
 	for _, env := range *envs {
-		settings.Environments[env.Name] = models.AssociatedEnvV2{
+		settings.Environments[env.ID] = models.AssociatedEnvV2{
 			EnvironmentID: env.ID,
 			Name:          env.Name,
 			Pod:           env.Pod,
@@ -154,8 +154,8 @@ func migrateFromV1(file *os.File) (models.Settings, error) {
 		PodCheck:       oldSettings.PodCheck,
 		Format:         currentFormat,
 	}
-	for envName, env := range oldSettings.Environments {
-		newSettings.Environments[envName] = models.AssociatedEnvV2{
+	for _, env := range oldSettings.Environments {
+		newSettings.Environments[env.EnvironmentID] = models.AssociatedEnvV2{
 			EnvironmentID: env.EnvironmentID,
 			Name:          env.Name,
 			Pod:           env.Pod,
@@ -174,12 +174,12 @@ func SaveSettings(settings *models.Settings) error {
 // SetGivenEnv takes the given env name and finds it in the env list
 // in the given settings object. It then populates the EnvironmentID and
 // ServiceID on the settings object with appropriate values.
-func SetGivenEnv(envName string, settings *models.Settings) {
-	for eName, e := range settings.Environments {
-		if eName == envName {
+func SetGivenEnv(envMatch string, settings *models.Settings) {
+	for _, e := range settings.Environments {
+		if e.Name == envMatch || e.EnvironmentID == envMatch {
 			settings.EnvironmentID = e.EnvironmentID
 			settings.Pod = e.Pod
-			settings.EnvironmentName = envName
+			settings.EnvironmentName = e.Name
 			settings.OrgID = e.OrgID
 			break
 		}

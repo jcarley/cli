@@ -3,16 +3,18 @@ package files
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/daticahealth/cli/commands/services"
 	"github.com/daticahealth/cli/models"
+	"github.com/olekukonko/tablewriter"
 )
 
 // CmdList lists all service files that are able to be downloaded
 // by a member of the environment. Typically service files of interest
 // will be on the service_proxy.
-func CmdList(svcName string, ifiles IFiles, is services.IServices) error {
+func CmdList(svcName string, showTimestamps bool, ifiles IFiles, is services.IServices) error {
 	service, err := is.RetrieveByLabel(svcName)
 	if err != nil {
 		return err
@@ -28,10 +30,32 @@ func CmdList(svcName string, ifiles IFiles, is services.IServices) error {
 		logrus.Println("No service files found")
 		return nil
 	}
-	logrus.Println("NAME")
-	for _, sf := range *files {
-		logrus.Println(sf.Name)
+
+	const dateForm = "2006-01-02T15:04:05"
+	headerArray := []string{"NAME"}
+	if showTimestamps {
+		headerArray = append(headerArray, "CREATED_AT", "UPDATED_AT")
 	}
+	data := [][]string{headerArray}
+	for _, sf := range *files {
+		line := []string{sf.Name}
+		if showTimestamps {
+			ct, _ := time.Parse(dateForm, sf.CreatedAt)
+			ut, _ := time.Parse(dateForm, sf.UpdatedAt)
+			line = append(line, ct.Local().Format(time.Stamp), ut.Local().Format(time.Stamp))
+		}
+		data = append(data, line)
+	}
+
+	table := tablewriter.NewWriter(logrus.StandardLogger().Out)
+	table.SetBorder(false)
+	table.SetRowLine(false)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.AppendBulk(data)
+	table.Render()
+
 	logrus.Printf("\nTo view the contents of a service file, use the \"datica files download %s FILE_NAME\" command", svcName)
 	return nil
 }
