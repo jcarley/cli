@@ -54,7 +54,7 @@ func CmdList(svcName string, ir IReleases, is services.IServices) error {
 			name = fmt.Sprintf("*%s", r.Name)
 		}
 		t, _ := time.Parse(dateForm, r.CreatedAt)
-		data = append(data, []string{name, t.Local().Format(time.Stamp), r.Notes})
+		data = append(data, []string{name, t.Local().Format(time.ANSIC), r.Notes})
 	}
 
 	table := tablewriter.NewWriter(logrus.StandardLogger().Out)

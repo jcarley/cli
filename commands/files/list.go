@@ -42,7 +42,7 @@ func CmdList(svcName string, showTimestamps bool, ifiles IFiles, is services.ISe
 		if showTimestamps {
 			ct, _ := time.Parse(dateForm, sf.CreatedAt)
 			ut, _ := time.Parse(dateForm, sf.UpdatedAt)
-			line = append(line, ct.Local().Format(time.Stamp), ut.Local().Format(time.Stamp))
+			line = append(line, ct.Local().Format(time.ANSIC), ut.Local().Format(time.ANSIC))
 		}
 		data = append(data, line)
 	}
