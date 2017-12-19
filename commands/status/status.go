@@ -74,7 +74,7 @@ func (s *SStatus) Status(env *models.Environment, services *[]models.Service, hi
 				}
 
 				t, _ := time.Parse(dateForm, job.CreatedAt)
-				fmt.Fprintln(w, displayType+"\t"+job.Status+"\t"+t.Local().Format(time.Stamp))
+				fmt.Fprintln(w, displayType+"\t"+job.Status+"\t"+t.Local().Format(time.ANSIC))
 			}
 			if service.Type == "code" {
 				latestBuildJobs, err := s.Jobs.RetrieveByType(service.ID, "build", 1, 1)
@@ -90,7 +90,7 @@ func (s *SStatus) Status(env *models.Environment, services *[]models.Service, hi
 					} else if latestBuildJob.ID != "" {
 						t, _ := time.Parse(dateForm, latestBuildJob.CreatedAt)
 						displayType := fmt.Sprintf("%s (%s)", service.Label, latestBuildJob.Type)
-						fmt.Fprintln(w, displayType+"\t"+latestBuildJob.Status+"\t"+t.Local().Format(time.Stamp))
+						fmt.Fprintln(w, displayType+"\t"+latestBuildJob.Status+"\t"+t.Local().Format(time.ANSIC))
 					}
 				}
 			}

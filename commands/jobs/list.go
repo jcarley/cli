@@ -51,7 +51,7 @@ func CmdList(svcName string, ij IJobs, is services.IServices) error {
 		id := j.ID
 
 		t, _ := time.Parse(dateForm, j.CreatedAt)
-		data = append(data, []string{id, j.Status, t.Local().Format(time.Stamp), j.Type, j.Target})
+		data = append(data, []string{id, j.Status, t.Local().Format(time.ANSIC), j.Type, j.Target})
 	}
 
 	table := tablewriter.NewWriter(logrus.StandardLogger().Out)
