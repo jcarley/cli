@@ -47,6 +47,7 @@ var CreateSubCmd = models.Command{
 			name := subCmd.StringArg("NAME", "", "The name of this SSL certificate plus private key pair")
 			pubKeyPath := subCmd.StringArg("PUBLIC_KEY_PATH", "", "The path to a public key file in PEM format")
 			privKeyPath := subCmd.StringArg("PRIVATE_KEY_PATH", "", "The path to an unencrypted private key file in PEM format")
+			downStream := subCmd.StringOpt("down-stream", "service_proxy", "The down-stream service the cert belongs to.")
 			selfSigned := subCmd.BoolOpt("s self-signed", false, "Whether or not the given SSL certificate and private key are self signed")
 			resolve := subCmd.BoolOpt("r resolve", true, "Whether or not to attempt to automatically resolve incomplete SSL certificate issues")
 			letsEncrypt := subCmd.BoolOpt("l lets-encrypt", false, "Whether or not this is a Let's Encrypt certificate")
@@ -57,12 +58,12 @@ var CreateSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdCreate(*name, *pubKeyPath, *privKeyPath, *selfSigned, *resolve, *letsEncrypt, New(settings), services.New(settings), ssl.New(settings))
+				err := CmdCreate(*name, *pubKeyPath, *privKeyPath, *downStream, *selfSigned, *resolve, *letsEncrypt, New(settings), services.New(settings), ssl.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "NAME ((PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r]) | -l)"
+			subCmd.Spec = "NAME ((PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r]) | -l) [--down-stream]"
 		}
 	},
 }
@@ -77,6 +78,7 @@ var ListSubCmd = models.Command{
 		"```\ndatica -E \"<your_env_name>\" certs list\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
+			downStream := subCmd.StringOpt("down-stream", "service_proxy", "The down-stream service to list certs for.")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -84,11 +86,12 @@ var ListSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdList(New(settings), services.New(settings))
+				err := CmdList(New(settings), services.New(settings), *downStream)
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
+			subCmd.Spec = "[--down-stream]"
 		}
 	},
 }
@@ -101,6 +104,7 @@ var RmSubCmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of the certificate to remove")
+			downStream := subCmd.StringOpt("down-stream", "service_proxy", "The down-stream service the cert belongs to.")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -108,12 +112,12 @@ var RmSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdRm(*name, New(settings), services.New(settings))
+				err := CmdRm(*name, New(settings), services.New(settings), *downStream)
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "NAME"
+			subCmd.Spec = "NAME [--down-stream]"
 		}
 	},
 }
@@ -131,6 +135,7 @@ var UpdateSubCmd = models.Command{
 			name := subCmd.StringArg("NAME", "", "The name of this SSL certificate and private key pair")
 			pubKeyPath := subCmd.StringArg("PUBLIC_KEY_PATH", "", "The path to a public key file in PEM format")
 			privKeyPath := subCmd.StringArg("PRIVATE_KEY_PATH", "", "The path to an unencrypted private key file in PEM format")
+			downStream := subCmd.StringOpt("down-stream", "service_proxy", "The down-stream service the cert belongs to.")
 			selfSigned := subCmd.BoolOpt("s self-signed", false, "Whether or not the given SSL certificate and private key are self signed")
 			resolve := subCmd.BoolOpt("r resolve", true, "Whether or not to attempt to automatically resolve incomplete SSL certificate issues")
 			subCmd.Action = func() {
@@ -140,12 +145,12 @@ var UpdateSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdUpdate(*name, *pubKeyPath, *privKeyPath, *selfSigned, *resolve, New(settings), services.New(settings), ssl.New(settings))
+				err := CmdUpdate(*name, *pubKeyPath, *privKeyPath, *downStream, *selfSigned, *resolve, New(settings), services.New(settings), ssl.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "NAME PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r]"
+			subCmd.Spec = "NAME PUBLIC_KEY_PATH PRIVATE_KEY_PATH [-s] [-r] [--down-stream]"
 		}
 	},
 }
