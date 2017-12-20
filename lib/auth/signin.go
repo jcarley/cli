@@ -193,5 +193,6 @@ func (a *SAuth) Verify() (*models.User, error) {
 		return nil, err
 	}
 	a.Settings.UsersID = user.UsersID
+	user.SessionToken = a.Settings.SessionToken
 	return &user, nil
 }

@@ -1,6 +1,8 @@
 package models
 
-import "github.com/jault3/mow.cli"
+import (
+	"github.com/jault3/mow.cli"
+)
 
 // AssociatedEnvV1 holds information about an associated environment
 type AssociatedEnvV1 struct {
@@ -37,6 +39,13 @@ type Command struct {
 	ShortHelp string
 	LongHelp  string
 	CmdFunc   func(settings *Settings) func(cmd *cli.Cmd)
+}
+
+// ContentDigest contains hash data for an image
+type ContentDigest struct {
+	HashType string
+	Hash     string
+	Size     int64
 }
 
 // ConsoleCredentials hold the keys necessary for connecting to a console service
@@ -116,6 +125,13 @@ type HTTPManager interface {
 	PutFile(filepath string, url string, headers map[string][]string) ([]byte, int, error)
 	Put(body []byte, url string, headers map[string][]string) ([]byte, int, error)
 	Delete(body []byte, url string, headers map[string][]string) ([]byte, int, error)
+}
+
+// Image contains data about an image
+type Image struct {
+	Name   string
+	Tag    string
+	Digest *ContentDigest
 }
 
 // Invite represents an invitation to an organization
@@ -216,6 +232,13 @@ type NetworkUsage struct {
 	TXKB      float64 `json:"tx_kb"`
 	TXPackets float64 `json:"tx_packets"`
 	TS        int     `json:"ts"`
+}
+
+type NotaryRepo struct {
+	RootTrustDir string
+	ImageName    string
+	NotaryServer string
+	User         *User
 }
 
 type Org struct {
