@@ -33,13 +33,13 @@ func TestList(t *testing.T) {
 	}
 	// check that the local cache was updated
 	expected := map[string]models.AssociatedEnvV2{
-		test.EnvName: models.AssociatedEnvV2{
+		test.EnvID: models.AssociatedEnvV2{
 			EnvironmentID: test.EnvID,
 			Name:          test.EnvName,
 			Pod:           test.Pod,
 			OrgID:         test.OrgID,
 		},
-		test.EnvNameAlt: models.AssociatedEnvV2{
+		test.EnvIDAlt: models.AssociatedEnvV2{
 			EnvironmentID: test.EnvIDAlt,
 			Name:          test.EnvNameAlt,
 			Pod:           test.PodAlt,
