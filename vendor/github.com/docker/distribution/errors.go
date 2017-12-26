@@ -1,219 +1,115 @@
 package distribution
 
 import (
+	"errors"
 	"fmt"
-	"net/url"
 	"strings"
-	"syscall"
 
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/reference"
-	"github.com/docker/distribution/registry/api/errcode"
-	"github.com/docker/distribution/registry/api/v2"
-	"github.com/docker/distribution/registry/client"
-	"github.com/docker/distribution/registry/client/auth"
-	"github.com/docker/docker/distribution/xfer"
-	"github.com/sirupsen/logrus"
+	"github.com/opencontainers/go-digest"
 )
 
-// ErrNoSupport is an error type used for errors indicating that an operation
-// is not supported. It encapsulates a more specific error.
-type ErrNoSupport struct{ Err error }
+// ErrAccessDenied is returned when an access to a requested resource is
+// denied.
+var ErrAccessDenied = errors.New("access denied")
 
-func (e ErrNoSupport) Error() string {
-	if e.Err == nil {
-		return "not supported"
-	}
-	return e.Err.Error()
+// ErrManifestNotModified is returned when a conditional manifest GetByTag
+// returns nil due to the client indicating it has the latest version
+var ErrManifestNotModified = errors.New("manifest not modified")
+
+// ErrUnsupported is returned when an unimplemented or unsupported action is
+// performed
+var ErrUnsupported = errors.New("operation unsupported")
+
+// ErrTagUnknown is returned if the given tag is not known by the tag service
+type ErrTagUnknown struct {
+	Tag string
 }
 
-// fallbackError wraps an error that can possibly allow fallback to a different
-// endpoint.
-type fallbackError struct {
-	// err is the error being wrapped.
-	err error
-	// confirmedV2 is set to true if it was confirmed that the registry
-	// supports the v2 protocol. This is used to limit fallbacks to the v1
-	// protocol.
-	confirmedV2 bool
-	// transportOK is set to true if we managed to speak HTTP with the
-	// registry. This confirms that we're using appropriate TLS settings
-	// (or lack of TLS).
-	transportOK bool
+func (err ErrTagUnknown) Error() string {
+	return fmt.Sprintf("unknown tag=%s", err.Tag)
 }
 
-// Error renders the FallbackError as a string.
-func (f fallbackError) Error() string {
-	return f.Cause().Error()
+// ErrRepositoryUnknown is returned if the named repository is not known by
+// the registry.
+type ErrRepositoryUnknown struct {
+	Name string
 }
 
-func (f fallbackError) Cause() error {
-	return f.err
+func (err ErrRepositoryUnknown) Error() string {
+	return fmt.Sprintf("unknown repository name=%s", err.Name)
 }
 
-// shouldV2Fallback returns true if this error is a reason to fall back to v1.
-func shouldV2Fallback(err errcode.Error) bool {
-	switch err.Code {
-	case errcode.ErrorCodeUnauthorized, v2.ErrorCodeManifestUnknown, v2.ErrorCodeNameUnknown:
-		return true
-	}
-	return false
+// ErrRepositoryNameInvalid should be used to denote an invalid repository
+// name. Reason may set, indicating the cause of invalidity.
+type ErrRepositoryNameInvalid struct {
+	Name   string
+	Reason error
 }
 
-type notFoundError struct {
-	cause errcode.Error
-	ref   reference.Named
+func (err ErrRepositoryNameInvalid) Error() string {
+	return fmt.Sprintf("repository name %q invalid: %v", err.Name, err.Reason)
 }
 
-func (e notFoundError) Error() string {
-	switch e.cause.Code {
-	case errcode.ErrorCodeDenied:
-		// ErrorCodeDenied is used when access to the repository was denied
-		return fmt.Sprintf("pull access denied for %s, repository does not exist or may require 'docker login'", reference.FamiliarName(e.ref))
-	case v2.ErrorCodeManifestUnknown:
-		return fmt.Sprintf("manifest for %s not found", reference.FamiliarString(e.ref))
-	case v2.ErrorCodeNameUnknown:
-		return fmt.Sprintf("repository %s not found", reference.FamiliarName(e.ref))
-	}
-	// Shouldn't get here, but this is better than returning an empty string
-	return e.cause.Message
+// ErrManifestUnknown is returned if the manifest is not known by the
+// registry.
+type ErrManifestUnknown struct {
+	Name string
+	Tag  string
 }
 
-func (e notFoundError) NotFound() {}
-
-func (e notFoundError) Cause() error {
-	return e.cause
+func (err ErrManifestUnknown) Error() string {
+	return fmt.Sprintf("unknown manifest name=%s tag=%s", err.Name, err.Tag)
 }
 
-type unknownError struct {
-	cause error
+// ErrManifestUnknownRevision is returned when a manifest cannot be found by
+// revision within a repository.
+type ErrManifestUnknownRevision struct {
+	Name     string
+	Revision digest.Digest
 }
 
-func (e unknownError) Error() string {
-	return e.cause.Error()
+func (err ErrManifestUnknownRevision) Error() string {
+	return fmt.Sprintf("unknown manifest name=%s revision=%s", err.Name, err.Revision)
 }
 
-func (e unknownError) Cause() error {
-	return e.cause
+// ErrManifestUnverified is returned when the registry is unable to verify
+// the manifest.
+type ErrManifestUnverified struct{}
+
+func (ErrManifestUnverified) Error() string {
+	return "unverified manifest"
 }
 
-func (e unknownError) Unknown() {}
+// ErrManifestVerification provides a type to collect errors encountered
+// during manifest verification. Currently, it accepts errors of all types,
+// but it may be narrowed to those involving manifest verification.
+type ErrManifestVerification []error
 
-// TranslatePullError is used to convert an error from a registry pull
-// operation to an error representing the entire pull operation. Any error
-// information which is not used by the returned error gets output to
-// log at info level.
-func TranslatePullError(err error, ref reference.Named) error {
-	switch v := err.(type) {
-	case errcode.Errors:
-		if len(v) != 0 {
-			for _, extra := range v[1:] {
-				logrus.Infof("Ignoring extra error returned from registry: %v", extra)
-			}
-			return TranslatePullError(v[0], ref)
-		}
-	case errcode.Error:
-		switch v.Code {
-		case errcode.ErrorCodeDenied, v2.ErrorCodeManifestUnknown, v2.ErrorCodeNameUnknown:
-			return notFoundError{v, ref}
-		}
-	case xfer.DoNotRetry:
-		return TranslatePullError(v.Err, ref)
+func (errs ErrManifestVerification) Error() string {
+	var parts []string
+	for _, err := range errs {
+		parts = append(parts, err.Error())
 	}
 
-	return unknownError{err}
+	return fmt.Sprintf("errors verifying manifest: %v", strings.Join(parts, ","))
 }
 
-// continueOnError returns true if we should fallback to the next endpoint
-// as a result of this error.
-func continueOnError(err error, mirrorEndpoint bool) bool {
-	switch v := err.(type) {
-	case errcode.Errors:
-		if len(v) == 0 {
-			return true
-		}
-		return continueOnError(v[0], mirrorEndpoint)
-	case ErrNoSupport:
-		return continueOnError(v.Err, mirrorEndpoint)
-	case errcode.Error:
-		return mirrorEndpoint || shouldV2Fallback(v)
-	case *client.UnexpectedHTTPResponseError:
-		return true
-	case ImageConfigPullError:
-		// ImageConfigPullError only happens with v2 images, v1 fallback is
-		// unnecessary.
-		// Failures from a mirror endpoint should result in fallback to the
-		// canonical repo.
-		return mirrorEndpoint
-	case error:
-		return !strings.Contains(err.Error(), strings.ToLower(syscall.ESRCH.Error()))
-	}
-	// let's be nice and fallback if the error is a completely
-	// unexpected one.
-	// If new errors have to be handled in some way, please
-	// add them to the switch above.
-	return true
+// ErrManifestBlobUnknown returned when a referenced blob cannot be found.
+type ErrManifestBlobUnknown struct {
+	Digest digest.Digest
 }
 
-// retryOnError wraps the error in xfer.DoNotRetry if we should not retry the
-// operation after this error.
-func retryOnError(err error) error {
-	switch v := err.(type) {
-	case errcode.Errors:
-		if len(v) != 0 {
-			return retryOnError(v[0])
-		}
-	case errcode.Error:
-		switch v.Code {
-		case errcode.ErrorCodeUnauthorized, errcode.ErrorCodeUnsupported, errcode.ErrorCodeDenied, errcode.ErrorCodeTooManyRequests, v2.ErrorCodeNameUnknown:
-			return xfer.DoNotRetry{Err: err}
-		}
-	case *url.Error:
-		switch v.Err {
-		case auth.ErrNoBasicAuthCredentials, auth.ErrNoToken:
-			return xfer.DoNotRetry{Err: v.Err}
-		}
-		return retryOnError(v.Err)
-	case *client.UnexpectedHTTPResponseError:
-		return xfer.DoNotRetry{Err: err}
-	case error:
-		if err == distribution.ErrBlobUnknown {
-			return xfer.DoNotRetry{Err: err}
-		}
-		if strings.Contains(err.Error(), strings.ToLower(syscall.ENOSPC.Error())) {
-			return xfer.DoNotRetry{Err: err}
-		}
-	}
-	// let's be nice and fallback if the error is a completely
-	// unexpected one.
-	// If new errors have to be handled in some way, please
-	// add them to the switch above.
-	return err
+func (err ErrManifestBlobUnknown) Error() string {
+	return fmt.Sprintf("unknown blob %v on manifest", err.Digest)
 }
 
-type invalidManifestClassError struct {
-	mediaType string
-	class     string
+// ErrManifestNameInvalid should be used to denote an invalid manifest
+// name. Reason may set, indicating the cause of invalidity.
+type ErrManifestNameInvalid struct {
+	Name   string
+	Reason error
 }
 
-func (e invalidManifestClassError) Error() string {
-	return fmt.Sprintf("Encountered remote %q(%s) when fetching", e.mediaType, e.class)
+func (err ErrManifestNameInvalid) Error() string {
+	return fmt.Sprintf("manifest name %q invalid: %v", err.Name, err.Reason)
 }
-
-func (e invalidManifestClassError) InvalidParameter() {}
-
-type invalidManifestFormatError struct{}
-
-func (invalidManifestFormatError) Error() string {
-	return "unsupported manifest format"
-}
-
-func (invalidManifestFormatError) InvalidParameter() {}
-
-type reservedNameError string
-
-func (e reservedNameError) Error() string {
-	return "'" + string(e) + "' is a reserved name"
-}
-
-func (e reservedNameError) Forbidden() {}
