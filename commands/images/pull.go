@@ -34,7 +34,7 @@ func cmdImagePull(envID, name string, user *models.User, ie environments.IEnviro
 		return err
 	}
 	if subtle.ConstantTimeCompare(target.Hashes[image.Digest.HashType], hashBytes) == 0 {
-		return fmt.Errorf("Content verifcation failed. Image content does not match the signed target")
+		return fmt.Errorf("Content verification failed. Image content does not match the signed target.")
 	}
 	logrus.Printf("\nSuccessfully verified image %s against signed target in remote trust repository\n", fullImageName)
 

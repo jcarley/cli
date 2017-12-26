@@ -1,8 +1,6 @@
 package targets
 
 import (
-	"fmt"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/daticahealth/cli/commands/environments"
 	"github.com/daticahealth/cli/lib/images"
@@ -31,7 +29,6 @@ func cmdTargetsReset(envID, imageName string, user *models.User, ie environments
 	}
 	changes := changelist.List()
 	if len(changes) > 0 {
-		var targetedReset string
 		if tag != "" {
 			var indices []int
 			for i, change := range changes {
@@ -43,14 +40,15 @@ func cmdTargetsReset(envID, imageName string, user *models.User, ie environments
 			if err != nil {
 				return err
 			}
-			targetedReset = fmt.Sprintf(" target \"%s\" in", tag)
+			logrus.Printf("Local changelist cleared for target \"%s\" in trust repository %s", tag, repositoryName)
+			return nil
 		} else {
 			err := changelist.Clear("")
 			if err != nil {
 				return err
 			}
 		}
-		logrus.Printf("Local changelist cleared for%s trust repository %s", targetedReset, repositoryName)
+		logrus.Printf("Local changelist cleared for trust repository %s", repositoryName)
 		return nil
 	}
 	logrus.Printf("No unpublished changes for trust repository %s\n", repositoryName)
