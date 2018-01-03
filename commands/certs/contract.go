@@ -32,9 +32,9 @@ var CreateSubCmd = models.Command{
 	ShortHelp: "Create a new domain with an SSL certificate and private key or create a Let's Encrypt certificate",
 	LongHelp: "<code>certs create</code> allows you to upload an SSL certificate and private key which can be used to secure your public facing code service. " +
 		"Alternatively, you may opt to create a Let's Encrypt certificate. When creating a Let's Encrypt certificate, you only need to provide the certificate name along with the \"-l\" flag. " +
-		"Let's Encrypt certificates are issued asynchronously and may not be available immediately. Use the [certs list](#certs-list) command to check on the issuance status. " +
+		"Let's Encrypt certificates are issued asynchronously and may not be available immediately. Use the certs list command to check on the issuance status. " +
 		"Once issued, Let's Encrypt certificates automatically renew before expiring. " +
-		"Cert creation can be done at any time, even after environment provisioning, but must be done before [creating a site](#sites-create). " +
+		"Cert creation can be done at any time, even after environment provisioning, but must be done before creating a site. " +
 		"When uploading a custom cert, the CLI will check to ensure the certificate and private key match. If you are using a self signed cert, pass in the <code>-s</code> flag and the hostname check will be skipped. " +
 		"Datica requires that your certificate file include your own certificate, intermediate certificates, and the root certificate in that order. " +
 		"If you only include your certificate, the CLI will attempt to resolve this and fetch intermediate and root certificates for you. " +
@@ -71,7 +71,7 @@ var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List all existing domains that have SSL certificate and private key pairs",
 	LongHelp: "<code>certs list</code> lists all of the available certs you have created on your environment. " +
-		"The displayed names are the names that should be used as the <code>CERT_NAME</code> parameter in the [sites create](#sites-create) command. " +
+		"The displayed names are the names that should be used as the <code>CERT_NAME</code> parameter in the sites create command. " +
 		"If any certs are Let's Encrypt certs, the issuance status will also be shown. " +
 		"Here is a sample command\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" certs list\n</pre>",
@@ -121,7 +121,7 @@ var RmSubCmd = models.Command{
 var UpdateSubCmd = models.Command{
 	Name:      "update",
 	ShortHelp: "Update the SSL certificate and private key pair for an existing domain",
-	LongHelp: "<code>certs update</code> works nearly identical to the [certs create](#certs-create) command. " +
+	LongHelp: "<code>certs update</code> works nearly identical to the certs create command. " +
 		"All rules regarding self signed certs and certificate resolution from the <code>certs create</code> command apply to the <code>certs update</code> command. " +
 		"Let's Encrypt certs cannot be updated since they are automatically renewed before expiring. " +
 		"This is useful for when your certificates have expired and you need to upload new ones. Update your certs and then redeploy your service_proxy. Here is a sample command\n\n" +

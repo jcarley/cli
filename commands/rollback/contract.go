@@ -19,7 +19,7 @@ var Cmd = models.Command{
 	ShortHelp: "Rollback a code service to a specific release",
 	LongHelp: "<code>rollback</code> is a way to redeploy older versions of your code service. " +
 		"You must specify the name of the service to rollback and the name of an existing release to rollback to. " +
-		"Releases can be found with the [releases list](#releases-list) command. Here are some sample commands\n\n" +
+		"Releases can be found with the releases list command. Here are some sample commands\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" rollback code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {

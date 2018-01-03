@@ -60,7 +60,7 @@ var ListSubCmd = models.Command{
 	ShortHelp: "List all pending organization invitations",
 	LongHelp: "<code>invites list</code> lists all pending invites for an environment's organization. " +
 		"Any invites that have already been accepted will not appear in this list. " +
-		"To manage users who have already accepted invitations or are already granted access to your environment, use the [users](#users) group of commands. " +
+		"To manage users who have already accepted invitations or are already granted access to your environment, use the users group of commands. " +
 		"Here is a sample command\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" invites list\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
@@ -84,10 +84,10 @@ var ListSubCmd = models.Command{
 var RmSubCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Remove a pending organization invitation",
-	LongHelp: "<code>invites rm</code> removes a pending invitation found by using the [invites list](#invites-list) command. " +
+	LongHelp: "<code>invites rm</code> removes a pending invitation found by using the invites list command. " +
 		"Once an invite has already been accepted, it cannot be removed. " +
 		"Removing an invitation is helpful if an email was misspelled or an invitation was sent to an incorrect email address. " +
-		"If you want to revoke access to a user who already has been given access to your environment, use the [users rm](#users-rm) command. " +
+		"If you want to revoke access to a user who already has been given access to your environment, use the users rm command. " +
 		"Here is a sample command\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" invites rm 78b5d0ed-f71c-47f7-a4c8-6c8c58c29db1\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {

@@ -43,7 +43,7 @@ var BackupSubCmd = models.Command{
 	LongHelp: "<code>db backup</code> creates a new backup for the given database service. " +
 		"The backup is started and unless <code>-s</code> is specified, the CLI will poll every few seconds until it finishes. " +
 		"Regardless of a successful backup or not, the logs for the backup will be printed to the console when the backup is finished. " +
-		"If an error occurs and the logs are not printed, you can use the [db logs](#db-logs) command to print out historical backup job logs. Here is a sample command\n\n" +
+		"If an error occurs and the logs are not printed, you can use the db logs command to print out historical backup job logs. Here is a sample command\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" db backup db01\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
@@ -72,7 +72,7 @@ var DownloadSubCmd = models.Command{
 	LongHelp: "<code>db download</code> downloads a previously created backup to your local hard drive. " +
 		"Be careful using this command as it could download PHI. " +
 		"Be sure that all hard drive encryption and necessary precautions have been taken before performing a download. " +
-		"The ID of the backup is found by first running the [db list](#db-list) command. Here is a sample command\n\n" +
+		"The ID of the backup is found by first running the db list command. Here is a sample command\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" db download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.sql\n</pre>\n\n" +
 		"This assumes you are downloading a MySQL or PostgreSQL backup which takes the <code>.sql</code> file format. If you are downloading a mongo backup, the command might look like this\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" db download db01 cd2b4bce-2727-42d1-89e0-027bf3f1a203 ./db.tar.gz\n</pre>",
@@ -103,9 +103,9 @@ var ExportSubCmd = models.Command{
 	Name:      "export",
 	ShortHelp: "Export data from a database",
 	LongHelp: "<code>db export</code> is a simple wrapper around the <code>db backup</code> and <code>db download</code> commands. " +
-		"When you request an export, a backup is created that will be added to the list of backups shown when you perform the [db list](#db-list) command. " +
+		"When you request an export, a backup is created that will be added to the list of backups shown when you perform the db list command. " +
 		"Then that backup is immediately downloaded. Regardless of a successful export or not, the logs for the backup will be printed to the console when the export is finished. " +
-		"If an error occurs and the logs are not printed, you can use the [db logs](#db-logs) command to print out historical backup job logs. Here is a sample command\n\n" +
+		"If an error occurs and the logs are not printed, you can use the db logs command to print out historical backup job logs. Here is a sample command\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" db export db01 ./dbexport.sql\n</pre>\n\n" +
 		"This assumes you are exporting a MySQL or PostgreSQL database which takes the <code>.sql</code> file format. If you are exporting a mongo database, the command might look like this\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" db export db01 ./dbexport.tar.gz\n</pre>",
@@ -173,7 +173,7 @@ var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List created backups",
 	LongHelp: "<code>db list</code> lists all previously created backups. " +
-		"After listing backups you can copy the backup ID and use it to [download](#db-download) that backup or [view the logs](#db-logs) from that backup. Here is a sample command\n\n" +
+		"After listing backups you can copy the backup ID and use it to download that backup or view the logs from that backup. Here is a sample command\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" db list db01\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {

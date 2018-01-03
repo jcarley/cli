@@ -31,7 +31,7 @@ var DeploySubCmd = models.Command{
 	Name:      "deploy",
 	ShortHelp: "Deploy new workers for a given service",
 	LongHelp: "<code>worker deploy</code> allows you to start a background process asynchronously. The TARGET must be specified in your Procfile. " +
-		"Once the worker is started, any output can be found in your logging Dashboard or using the [logs](#logs) command. " +
+		"Once the worker is started, any output can be found in your logging Dashboard or using the logs command. " +
 		"Here is a sample command\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" worker deploy code-1 mailer\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {

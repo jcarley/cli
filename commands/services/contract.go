@@ -31,7 +31,7 @@ var ListSubCmd = models.Command{
 	ShortHelp: "List all services for your environment",
 	LongHelp: "<code>services list</code> prints out a list of all services in your environment and their sizes. " +
 		"The services will be printed regardless of their currently running state. " +
-		"To see which services are currently running and which are not, use the [status](#status) command. " +
+		"To see which services are currently running and which are not, use the status command. " +
 		"Here is a sample command\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" services list\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {

@@ -68,7 +68,7 @@ var SetSubCmd = models.Command{
 	ShortHelp: "Set one or more new environment variables or update the values of existing ones",
 	LongHelp: "<code>vars set</code> allows you to add new environment variables or update the value of an existing environment variable on the given code service. " +
 		"You can set/update 1 or more environment variables at a time with this command by repeating the <code>-v</code> option multiple times. " +
-		"Once new environment variables are added or values updated, a [redeploy](#redeploy) is required for the given code service to have access to the new values. " +
+		"Once new environment variables are added or values updated, a redeploy is required for the given code service to have access to the new values. " +
 		"The environment variables must be of the form <code><key>=<value></code>. Here is a sample command\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" vars set code-1 -v AWS_ACCESS_KEY_ID=1234 -v AWS_SECRET_ACCESS_KEY=5678\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
@@ -103,7 +103,7 @@ var UnsetSubCmd = models.Command{
 	ShortHelp: "Unset (delete) an existing environment variable",
 	LongHelp: "<code>vars unset</code> removes environment variables from the given code service. " +
 		"Only the environment variable name is required to unset. " +
-		"Once environment variables are unset, a [redeploy](#redeploy) is required for the given code service to realize the variable was removed. " +
+		"Once environment variables are unset, a redeploy is required for the given code service to realize the variable was removed. " +
 		"You can unset any number of environment variables in one command. " +
 		"Here is a sample command\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" vars unset code-1 AWS_ACCESS_KEY_ID AWS_SECRET_ACCES_KEY_ID\n</pre>",

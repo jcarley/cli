@@ -29,6 +29,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	output.WriteString("<div class=\"cli-docs\" id=\"cli-docs\">\n")
 	defer output.Close()
 	_, err = io.Copy(output, intro)
 	if err != nil {
@@ -47,6 +48,7 @@ func main() {
 			panic(err)
 		}
 	}
+	output.WriteString("</div>")
 }
 
 func generateCommandDocs(cmd *cli.Cmd, tagLevel int, writer io.Writer) error {

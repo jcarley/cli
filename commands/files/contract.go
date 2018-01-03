@@ -31,7 +31,7 @@ var DownloadSubCmd = models.Command{
 	ShortHelp: "Download a file to your localhost with the same file permissions as on the remote host or print it to stdout",
 	LongHelp: "<code>files download</code> allows you to view the contents of a service file and save it to your local machine. " +
 		"Most service files are stored on your service_proxy and therefore you should not have to specify the <code>SERVICE_NAME</code> argument. " +
-		"Simply supply the <code>FILE_NAME</code> found from the [files list](#files-list) command and the contents of the file, as well as the permissions string, will be printed to your console. " +
+		"Simply supply the <code>FILE_NAME</code> found from the files list command and the contents of the file, as well as the permissions string, will be printed to your console. " +
 		"You can always store the file locally, applying the same permissions as those on the remote server, by specifying an output file with the <code>-o</code> flag. Here is a sample command\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" files download /etc/nginx/sites-enabled/mywebsite.com\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {

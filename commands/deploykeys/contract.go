@@ -32,7 +32,7 @@ var AddSubCmd = models.Command{
 	ShortHelp: "Add a new deploy key",
 	LongHelp: "<code>deploy-keys add</code> allows you to upload an SSH public key in OpenSSH format. " +
 		"These keys are used for pushing code to your code services but are not required. " +
-		"You should be using personal SSH keys with the [keys](#keys) command unless you are pushing code from Continuous Integration or Continuous Deployment scenarios. " +
+		"You should be using personal SSH keys with the keys command unless you are pushing code from Continuous Integration or Continuous Deployment scenarios. " +
 		"Deploy keys are intended to be shared among an organization. Here are some sample commands\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" deploy-keys add app01_public ~/.ssh/app01_rsa.pub app01\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {

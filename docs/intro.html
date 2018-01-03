@@ -19,13 +19,13 @@ Since version 2.0.0, the following platforms and architectures are supported by 
 
 <h1>Global Scope</h1>
 
-Datica CLI commands can be run anywhere on your system with two exceptions. The [<code>datica init</code>](#init) command expects to be inside of either a git repository or a directory that you intend to be a git repository, as it will set up a git repository if one does not exist. Additionally, the [<code>datica git-remote</code>](#git-remote) command is used to manage git remotes and must be run inside of a git repository in order to work.
+Datica CLI commands can be run anywhere on your system with two exceptions. The <code>init</code> command expects to be inside of either a git repository or a directory that you intend to be a git repository, as it will set up a git repository if one does not exist. Additionally, the <code>git-remote</code> command is used to manage git remotes and must be run inside of a git repository in order to work.
 
 If you have more than one environment, you must specify which environment to use with the global <code>-E</code> flag.
 
 Let's say you have initialized a code project for two environments (ex. "staging" and "production") named <code>mysandbox</code> and <code>myprod</code>. You have two options to specify which environment to run a command against.
 
-First, you can tell the CLI which environment you want to use with the global option <code>-E</code> or <code>--env</code> (see [Global Options](#global-options)). Your command might start like this
+First, you can tell the CLI which environment you want to use with the global option <code>-E</code> or <code>--env</code>. Your command might start like this
 
 <pre>
 datica -E myprod ...

@@ -79,7 +79,7 @@ var RemoveSubCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Remove a public key",
 	LongHelp: "<code>keys rm</code> allows you to remove an SSH key previously uploaded to your account. " +
-		"The name of the key can be found by using the [keys list](#keys-list) command. Here is a sample command\n\n" +
+		"The name of the key can be found by using the keys list command. Here is a sample command\n\n" +
 		"<pre>\ndatica keys rm my_prod_key\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
@@ -103,7 +103,7 @@ var SetSubCmd = models.Command{
 	LongHelp: "<code>keys set</code> allows the CLI to use an SSH key for authentication instead of the traditional email and password combination. " +
 		"This can be useful for automation or where shared workstations are involved. " +
 		"Please note that you must pass in the path to the private key and not the public key. " +
-		"The given key must already be added to your account by using the [keys add](#keys-add) command. " +
+		"The given key must already be added to your account by using the keys add command. " +
 		"Here is a sample command\n\n" +
 		"<pre>\ndatica keys set ~/.ssh/my_key\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {

@@ -33,14 +33,14 @@ var CreateSubCmd = models.Command{
 	Name:      "create",
 	ShortHelp: "Create a new site linking it to an existing cert instance",
 	LongHelp: "<code>sites create</code> allows you to create a site configuration that is tied to a single service. " +
-		"To create a site, you must specify an existing cert made by the [certs create](#certs-create) command or use the \"-l\" flag to automatically create a Let's Encrypt certificate. " +
+		"To create a site, you must specify an existing cert made by the certs create command or use the \"-l\" flag to automatically create a Let's Encrypt certificate. " +
 		"A site has three pieces of information: a name, the service it's tied to, and the cert instance it will use. " +
 		"The name is the <code>server_name</code> that will be injected into this site's Nginx configuration file. " +
 		"It is important that this site name match what URL your site will respond to. " +
 		"If this is a bare domain, using <code>mysite.com</code> is sufficient. " +
 		"If it should respond to the APEX domain and all subdomains, it should be named <code>.mysite.com</code> notice the leading <code>.</code>. " +
 		"The service is a code service that will use this site configuration. " +
-		"Lastly, the cert instance must be specified by the <code>CERT_NAME</code> argument used in the [certs create](#certs-create) command or by the \"-l\" flag indicating a new Let's Encrypt certificate should be created. " +
+		"Lastly, the cert instance must be specified by the <code>CERT_NAME</code> argument used in the certs create command or by the \"-l\" flag indicating a new Let's Encrypt certificate should be created. " +
 		"You can also set Nginx configuration values directly by specifying one of the above flags. " +
 		"Specifying <code>--enable-cors</code> will add the following lines to your Nginx configuration\n\n" +
 		"<pre>\nadd_header 'Access-Control-Allow-Origin' '$http_origin' always;\n" +
@@ -117,8 +117,8 @@ var RmSubCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Remove a site configuration",
 	LongHelp: "<code>sites rm</code> allows you to remove a site by name. " +
-		"Since sites cannot be updated, if you want to change the name of a site, you must <code>rm</code> the site and then [create](#sites-create) it again. " +
-		"If you simply need to update your SSL certificates, you can use the [certs update](#certs-update) command on the cert instance used by the site in question. " +
+		"Since sites cannot be updated, if you want to change the name of a site, you must <code>rm</code> the site and then create it again. " +
+		"If you simply need to update your SSL certificates, you can use the certs update command on the cert instance used by the site in question. " +
 		"Here is a sample command\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" sites rm mywebsite.com\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
@@ -145,7 +145,7 @@ var ShowSubCmd = models.Command{
 	Name:      "show",
 	ShortHelp: "Shows the details for a given site",
 	LongHelp: "<code>sites show</code> will print out detailed information for a single site. " +
-		"The name of the site can be found from the [sites list](#sites-list) command. Here is a sample command\n\n" +
+		"The name of the site can be found from the sites list command. Here is a sample command\n\n" +
 		"<pre>\ndatica -E \"<your_env_name>\" sites show mywebsite.com\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
