@@ -9,8 +9,8 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func CmdList(ic ICerts, is services.IServices) error {
-	service, err := is.RetrieveByLabel("service_proxy")
+func CmdList(ic ICerts, is services.IServices, downStream string) error {
+	service, err := is.RetrieveByLabel(downStream)
 	if err != nil {
 		return err
 	}

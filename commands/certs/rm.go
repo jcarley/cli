@@ -9,11 +9,11 @@ import (
 	"github.com/daticahealth/cli/config"
 )
 
-func CmdRm(name string, ic ICerts, is services.IServices) error {
+func CmdRm(name string, ic ICerts, is services.IServices, downStream string) error {
 	if strings.ContainsAny(name, config.InvalidChars) {
 		return fmt.Errorf("Invalid cert name. Names must not contain the following characters: %s", config.InvalidChars)
 	}
-	service, err := is.RetrieveByLabel("service_proxy")
+	service, err := is.RetrieveByLabel(downStream)
 	if err != nil {
 		return err
 	}

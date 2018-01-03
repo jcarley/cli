@@ -14,7 +14,7 @@ import (
 	"github.com/daticahealth/cli/models"
 )
 
-func CmdUpdate(name, pubKeyPath, privKeyPath string, selfSigned, resolve bool, ic ICerts, is services.IServices, issl ssl.ISSL) error {
+func CmdUpdate(name, pubKeyPath, privKeyPath, downStream string, selfSigned, resolve bool, ic ICerts, is services.IServices, issl ssl.ISSL) error {
 	if strings.ContainsAny(name, config.InvalidChars) {
 		return fmt.Errorf("Invalid cert name. Names must not contain the following characters: %s", config.InvalidChars)
 	}
@@ -37,7 +37,7 @@ func CmdUpdate(name, pubKeyPath, privKeyPath string, selfSigned, resolve bool, i
 			return err
 		}
 	}
-	service, err := is.RetrieveByLabel("service_proxy")
+	service, err := is.RetrieveByLabel(downStream)
 	if err != nil {
 		return err
 	}

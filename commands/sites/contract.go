@@ -64,6 +64,7 @@ var CreateSubCmd = models.Command{
 			name := subCmd.StringArg("SITE_NAME", "", "The name of the site to be created. This will be used in this site's nginx configuration file (e.g. \".example.com\")")
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to add this site configuration to (e.g. 'app01')")
 			certName := subCmd.StringArg("CERT_NAME", "", "The name of the cert created with the 'certs' command (e.g. \"star_example_com\")")
+			downStream := subCmd.StringOpt("down-stream", "service_proxy", "The name of the down-stream service. Defaults to \"service_proxy\"")
 			clientMaxBodySize := subCmd.IntOpt("client-max-body-size", -1, "The 'client_max_body_size' nginx config specified in megabytes")
 			proxyConnectTimeout := subCmd.IntOpt("proxy-connect-timeout", -1, "The 'proxy_connect_timeout' nginx config specified in seconds")
 			proxyReadTimeout := subCmd.IntOpt("proxy-read-timeout", -1, "The 'proxy_read_timeout' nginx config specified in seconds")
@@ -79,12 +80,12 @@ var CreateSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdCreate(*name, *serviceName, *certName, *clientMaxBodySize, *proxyConnectTimeout, *proxyReadTimeout, *proxySendTimeout, *proxyUpstreamTimeout, *enableCORS, *enableWebSockets, *letsEncrypt, New(settings), certs.New(settings), services.New(settings))
+				err := CmdCreate(*name, *serviceName, *certName, *downStream, *clientMaxBodySize, *proxyConnectTimeout, *proxyReadTimeout, *proxySendTimeout, *proxyUpstreamTimeout, *enableCORS, *enableWebSockets, *letsEncrypt, New(settings), certs.New(settings), services.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "SITE_NAME SERVICE_NAME (CERT_NAME | -l) [--client-max-body-size] [--proxy-connect-timeout] [--proxy-read-timeout] [--proxy-send-timeout] [--proxy-upstream-timeout] [--enable-cors] [--enable-websockets]"
+			subCmd.Spec = "SITE_NAME SERVICE_NAME (CERT_NAME | -l) [--down-stream] [--client-max-body-size] [--proxy-connect-timeout] [--proxy-read-timeout] [--proxy-send-timeout] [--proxy-upstream-timeout] [--enable-cors] [--enable-websockets]"
 		}
 	},
 }
@@ -97,6 +98,7 @@ var ListSubCmd = models.Command{
 		"```\ndatica -E \"<your_env_name>\" sites list\n```",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
+			downStream := subCmd.StringOpt("down-stream", "service_proxy", "The name of the down-stream service. Defaults to \"service_proxy\"")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -104,11 +106,12 @@ var ListSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdList(New(settings), services.New(settings))
+				err := CmdList(New(settings), services.New(settings), *downStream)
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
+			subCmd.Spec = "[--down-stream]"
 		}
 	},
 }
@@ -124,6 +127,7 @@ var RmSubCmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of the site configuration to delete")
+			downStream := subCmd.StringOpt("down-stream", "service_proxy", "The name of the down-stream service. Defaults to \"service_proxy\"")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -131,7 +135,7 @@ var RmSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdRm(*name, New(settings), services.New(settings))
+				err := CmdRm(*name, New(settings), services.New(settings), *downStream)
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
@@ -150,6 +154,7 @@ var ShowSubCmd = models.Command{
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The name of the site configuration to show")
+			downStream := subCmd.StringOpt("down-stream", "service_proxy", "The name of the down-stream service. Defaults to \"service_proxy\"")
 			subCmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -157,12 +162,12 @@ var ShowSubCmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdShow(*name, New(settings), services.New(settings))
+				err := CmdShow(*name, New(settings), services.New(settings), *downStream)
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}
 			}
-			subCmd.Spec = "NAME"
+			subCmd.Spec = "NAME [--down-stream]"
 		}
 	},
 }

@@ -8,8 +8,8 @@ import (
 	"github.com/daticahealth/cli/models"
 )
 
-func CmdRm(name string, is ISites, iservices services.IServices) error {
-	serviceProxy, err := iservices.RetrieveByLabel("service_proxy")
+func CmdRm(name string, is ISites, iservices services.IServices, downStream string) error {
+	serviceProxy, err := iservices.RetrieveByLabel(downStream)
 	if err != nil {
 		return err
 	}

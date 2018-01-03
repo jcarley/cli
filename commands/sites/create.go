@@ -10,7 +10,7 @@ import (
 	"github.com/daticahealth/cli/models"
 )
 
-func CmdCreate(name, serviceName, certName string, clientMaxBodySize, proxyConnectTimeout, proxyReadTimeout, proxySendTimeout, proxyUpstreamTimeout int, enableCORS, enableWebSockets, letsEncrypt bool, is ISites, ic certs.ICerts, iservices services.IServices) error {
+func CmdCreate(name, serviceName, certName, downStreamService string, clientMaxBodySize, proxyConnectTimeout, proxyReadTimeout, proxySendTimeout, proxyUpstreamTimeout int, enableCORS, enableWebSockets, letsEncrypt bool, is ISites, ic certs.ICerts, iservices services.IServices) error {
 	upstreamService, err := iservices.RetrieveByLabel(serviceName)
 	if err != nil {
 		return err
@@ -19,7 +19,7 @@ func CmdCreate(name, serviceName, certName string, clientMaxBodySize, proxyConne
 		return fmt.Errorf("Could not find a service with the label \"%s\". You can list services with the \"datica services list\" command.", serviceName)
 	}
 
-	serviceProxy, err := iservices.RetrieveByLabel("service_proxy")
+	serviceProxy, err := iservices.RetrieveByLabel(downStreamService)
 	if err != nil {
 		return err
 	}
