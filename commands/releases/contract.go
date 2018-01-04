@@ -14,13 +14,13 @@ import (
 var Cmd = models.Command{
 	Name:      "releases",
 	ShortHelp: "Manage releases for code services",
-	LongHelp: "The `releases` command allows you to manage your code service releases. " +
+	LongHelp: "The <code>releases</code> command allows you to manage your code service releases. " +
 		"A release is automatically created each time you perform a git push. " +
 		"The release is tagged with the git SHA of the commit. " +
 		"Releases are a way of tagging specific points in time of your git history. " +
 		"By default, the last three releases will be kept. " +
 		"Please contact Support if you require more than the last three releases to be retained. " +
-		"You can rollback to a specific release by using the [rollback](#rollback) command. " +
+		"You can rollback to a specific release by using the rollback command. " +
 		"The releases command cannot be run directly but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
@@ -34,10 +34,10 @@ var Cmd = models.Command{
 var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List all releases for a given code service",
-	LongHelp: "`releases list` lists all of the releases for a given service. " +
+	LongHelp: "<code>releases list</code> lists all of the releases for a given service. " +
 		"A release is automatically created each time a git push is performed. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" releases list code-1\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" releases list code-1\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to list releases for")
@@ -60,9 +60,9 @@ var ListSubCmd = models.Command{
 var RmSubCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Remove a release from a code service",
-	LongHelp: "`releases rm` removes an existing release. This is useful in the case of a misbehaving code service. " +
+	LongHelp: "<code>releases rm</code> removes an existing release. This is useful in the case of a misbehaving code service. " +
 		"Removing the release avoids the risk of rolling back to a \"bad\" build. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" releases rm code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" releases rm code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to remove a release from")
@@ -86,10 +86,10 @@ var RmSubCmd = models.Command{
 var UpdateSubCmd = models.Command{
 	Name:      "update",
 	ShortHelp: "Update a release from a code service",
-	LongHelp: "`releases update` allows you to rename or add notes to an existing release. " +
+	LongHelp: "<code>releases update</code> allows you to rename or add notes to an existing release. " +
 		"By default, releases are named with the git SHA of the commit used to create the release. " +
 		"Renaming them allows you to organize your releases. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" releases update code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883 --notes \"This is a stable build\"\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" releases update code-1 f93ced037f828dcaabccfc825e6d8d32cc5a1883 --notes \"This is a stable build\"\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to update a release for")

@@ -17,7 +17,7 @@ import (
 var Cmd = models.Command{
 	Name:      "images",
 	ShortHelp: "Operations for working with images",
-	LongHelp: "`images` allows interactions with container images and tags. " +
+	LongHelp: "<code>images</code> allows interactions with container images and tags. " +
 		"This command cannot be run directly, but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
@@ -30,9 +30,9 @@ var Cmd = models.Command{
 var listCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List images available for an environment",
-	LongHelp: "`images list` lists available images for an environment. " +
+	LongHelp: "<code>images list</code> lists available images for an environment. " +
 		"These images must be pushed to the registry for the environment in order to show. Example:\n" +
-		"```\ndatica -E \"<your_env_name>\" images list```",
+		"<pre>\ndatica -E \"<your_env_name>\" images list</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

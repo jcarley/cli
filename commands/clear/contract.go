@@ -11,13 +11,13 @@ import (
 var Cmd = models.Command{
 	Name:      "clear",
 	ShortHelp: "Clear out information in the global settings file to fix a misconfigured CLI.",
-	LongHelp: "`clear` allows you to manage your global settings file in case your CLI becomes misconfigured. " +
-		"The global settings file is stored in your home directory at `~/.datica`. " +
+	LongHelp: "<code>clear</code> allows you to manage your global settings file in case your CLI becomes misconfigured. " +
+		"The global settings file is stored in your home directory at <code>~/.datica</code>. " +
 		"You can clear out all settings or pick and choose which ones need to be removed. " +
-		"After running the `clear` command, any other CLI command will reset the removed settings to their appropriate values. Here are some sample commands\n\n" +
-		"```\ndatica clear --all\n" +
+		"After running the <code>clear</code> command, any other CLI command will reset the removed settings to their appropriate values. Here are some sample commands\n\n" +
+		"<pre>\ndatica clear --all\n" +
 		"datica clear --environments # removes your locally cached environment(s) configuration data\n" +
-		"datica clear --session --private-key # removes all session and private key authentication information\n```",
+		"datica clear --session --private-key # removes all session and private key authentication information\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			privateKey := cmd.BoolOpt("private-key", false, "Clear out the saved private key information")

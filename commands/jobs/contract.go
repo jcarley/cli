@@ -13,7 +13,7 @@ import (
 var Cmd = models.Command{
 	Name:      "jobs",
 	ShortHelp: "Perform operations on a service's jobs",
-	LongHelp:  "The `jobs` command allows you to manage jobs for your service(s).  The jobs command cannot be run directly but has subcommands.",
+	LongHelp:  "The <code>jobs</code> command allows you to manage jobs for your service(s).  The jobs command cannot be run directly but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))
@@ -26,9 +26,9 @@ var Cmd = models.Command{
 var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List all jobs for a service",
-	LongHelp: "`jobs list` prints out a list of all jobs in your environment and their current status. " +
+	LongHelp: "<code>jobs list</code> prints out a list of all jobs in your environment and their current status. " +
 		"Here is a sample command:\n\n" +
-		"```\ndatica -E \"<your_env_name>\" jobs list <your_service_name>\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" jobs list <your_service_name>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to list jobs for")
@@ -51,9 +51,9 @@ var ListSubCmd = models.Command{
 var StartSubCmd = models.Command{
 	Name:      "start",
 	ShortHelp: "Start a specific job within a service",
-	LongHelp: "`jobs start` will start a job that is configured but not currently running within a given service. " +
+	LongHelp: "<code>jobs start</code> will start a job that is configured but not currently running within a given service. " +
 		"This command is useful for granual control of your services and their workers, tasks, etc. " +
-		"```\ndatica -E \"<your_env_name>\" jobs start <your_service_name> <your_job_id>\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" jobs start <your_service_name> <your_job_id>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to list jobs for")
@@ -77,9 +77,9 @@ var StartSubCmd = models.Command{
 var StopSubCmd = models.Command{
 	Name:      "stop",
 	ShortHelp: "Stop a specific job within a service",
-	LongHelp: "`jobs stop` will shut down a running job within a given service. " +
+	LongHelp: "<code>jobs stop</code> will shut down a running job within a given service. " +
 		"This command is useful for granular control of your services and their workers, tasks, etc. " +
-		"```\ndatica -E \"<your_env_name>\" jobs stop <your_service_name> <your_job_id>\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" jobs stop <your_service_name> <your_job_id>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to list jobs for")

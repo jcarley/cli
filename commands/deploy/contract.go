@@ -17,10 +17,10 @@ import (
 var Cmd = models.Command{
 	Name:      "deploy",
 	ShortHelp: "Deploy a Docker image to a container service.",
-	LongHelp: "`deploy` deploys a Docker image for the given service. " +
+	LongHelp: "<code>deploy</code> deploys a Docker image for the given service. " +
 		"This command will only deploy for \"container\" services. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" deploy container01 image01\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" deploy container01 image01\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to deploy to (e.g. 'container01')")

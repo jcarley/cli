@@ -116,7 +116,7 @@ func TestDeleteTagIsRelease(t *testing.T) {
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "DELETE")
 			w.WriteHeader(400)
-			fmt.Fprint(w, `{"code": 98005, "title": "Tag is release", "description": "The tag is a god damn release"}`)
+			fmt.Fprint(w, `{"code": 98005, "title": "Tag is release", "description": "The tag is a release"}`)
 		},
 	)
 

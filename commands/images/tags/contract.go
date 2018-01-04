@@ -15,7 +15,7 @@ import (
 var Cmd = models.Command{
 	Name:      "tags",
 	ShortHelp: "Operations for working with tags",
-	LongHelp: "`tags` allows interactions with container image tags. " +
+	LongHelp: "<code>tags</code> allows interactions with container image tags. " +
 		"This command cannot be run directly, but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
@@ -29,7 +29,7 @@ var listCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List tags for a given image",
 	LongHelp: "List pushed tags for given image. Example:\n" +
-		"```\ndatica -E \"<your_env_name>\" images tags list pod012345/my-image\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" images tags list pod012345/my-image\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to list tags for, including the environment's namespace.")
@@ -53,7 +53,7 @@ var deleteCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Delete a tag for a given image",
 	LongHelp: "Delete a tag for a given image. Example:\n" +
-		"```\ndatica -E \"<your_env_name>\" images tags delete pod012345/my-image v1\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" images tags delete pod012345/my-image v1\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to list tags for, including the environment's namespace.")

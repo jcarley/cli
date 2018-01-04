@@ -16,7 +16,7 @@ import (
 var Cmd = models.Command{
 	Name:      "worker",
 	ShortHelp: "Manage a service's workers",
-	LongHelp:  "The `worker` command allows to deploy, list, remove, and scale the workers in a code service.",
+	LongHelp:  "The <code>worker</code> command allows to deploy, list, remove, and scale the workers in a code service.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.CommandLong(DeploySubCmd.Name, DeploySubCmd.ShortHelp, DeploySubCmd.LongHelp, DeploySubCmd.CmdFunc(settings))
@@ -30,10 +30,10 @@ var Cmd = models.Command{
 var DeploySubCmd = models.Command{
 	Name:      "deploy",
 	ShortHelp: "Deploy new workers for a given service",
-	LongHelp: "`worker deploy` allows you to start a background process asynchronously. The TARGET must be specified in your Procfile. " +
-		"Once the worker is started, any output can be found in your logging Dashboard or using the [logs](#logs) command. " +
+	LongHelp: "<code>worker deploy</code> allows you to start a background process asynchronously. The TARGET must be specified in your Procfile. " +
+		"Once the worker is started, any output can be found in your logging Dashboard or using the logs command. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" worker deploy code-1 mailer\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" worker deploy code-1 mailer\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to use to deploy a worker")
@@ -58,8 +58,8 @@ var DeploySubCmd = models.Command{
 var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "Lists all workers for a given service",
-	LongHelp: "`worker list` lists all workers and their scale for a given code service along with the number of currently running instances of each worker target. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" worker list code-1\n```",
+	LongHelp: "<code>worker list</code> lists all workers and their scale for a given code service along with the number of currently running instances of each worker target. Here is a sample command\n\n" +
+		"<pre>\ndatica -E \"<your_env_name>\" worker list code-1\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to list workers for")
@@ -83,8 +83,8 @@ var ListSubCmd = models.Command{
 var RmSubCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Remove all workers for a given service and target",
-	LongHelp: "`worker rm` removes a worker by the given TARGET and stops all currently running instances of that TARGET. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" worker rm code-1 mailer\n```",
+	LongHelp: "<code>worker rm</code> removes a worker by the given TARGET and stops all currently running instances of that TARGET. Here is a sample command\n\n" +
+		"<pre>\ndatica -E \"<your_env_name>\" worker rm code-1 mailer\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service running the workers")
@@ -109,10 +109,10 @@ var RmSubCmd = models.Command{
 var ScaleSubCmd = models.Command{
 	Name:      "scale",
 	ShortHelp: "Scale existing workers up or down for a given service and target",
-	LongHelp: "`worker scale` allows you to scale up or down a given worker TARGET. " +
+	LongHelp: "<code>worker scale</code> allows you to scale up or down a given worker TARGET. " +
 		"Scaling up will launch new instances of the worker TARGET while scaling down will immediately stop running instances of the worker TARGET if applicable. Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_name>\" worker scale code-1 mailer 1\n" +
-		"datica -E \"<your_env_name>\" worker scale code-1 mailer -- -2\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" worker scale code-1 mailer 1\n" +
+		"datica -E \"<your_env_name>\" worker scale code-1 mailer -- -2\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service running the workers")
