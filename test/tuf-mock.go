@@ -73,7 +73,7 @@ const (
 
 // Constants for image handling
 const (
-	DefaultTag = "latest"
+	defaultTag = "latest"
 	trustPath  = ".docker/trust"
 )
 
@@ -85,7 +85,7 @@ func (d *FakeImages) Push(name string, user *models.User, env *models.Environmen
 	}
 
 	if tag == "" {
-		tag = DefaultTag
+		tag = defaultTag
 	}
 	fullImageName := strings.Join([]string{repositoryName, tag}, ":")
 
@@ -115,7 +115,7 @@ func (d *FakeImages) Pull(name string, user *models.User, env *models.Environmen
 	}
 	logrus.Printf("Pulling from repository %s\n", repositoryName)
 	if tag == "" {
-		tag = DefaultTag
+		tag = defaultTag
 		logrus.Printf("Using default tag: %s\n", tag)
 	}
 	fullImageName := fmt.Sprintf("%s:%s", repositoryName, tag)
@@ -278,9 +278,13 @@ func (d *FakeImages) GetGloballyUniqueNamespace(name string, env *models.Environ
 		repositoryName = fmt.Sprintf("%s/%s/%s", registry, env.Namespace, repoParts[0])
 	case 2:
 		if repoParts[0] != env.Namespace {
-			return "", "", fmt.Errorf(IncorrectNamespace)
+			if repoParts[0] != registry {
+				return "", "", fmt.Errorf(IncorrectNamespace)
+			}
+			repositoryName = image
+		} else {
+			repositoryName = fmt.Sprintf("%s/%s", registry, image)
 		}
-		repositoryName = fmt.Sprintf("%s/%s", registry, image)
 	case 3:
 		if repoParts[0] != registry || repoParts[1] != env.Namespace {
 			return "", "", fmt.Errorf(IncorrectRegistryOrNamespace)

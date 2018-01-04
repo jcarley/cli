@@ -60,7 +60,7 @@ const (
 
 // Constants for image handling
 const (
-	DefaultTag = "latest"
+	defaultTag = "latest"
 	trustPath  = ".docker/trust"
 )
 
@@ -79,7 +79,7 @@ func (d *SImages) Push(name string, user *models.User, env *models.Environment, 
 	}
 
 	if tag == "" {
-		tag = DefaultTag
+		tag = defaultTag
 	}
 	fullImageName := strings.Join([]string{repositoryName, tag}, ":")
 	if fullImageName != name {
@@ -132,7 +132,7 @@ func (d *SImages) Pull(name string, user *models.User, env *models.Environment) 
 	}
 	logrus.Printf("Pulling from repository %s\n", repositoryName)
 	if tag == "" {
-		tag = DefaultTag
+		tag = defaultTag
 		logrus.Printf("Using default tag: %s\n", tag)
 	}
 	fullImageName := strings.Join([]string{repositoryName, tag}, ":")
@@ -310,9 +310,14 @@ func (d *SImages) GetGloballyUniqueNamespace(name string, env *models.Environmen
 		repositoryName = fmt.Sprintf("%s/%s/%s", registry, env.Namespace, repoParts[0])
 	case 2:
 		if repoParts[0] != env.Namespace {
-			return "", "", fmt.Errorf(IncorrectNamespace)
+			if repoParts[0] != registry {
+				return "", "", fmt.Errorf(IncorrectNamespace)
+			}
+			//Allow users to pull public images
+			repositoryName = image
+		} else {
+			repositoryName = fmt.Sprintf("%s/%s", registry, image)
 		}
-		repositoryName = fmt.Sprintf("%s/%s", registry, image)
 	case 3:
 		if repoParts[0] != registry || repoParts[1] != env.Namespace {
 			return "", "", fmt.Errorf(IncorrectRegistryOrNamespace)
