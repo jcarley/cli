@@ -1,14 +1,14 @@
 <h1>Automatic Updates</h1>
 
-Any version of the CLI before version 4.0.0 will no longer automatically update. In order to obtain version 4.0.0 you will have to manually install the CLI. Automatic updates will work again once you have upgraded to 4.0.0 or greater.
+<p>Any version of the CLI before version 4.0.0 will no longer automatically update. In order to obtain version 4.0.0 you will have to manually install the CLI. Automatic updates will work again once you have upgraded to 4.0.0 or greater.</p>
 
-Once downloaded, the CLI will attempt to automatically update itself when a new version becomes available. This ensures you are always running a compatible version of the Datica CLI. However you can always check out the latest releases on the <a href="https://github.com/daticahealth/cli/releases">releases page</a>.
+<p>Once downloaded, the CLI will attempt to automatically update itself when a new version becomes available. This ensures you are always running a compatible version of the Datica CLI. However you can always check out the latest releases on the <a href="https://github.com/daticahealth/cli/releases">releases page</a>.</p>
 
-To ensure your CLI can automatically update itself, be sure to put the binary in a location where you have <b>write access</b> without the need for sudo or escalated privileges.
+<p>To ensure your CLI can automatically update itself, be sure to put the binary in a location where you have <b>write access</b> without the need for sudo or escalated privileges.</p>
 
 <h1>Supported Platforms</h1>
 
-Since version 2.0.0, the following platforms and architectures are supported by the Datica CLI.
+<p>Since version 2.0.0, the following platforms and architectures are supported by the Datica CLI.</p>
 
 <table>
 <tr><th>OS</th><th>Architecture</th></tr>
@@ -19,29 +19,29 @@ Since version 2.0.0, the following platforms and architectures are supported by 
 
 <h1>Global Scope</h1>
 
-Datica CLI commands can be run anywhere on your system with two exceptions. The <code>init</code> command expects to be inside of either a git repository or a directory that you intend to be a git repository, as it will set up a git repository if one does not exist. Additionally, the <code>git-remote</code> command is used to manage git remotes and must be run inside of a git repository in order to work.
+<p>Datica CLI commands can be run anywhere on your system with two exceptions. The <code>init</code> command expects to be inside of either a git repository or a directory that you intend to be a git repository, as it will set up a git repository if one does not exist. Additionally, the <code>git-remote</code> command is used to manage git remotes and must be run inside of a git repository in order to work.</p>
 
-If you have more than one environment, you must specify which environment to use with the global <code>-E</code> flag.
+<p>If you have more than one environment, you must specify which environment to use with the global <code>-E</code> flag.</p>
 
-Let's say you have initialized a code project for two environments (ex. "staging" and "production") named <code>mysandbox</code> and <code>myprod</code>. You have two options to specify which environment to run a command against.
+<p>Let's say you have initialized a code project for two environments (ex. "staging" and "production") named <code>mysandbox</code> and <code>myprod</code>. You have two options to specify which environment to run a command against.</p>
 
-First, you can tell the CLI which environment you want to use with the global option <code>-E</code> or <code>--env</code>. Your command might start like this
+<p>First, you can tell the CLI which environment you want to use with the global option <code>-E</code> or <code>--env</code>. Your command might start like this
 
 <pre>
 datica -E myprod ...
 </pre>
 
-If you don't set the <code>-E</code> flag, then the CLI picks one of your environments and prompts you to continue with this environment. This concept of scope will make it easier for Datica customers with multiple environments to use the CLI!
+If you don't set the <code>-E</code> flag, then the CLI picks one of your environments and prompts you to continue with this environment. This concept of scope will make it easier for Datica customers with multiple environments to use the CLI!</p>
 
 <h1>Bash Autocompletion</h1>
 
-One feature we've found helpful on \*Nix systems is autocompletion in bash. To enable this feature, head over to the github repo and download the <code>datica_autocomplete</code> file. If you use a Mac, you will need to install bash-completion with <code>brew install bash-completion</code> or <code>source</code> the <code>datica_autocomplete</code> file each time you start up a terminal. Store this file locally in <code>/etc/bash_completion.d/</code> or (<code>/usr/local/etc/bash_completion.d/</code> on a Mac). Completion will be available when you restart your terminal. Now type <code>datica </code> and hit tab twice to see the list of available commands. <b>Please note</b> that autocompletion only works one level deep. The CLI will not autocomplete or suggest completions when you type <code>datica db </code> and then hit tab twice. It currently only works when you have just <code>datica </code> typed into your terminal. This is a feature we are looking into expanding in the future.
+<p>One feature we've found helpful on *Nix systems is autocompletion in bash. To enable this feature, head over to the github repo and download the <code>datica_autocomplete</code> file. If you use a Mac, you will need to install bash-completion with <code>brew install bash-completion</code> or <code>source</code> the <code>datica_autocomplete</code> file each time you start up a terminal. Store this file locally in <code>/etc/bash_completion.d/</code> or (<code>/usr/local/etc/bash_completion.d/</code> on a Mac). Completion will be available when you restart your terminal. Now type <code>datica </code> and hit tab twice to see the list of available commands. <b>Please note</b> that autocompletion only works one level deep. The CLI will not autocomplete or suggest completions when you type <code>datica db </code> and then hit tab twice. It currently only works when you have just <code>datica </code> typed into your terminal. This is a feature we are looking into expanding in the future.</p>
 
-Note: you may have to add <code>source /etc/bash_completion.d/datica_autocomplete</code> (<code>/usr/local/etc/bash_completion.d/datica_autocomplete</code>) in your <code>~/.bashrc</code> (<code>~/.bash_profile</code>) file.
+<p>Note: you may have to add <code>source /etc/bash_completion.d/datica_autocomplete</code> (<code>/usr/local/etc/bash_completion.d/datica_autocomplete</code>) in your <code>~/.bashrc</code> (<code>~/.bash_profile</code>) file.</p>
 
 <h1>Global Options</h1>
 
-The following table outlines all global options available in the CLI. Global options are always set after the word <code>datica</code> and before any commands. Rather than setting these each time, you may also set an environment variable with the appropriate value which will automatically be used.
+<p>The following table outlines all global options available in the CLI. Global options are always set after the word <code>datica</code> and before any commands. Rather than setting these each time, you may also set an environment variable with the appropriate value which will automatically be used.</p>
 
 <table>
 <tr><th>Short Name</th><th>Long Name</th><th>Description</th><th>Environment Variable</th></tr>
