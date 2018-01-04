@@ -16,7 +16,7 @@ import (
 var Cmd = models.Command{
 	Name:      "targets",
 	ShortHelp: "Operations for working with signed targets",
-	LongHelp: "`targets` allows interactions with content verified targets in a repository. " +
+	LongHelp: "<code>targets</code> allows interactions with content verified targets in a repository. " +
 		"This command cannot be run directly, but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
@@ -31,10 +31,9 @@ var Cmd = models.Command{
 var listCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List signed targets for an image",
-	LongHelp: "`images targets list` lists signed targets for an image.\n" +
-		"To search for a specific target, specify a tag with the image name in the format <image>:<tag>\n" +
-		"Example:\n" +
-		"```\ndatica -E \"<your_env_name>\" images targets list <image>\n```",
+	LongHelp: "<code>images targets list</code> lists signed targets for an image. " +
+		"To search for a specific target, specify a tag with the image name in the format \"image:tag\" Here is a sample command:\n\n" +
+		"<pre>\ndatica -E \"<your_env_name>\" images targets list <image>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to list targets for.")
@@ -57,9 +56,9 @@ var listCmd = models.Command{
 var deleteCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Delete a signed target for a given image",
-	LongHelp: "Delete a signed target for a given image. You environment namespace will be filled in for you if not provided.\n" +
-		"Example:\n" +
-		"```\ndatica -E \"<your_env_name>\" images targets rm <image>:<tag>\n```",
+	LongHelp: "<code>images targets rm</code> deletes a signed target for a given image. " +
+		"You environment namespace will be filled in for you if not provided. Here is a sample command:\n\n" +
+		"<pre>\ndatica -E \"<your_env_name>\" images targets rm <image>:<tag>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to delete targets for")
@@ -82,10 +81,9 @@ var deleteCmd = models.Command{
 var statusCmd = models.Command{
 	Name:      "status",
 	ShortHelp: "List local unpublished changes to the trust repository for an image",
-	LongHelp: "`images targets status` lists unpublished changes to a local trust repository.\n" +
-		"To search for changes to a specific target, specify a tag with the image name in the format <image>:<tag>\n" +
-		"Example:\n" +
-		"```\ndatica -E \"<your_env_name>\" images targets status <image>\n```",
+	LongHelp: "<code>images targets status</code> lists unpublished changes to a local trust repository. " +
+		"To search for changes to a specific target, specify a tag with the image name in the format \"image:tag\". Here is a sample command:\n\n" +
+		"<pre>\ndatica -E \"<your_env_name>\" images targets status <image>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to list unpublished changes for.")
@@ -108,10 +106,9 @@ var statusCmd = models.Command{
 var resetCmd = models.Command{
 	Name:      "reset",
 	ShortHelp: "Clear unpublished changes in the local trust repository for an image",
-	LongHelp: "`images targets reset` clears unpublished changes in a local trust repository. Does not affect your remote trust repository.\n" +
-		"To reset changes for a specific target, specify a tag with the image name in the format <image>:<tag>\n" +
-		"Example:\n" +
-		"```\ndatica -E \"<your_env_name>\" images targets reset <image>\n```",
+	LongHelp: "<code>images targets reset</code> clears unpublished changes in a local trust repository. This does not affect your remote trust repository. " +
+		"To reset changes for a specific target, specify a tag with the image name in the format \"image:tag\". Here is a sample command:\n\n" +
+		"<pre>\ndatica -E \"<your_env_name>\" images targets reset <image>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to reset unpublished changes for.")

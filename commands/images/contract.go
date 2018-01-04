@@ -18,7 +18,7 @@ import (
 var Cmd = models.Command{
 	Name:      "images",
 	ShortHelp: "Operations for working with images",
-	LongHelp: "`images` allows interactions with container images and tags. " +
+	LongHelp: "<code>images</code> allows interactions with container images and tags. " +
 		"This command cannot be run directly, but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
@@ -34,9 +34,9 @@ var Cmd = models.Command{
 var listCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List images available for an environment",
-	LongHelp: "`images list` lists available images for an environment. " +
-		"These images must be pushed to the registry for the environment and deployed in order to show. \nExample:\n" +
-		"```\ndatica -E \"<your_env_name>\" images list\n```",
+	LongHelp: "<code>images list</code> lists available images for an environment. " +
+		"These images must be pushed to the registry for the environment and deployed in order to show. Here is a sample command:\n\n" +
+		"<pre>\ndatica -E \"<your_env_name>\" images list\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {
@@ -58,12 +58,11 @@ var listCmd = models.Command{
 var pushCmd = models.Command{
 	Name:      "push",
 	ShortHelp: "Push an image for your environment",
-	LongHelp: "`images push` pushes a new image to the registry for your environment.\n" +
-		"The image will be retagged with the Datica registry and your namespace appended to the front if not provided.\n" +
+	LongHelp: "<code>images push</code> pushes a new image to the registry for your environment. " +
+		"The image will be retagged with the Datica registry and your namespace appended to the front if not provided. " +
 		"If no tag is specified, the image will be tagged \"latest\"\n" +
-		"Note: Pushed images will not be returned by the `images list` command until they have been deployed.\n" +
-		"Example:\n" +
-		"```\ndatica -E \"<your_env_name>\" images push <image>:<tag>\n```",
+		"Note: Pushed images will not be returned by the `images list` command until they have been deployed. Here is a sample command:\n\n" +
+		"<pre>\ndatica -E \"<your_env_name>\" images push <image>:<tag>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to push.")
@@ -87,10 +86,9 @@ var pushCmd = models.Command{
 var pullCmd = models.Command{
 	Name:      "pull",
 	ShortHelp: "Pull an image from your environment namespace",
-	LongHelp: "`images pull` pulls an image from the registry for your environment and verifies its content against a signed target.\n" +
-		"The image will be pulled with the Datica registry and your environment namespace appended to the front if not provided.\n" +
-		"Example:\n" +
-		"```\ndatica -E \"<your_env_name>\" images pull <image>:<tag>\n```",
+	LongHelp: "<code>images pull</code> pulls an image from the registry for your environment and verifies its content against a signed target. " +
+		"The image will be pulled with the Datica registry and your environment namespace appended to the front if not provided. Here is a sample command:\n\n" +
+		"<pre>\ndatica -E \"<your_env_name>\" images pull <image>:<tag>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to pull.")
