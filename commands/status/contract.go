@@ -17,10 +17,10 @@ import (
 var Cmd = models.Command{
 	Name:      "status",
 	ShortHelp: "Get quick readout of the current status of an environment and all of its services",
-	LongHelp: "`status` will give a quick readout of your environment's health. " +
+	LongHelp: "<code>status</code> will give a quick readout of your environment's health. " +
 		"This includes your environment name, environment ID, and for each service the name, size, build status, deploy status, and service ID. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" status\ndatica -E \"<your_env_name>\" status --historical\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" status\ndatica -E \"<your_env_name>\" status --historical\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			historical := cmd.BoolOpt("historical", false, "If this option is specified, a complete history of jobs will be reported")

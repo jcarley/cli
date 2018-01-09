@@ -9,8 +9,8 @@ import (
 	"github.com/forana/simpletable"
 )
 
-func CmdShow(name string, is ISites, iservices services.IServices) error {
-	serviceProxy, err := iservices.RetrieveByLabel("service_proxy")
+func CmdShow(name string, is ISites, iservices services.IServices, downStream string) error {
+	serviceProxy, err := iservices.RetrieveByLabel(downStream)
 	if err != nil {
 		return err
 	}

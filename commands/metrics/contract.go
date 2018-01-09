@@ -24,7 +24,7 @@ const (
 var Cmd = models.Command{
 	Name:      "metrics",
 	ShortHelp: "Print service and environment metrics in your local time zone",
-	LongHelp: "The `metrics` command gives access to environment metrics or individual service metrics through a variety of formats. " +
+	LongHelp: "The <code>metrics</code> command gives access to environment metrics or individual service metrics through a variety of formats. " +
 		"This is useful for checking on the status and performance of your application or environment as a whole. " +
 		"The metrics command cannot be run directly but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
@@ -40,17 +40,17 @@ var Cmd = models.Command{
 var CPUSubCmd = models.Command{
 	Name:      "cpu",
 	ShortHelp: "Print service and environment CPU metrics in your local time zone",
-	LongHelp: "`metrics cpu` prints out CPU metrics for your environment or individual services. " +
+	LongHelp: "<code>metrics cpu</code> prints out CPU metrics for your environment or individual services. " +
 		"You can print out metrics in csv, json, plain text, or spark lines format. " +
-		"If you want plain text format, omit the `--json` and `--csv` flags. " +
+		"If you want plain text format, omit the <code>--json</code> and <code>--csv</code> flags. " +
 		"You can only stream metrics using plain text or spark lines formats. " +
-		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
+		"To print out metrics for every service in your environment, omit the <code>SERVICE_NAME</code> argument. " +
 		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. " +
 		"Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_name>\" metrics cpu\n" +
+		"<pre>\ndatica -E \"<your_env_name>\" metrics cpu\n" +
 		"datica -E \"<your_env_name>\" metrics cpu app01 --stream\n" +
 		"datica -E \"<your_env_name>\" metrics cpu --json\n" +
-		"datica -E \"<your_env_name>\" metrics cpu db01 --csv -m 60\n```",
+		"datica -E \"<your_env_name>\" metrics cpu db01 --csv -m 60\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
@@ -79,17 +79,17 @@ var CPUSubCmd = models.Command{
 var MemorySubCmd = models.Command{
 	Name:      "memory",
 	ShortHelp: "Print service and environment memory metrics in your local time zone",
-	LongHelp: "`metrics memory` prints out memory metrics for your environment or individual services. " +
+	LongHelp: "<code>metrics memory</code> prints out memory metrics for your environment or individual services. " +
 		"You can print out metrics in csv, json, plain text, or spark lines format. " +
-		"If you want plain text format, omit the `--json` and `--csv` flags. " +
+		"If you want plain text format, omit the <code>--json</code> and <code>--csv</code> flags. " +
 		"You can only stream metrics using plain text or spark lines formats. " +
-		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
+		"To print out metrics for every service in your environment, omit the <code>SERVICE_NAME</code> argument. " +
 		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. " +
 		"Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_name>\" metrics memory\n" +
+		"<pre>\ndatica -E \"<your_env_name>\" metrics memory\n" +
 		"datica -E \"<your_env_name>\" metrics memory app01 --stream\n" +
 		"datica -E \"<your_env_name>\" metrics memory --json\n" +
-		"datica -E \"<your_env_name>\" metrics memory db01 --csv -m 60\n```",
+		"datica -E \"<your_env_name>\" metrics memory db01 --csv -m 60\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
@@ -118,16 +118,16 @@ var MemorySubCmd = models.Command{
 var NetworkInSubCmd = models.Command{
 	Name:      "network-in",
 	ShortHelp: "Print service and environment received network data metrics in your local time zone",
-	LongHelp: "`metrics network-in` prints out received network metrics for your environment or individual services. " +
+	LongHelp: "<code>metrics network-in</code> prints out received network metrics for your environment or individual services. " +
 		"You can print out metrics in csv, json, plain text, or spark lines format. " +
-		"If you want plain text format, omit the `--json` and `--csv` flags. " +
+		"If you want plain text format, omit the <code>--json</code> and <code>--csv</code> flags. " +
 		"You can only stream metrics using plain text or spark lines formats. " +
-		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
+		"To print out metrics for every service in your environment, omit the <code>SERVICE_NAME</code> argument. " +
 		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_name>\" metrics network-in\n" +
+		"<pre>\ndatica -E \"<your_env_name>\" metrics network-in\n" +
 		"datica -E \"<your_env_name>\" metrics network-in app01 --stream\n" +
 		"datica -E \"<your_env_name>\" metrics network-in --json\n" +
-		"datica -E \"<your_env_name>\" metrics network-in db01 --csv -m 60\n```",
+		"datica -E \"<your_env_name>\" metrics network-in db01 --csv -m 60\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")
@@ -156,17 +156,17 @@ var NetworkInSubCmd = models.Command{
 var NetworkOutSubCmd = models.Command{
 	Name:      "network-out",
 	ShortHelp: "Print service and environment transmitted network data metrics in your local time zone",
-	LongHelp: "`metrics network-out` prints out transmitted network metrics for your environment or individual services. " +
+	LongHelp: "<code>metrics network-out</code> prints out transmitted network metrics for your environment or individual services. " +
 		"You can print out metrics in csv, json, plain text, or spark lines format. " +
-		"If you want plain text format, simply omit the `--json` and `--csv` flags. " +
+		"If you want plain text format, simply omit the <code>--json</code> and <code>--csv</code> flags. " +
 		"You can only stream metrics using plain text or spark lines formats. " +
-		"To print out metrics for every service in your environment, omit the `SERVICE_NAME` argument. " +
+		"To print out metrics for every service in your environment, omit the <code>SERVICE_NAME</code> argument. " +
 		"Otherwise you may choose a service, such as an app service, to retrieve metrics for. " +
 		"Here are some sample commands\n\n" +
-		"```\ndatica -E \"<your_env_name>\" metrics network-out\n" +
+		"<pre>\ndatica -E \"<your_env_name>\" metrics network-out\n" +
 		"datica -E \"<your_env_name>\" metrics network-out app01 --stream\n" +
 		"datica -E \"<your_env_name>\" metrics network-out --json\n" +
-		"datica -E \"<your_env_name>\" metrics network-out db01 --csv -m 60\n```",
+		"datica -E \"<your_env_name>\" metrics network-out db01 --csv -m 60\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			serviceName := subCmd.StringArg("SERVICE_NAME", "", "The name of the service to print metrics for")

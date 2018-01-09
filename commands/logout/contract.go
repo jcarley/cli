@@ -13,10 +13,10 @@ import (
 var Cmd = models.Command{
 	Name:      "logout",
 	ShortHelp: "Clear the stored user information from your local machine",
-	LongHelp: "When using the CLI, your email and password are **never** stored in any file on your filesystem. " +
+	LongHelp: "When using the CLI, your email and password are <b>never</b> stored in any file on your filesystem. " +
 		"However, in order to not type in your email and password each and every command, a session token is stored in the CLI's configuration file and used until it expires. " +
-		"`logout` removes this session token from the configuration file. Here is a sample command\n\n" +
-		"```\ndatica logout\n```",
+		"<code>logout</code> removes this session token from the configuration file. Here is a sample command\n\n" +
+		"<pre>\ndatica logout\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

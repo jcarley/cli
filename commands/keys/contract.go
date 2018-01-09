@@ -13,7 +13,7 @@ import (
 var Cmd = models.Command{
 	Name:      "keys",
 	ShortHelp: "Tasks for SSH keys",
-	LongHelp: "The `keys` command gives access to SSH key management for your user account. " +
+	LongHelp: "The <code>keys</code> command gives access to SSH key management for your user account. " +
 		"SSH keys can be used for authentication and pushing code to the Datica platform. " +
 		"Any SSH keys added to your user account should not be shared but be treated as private SSH keys. " +
 		"Any SSH key uploaded to your user account will be able to be used with all code services and environments that you have access to. " +
@@ -31,12 +31,12 @@ var Cmd = models.Command{
 var AddSubCmd = models.Command{
 	Name:      "add",
 	ShortHelp: "Add a public key",
-	LongHelp: "`keys add` allows you to add a new SSH key to your user account. " +
+	LongHelp: "<code>keys add</code> allows you to add a new SSH key to your user account. " +
 		"SSH keys added to your user account should be private and not shared with others. " +
 		"SSH keys can be used for authentication (as opposed to the traditional email and password) as well as pushing code to an environment's code services. " +
 		"Please note, you must specify the path to the public key file and not the private key. " +
 		"All SSH keys should be in either OpenSSH RSA format or PEM format. Here is a sample command\n\n" +
-		"```\ndatica keys add my_prod_key ~/.ssh/prod_rsa.pub\n```",
+		"<pre>\ndatica keys add my_prod_key ~/.ssh/prod_rsa.pub\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			name := cmd.StringArg("NAME", "", "The name for the new key, for your own purposes")
@@ -57,9 +57,9 @@ var AddSubCmd = models.Command{
 var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List your public keys",
-	LongHelp: "`keys list` lists all public keys by name that have been uploaded to your user account including the key's fingerprint in SHA256 format. " +
+	LongHelp: "<code>keys list</code> lists all public keys by name that have been uploaded to your user account including the key's fingerprint in SHA256 format. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica keys list\n```",
+		"<pre>\ndatica keys list\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {
@@ -78,9 +78,9 @@ var ListSubCmd = models.Command{
 var RemoveSubCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Remove a public key",
-	LongHelp: "`keys rm` allows you to remove an SSH key previously uploaded to your account. " +
-		"The name of the key can be found by using the [keys list](#keys-list) command. Here is a sample command\n\n" +
-		"```\ndatica keys rm my_prod_key\n```",
+	LongHelp: "<code>keys rm</code> allows you to remove an SSH key previously uploaded to your account. " +
+		"The name of the key can be found by using the keys list command. Here is a sample command\n\n" +
+		"<pre>\ndatica keys rm my_prod_key\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			name := cmd.StringArg("NAME", "", "The name of the key to remove.")
@@ -100,12 +100,12 @@ var RemoveSubCmd = models.Command{
 var SetSubCmd = models.Command{
 	Name:      "set",
 	ShortHelp: "Set your auth key",
-	LongHelp: "`keys set` allows the CLI to use an SSH key for authentication instead of the traditional email and password combination. " +
+	LongHelp: "<code>keys set</code> allows the CLI to use an SSH key for authentication instead of the traditional email and password combination. " +
 		"This can be useful for automation or where shared workstations are involved. " +
 		"Please note that you must pass in the path to the private key and not the public key. " +
-		"The given key must already be added to your account by using the [keys add](#keys-add) command. " +
+		"The given key must already be added to your account by using the keys add command. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica keys set ~/.ssh/my_key\n```",
+		"<pre>\ndatica keys set ~/.ssh/my_key\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			path := cmd.StringArg("PRIVATE_KEY_PATH", "", "Relative path to the private key file")

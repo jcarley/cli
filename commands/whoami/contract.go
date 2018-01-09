@@ -13,9 +13,9 @@ import (
 var Cmd = models.Command{
 	Name:      "whoami",
 	ShortHelp: "Retrieve your user ID",
-	LongHelp: "`whoami` prints out the currently logged in user's users ID. " +
+	LongHelp: "<code>whoami</code> prints out the currently logged in user's users ID. " +
 		"This is used with Datica support engineers. Here is a sample command\n\n" +
-		"```\ndatica whoami\n```",
+		"<pre>\ndatica whoami\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

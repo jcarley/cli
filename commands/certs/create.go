@@ -14,11 +14,11 @@ import (
 	"github.com/daticahealth/cli/models"
 )
 
-func CmdCreate(name, pubKeyPath, privKeyPath string, selfSigned, resolve, letsEncrypt bool, ic ICerts, is services.IServices, issl ssl.ISSL) error {
+func CmdCreate(name, pubKeyPath, privKeyPath, downStream string, selfSigned, resolve, letsEncrypt bool, ic ICerts, is services.IServices, issl ssl.ISSL) error {
 	if strings.ContainsAny(name, config.InvalidChars) {
 		return fmt.Errorf("Invalid cert name. Names must not contain the following characters: %s", config.InvalidChars)
 	}
-	service, err := is.RetrieveByLabel("service_proxy")
+	service, err := is.RetrieveByLabel(downStream)
 	if err != nil {
 		return err
 	}

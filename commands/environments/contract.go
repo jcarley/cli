@@ -14,7 +14,7 @@ import (
 var Cmd = models.Command{
 	Name:      "environments",
 	ShortHelp: "Manage environments for which you have access",
-	LongHelp:  "The `environments` command allows you to manage your environments. The environments command can not be run directly but has subcommands.",
+	LongHelp:  "The <code>environments</code> command allows you to manage your environments. The environments command can not be run directly but has subcommands.",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.CommandLong(ListSubCmd.Name, ListSubCmd.ShortHelp, ListSubCmd.LongHelp, ListSubCmd.CmdFunc(settings))
@@ -26,10 +26,10 @@ var Cmd = models.Command{
 var ListSubCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List all environments you have access to",
-	LongHelp: "`environments list` lists all environments that you are granted access to. " +
+	LongHelp: "<code>environments list</code> lists all environments that you are granted access to. " +
 		"These environments include those you created and those that other Datica customers have added you to. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica environments list\n```",
+		"<pre>\ndatica environments list\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			subCmd.Action = func() {
@@ -48,8 +48,8 @@ var ListSubCmd = models.Command{
 var RenameSubCmd = models.Command{
 	Name:      "rename",
 	ShortHelp: "Rename an environment",
-	LongHelp: "`environments rename` allows you to rename your environment. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" environments rename MyNewEnvName\n```",
+	LongHelp: "<code>environments rename</code> allows you to rename your environment. Here is a sample command\n\n" +
+		"<pre>\ndatica -E \"<your_env_name>\" environments rename MyNewEnvName\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(subCmd *cli.Cmd) {
 			name := subCmd.StringArg("NAME", "", "The new name of the environment")

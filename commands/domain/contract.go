@@ -17,9 +17,9 @@ import (
 var Cmd = models.Command{
 	Name:      "domain",
 	ShortHelp: "Print out the temporary domain name of the environment",
-	LongHelp: "`domain` prints out the temporary domain name setup by Datica for an environment. " +
+	LongHelp: "<code>domain</code> prints out the temporary domain name setup by Datica for an environment. " +
 		"This domain name typically takes the form podXXXXX.catalyzeapps.com but may vary based on the environment. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" domain\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" domain\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {
