@@ -199,7 +199,7 @@ func (d *SImages) ListTargets(repo notaryClient.Repository, roles ...string) ([]
 	return targets, nil
 }
 
-// LookupTarget searches for a specific target in a repository by tag name
+// Target searches for a specific target in a repository by tag name
 func (d *SImages) LookupTarget(repo notaryClient.Repository, tag string) (*notaryClient.TargetWithRole, error) {
 	target, err := repo.GetTargetByName(tag)
 	if err != nil {
