@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"os/signal"
-	"runtime"
 	"strings"
 
 	"golang.org/x/net/websocket"
@@ -40,23 +40,6 @@ func (c *SConsole) Open(command string, service *models.Service) error {
 	fdIn, isTermIn := term.GetFdInfo(stdin)
 	if !isTermIn {
 		return errors.New("StdIn is not a terminal")
-	}
-	var size *term.Winsize
-	var err error
-	if runtime.GOOS != "windows" {
-		size, err = term.GetWinsize(fdIn)
-	} else {
-		fdOut, _ := term.GetFdInfo(stdout)
-		size, err = term.GetWinsize(fdOut)
-	}
-
-	if err != nil {
-		return err
-	}
-	if size.Width != 80 {
-		logrus.Warnln("Your terminal width is not 80 characters. Please resize your terminal to be exactly 80 characters wide to avoid line wrapping issues.")
-	} else {
-		logrus.Warnln("Keep your terminal width at 80 characters. Resizing your terminal will introduce line wrapping issues.")
 	}
 
 	logrus.Printf("Opening console to %s (%s)", service.Name, service.ID)
@@ -105,7 +88,12 @@ func (c *SConsole) Open(command string, service *models.Service) error {
 	defer ws.Close()
 	logrus.Println("Connection opened")
 
-	oldState, err := term.SetRawTerminal(fdIn)
+	oldState, _ := term.SaveState(fdIn)
+	// settings taken from MakeRaw function of https://github.com/moby/moby/blob/master/pkg/term/termios_linux.go
+	sttyCommand := exec.Command("/bin/stty", "cooked", "-ignbrk", "-brkint", "-parmrk", "-istrip", "-inlcr", "-igncr", "-icrnl", "-ixon", "-opost", "-echo", "-echonl", "-icanon", "-isig", "-iexten", "-parenb")
+	sttyCommand.Stdin = stdin
+	sttyCommand.Stdout = stdout
+	err = sttyCommand.Run()
 	if err != nil {
 		return err
 	}
