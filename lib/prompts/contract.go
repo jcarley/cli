@@ -118,7 +118,6 @@ func (p *SPrompts) Password(msg string) string {
 
 // OTP prompts for a one-time password and returns the value.
 func (p *SPrompts) OTP(preferredMode string) string {
-	fmt.Println("This account has two-factor authentication enabled.")
 	prompt := "Your one-time password: "
 	if preferredMode == "authenticator" {
 		prompt = "Your authenticator one-time password: "
