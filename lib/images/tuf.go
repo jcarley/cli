@@ -105,6 +105,9 @@ func (d *SImages) Push(name string, user *models.User, env *models.Environment, 
 
 	out, err := dockerCli.ImagePush(ctx, fullImageName, types.ImagePushOptions{RegistryAuth: dockerAuth(user)})
 	if err != nil {
+		if matched, _ := regexp.MatchString(InvalidDockerAPIVersion, err.Error()); matched {
+			return nil, fmt.Errorf("%s\nSet environment variable `DOCKER_API_VERSION` to match your local installation", err.Error())
+		}
 		return nil, err
 	}
 	defer out.Close()
