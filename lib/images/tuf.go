@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -56,6 +57,7 @@ const (
 	MissingTrustData             = "does not have trust data for"
 	ImageDoesNotExist            = "No such image"
 	CancelingPush                = "Canceling push request"
+	InvalidDockerAPIVersion      = "Error response from daemon: client version .* is too new. Maximum supported API version is .*"
 )
 
 // Constants for image handling
@@ -139,6 +141,9 @@ func (d *SImages) Pull(name string, user *models.User, env *models.Environment) 
 
 	out, err := dockerCli.ImagePull(ctx, fullImageName, types.ImagePullOptions{RegistryAuth: dockerAuth(user)})
 	if err != nil {
+		if matched, _ := regexp.MatchString(InvalidDockerAPIVersion, err.Error()); matched {
+			return nil, fmt.Errorf("%s\nSet environment variable `DOCKER_API_VERSION` to match your local installation", err.Error())
+		}
 		return nil, err
 	}
 	defer out.Close()
