@@ -87,12 +87,12 @@ var certCreateTests = []struct {
 	resolve     bool
 	expectErr   bool
 }{
-	{certName, pubKeyPath, privKeyPath, test.SvcLabel, true, true, false},
-	// {certName, pubKeyPath, privKeyPath, test.SvcLabel, true, false, false},
-	// {certName, pubKeyPath, privKeyPath, test.SvcLabel, false, true, false},
-	// {certName, pubKeyPath, invalidPath, test.SvcLabel, true, true, true},
-	// {certName, invalidPath, privKeyPath, test.SvcLabel, true, true, true},
-	// {"/?%", pubKeyPath, privKeyPath, test.SvcLabel, true, true, true},
+	{certName, pubKeyPath, privKeyPath, test.DownStream, true, true, false},
+	{certName, pubKeyPath, privKeyPath, test.DownStream, true, false, false},
+	{certName, pubKeyPath, privKeyPath, test.DownStream, false, true, false},
+	{certName, pubKeyPath, invalidPath, test.DownStream, true, true, true},
+	{certName, invalidPath, privKeyPath, test.DownStream, true, true, true},
+	{"/?%", pubKeyPath, privKeyPath, test.DownStream, true, true, true},
 }
 
 func TestCertsCreate(t *testing.T) {
@@ -108,7 +108,7 @@ func TestCertsCreate(t *testing.T) {
 	mux.HandleFunc("/environments/"+test.EnvID+"/services",
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "GET")
-			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"%s"}]`, test.SvcID, test.SvcLabel))
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"%s"}]`, test.SvcID, test.DownStream))
 		},
 	)
 
@@ -149,7 +149,7 @@ func TestCertsCreateLetsEncrypt(t *testing.T) {
 	mux.HandleFunc("/environments/"+test.EnvID+"/services",
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "GET")
-			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"service_proxy"}]`, test.SvcID))
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"%s"}]`, test.SvcID, test.DownStream))
 		},
 	)
 	// test
@@ -168,12 +168,12 @@ func TestCertsCreateFailSSL(t *testing.T) {
 	mux.HandleFunc("/environments/"+test.EnvID+"/services",
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "GET")
-			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"service_proxy"}]`, test.SvcID))
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"%s"}]`, test.SvcID, test.DownStream))
 		},
 	)
 
 	// test
-	err := CmdCreate(certName, pubKeyPath, privKeyPath, test.SvcLabel, false, false, false, New(settings), services.New(settings), ssl.New(settings))
+	err := CmdCreate(certName, pubKeyPath, privKeyPath, test.DownStream, false, false, false, New(settings), services.New(settings), ssl.New(settings))
 
 	// assert
 	if err == nil {

@@ -22,12 +22,12 @@ func TestCertsList(t *testing.T) {
 	mux.HandleFunc("/environments/"+test.EnvID+"/services",
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "GET")
-			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"%s"}]`, test.SvcID, test.SvcLabel))
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"%s"}]`, test.SvcID, test.DownStream))
 		},
 	)
 
 	// test
-	err := CmdList(New(settings), services.New(settings), test.SvcLabel)
+	err := CmdList(New(settings), services.New(settings), test.DownStream)
 
 	// assert
 	if err != nil {

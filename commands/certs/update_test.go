@@ -19,12 +19,12 @@ var certUpdateTests = []struct {
 	resolve     bool
 	expectErr   bool
 }{
-	{certName, pubKeyPath, privKeyPath, test.SvcLabel, true, false, false},
-	{certName, invalidPath, privKeyPath, test.SvcLabel, true, false, true}, // invalid cert path
-	{certName, pubKeyPath, invalidPath, test.SvcLabel, true, false, true},  // invalid key path
-	{certName, pubKeyPath, privKeyPath, test.SvcLabel, false, false, true}, // cert not signed by CA
-	{certName, pubKeyPath, privKeyPath, test.SvcLabel, true, true, false},
-	{"bad-cert-name", pubKeyPath, privKeyPath, test.SvcLabel, true, false, true},
+	{certName, pubKeyPath, privKeyPath, test.DownStream, true, false, false},
+	{certName, invalidPath, privKeyPath, test.DownStream, true, false, true}, // invalid cert path
+	{certName, pubKeyPath, invalidPath, test.DownStream, true, false, true},  // invalid key path
+	{certName, pubKeyPath, privKeyPath, test.DownStream, false, false, true}, // cert not signed by CA
+	{certName, pubKeyPath, privKeyPath, test.DownStream, true, true, false},
+	{"bad-cert-name", pubKeyPath, privKeyPath, test.DownStream, true, false, true},
 }
 
 func TestCertsUpdate(t *testing.T) {
@@ -40,7 +40,7 @@ func TestCertsUpdate(t *testing.T) {
 	mux.HandleFunc("/environments/"+test.EnvID+"/services",
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "GET")
-			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"%s"}]`, test.SvcID, test.SvcLabel))
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"%s"}]`, test.SvcID, test.DownStream))
 		},
 	)
 

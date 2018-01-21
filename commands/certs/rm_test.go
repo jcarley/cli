@@ -14,8 +14,8 @@ var certRmTests = []struct {
 	downStream string
 	expectErr  bool
 }{
-	{certName, test.SvcLabel, false},
-	{"bad-cert-name", test.SvcLabel, true},
+	{certName, test.DownStream, false},
+	{"bad-cert-name", test.DownStream, true},
 }
 
 func TestCertsRm(t *testing.T) {
@@ -31,7 +31,7 @@ func TestCertsRm(t *testing.T) {
 	mux.HandleFunc("/environments/"+test.EnvID+"/services",
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "GET")
-			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"%s"}]`, test.SvcID, test.SvcLabel))
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"%s"}]`, test.SvcID, test.DownStream))
 		},
 	)
 
