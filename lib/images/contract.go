@@ -22,7 +22,7 @@ type IImages interface {
 	PrintChangelist(changes []changelist.Change)
 	CheckChangelist(repo notaryClient.Repository, ip prompts.IPrompts) error
 	GetNotaryRepository(pod, imageName string, user *models.User) notaryClient.Repository
-	GetGloballyUniqueNamespace(name string, env *models.Environment) (string, string, error)
+	GetGloballyUniqueNamespace(name string, env *models.Environment, includeRegistry bool) (string, string, error)
 	Publish(repo notaryClient.Repository) error
 }
 

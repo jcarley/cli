@@ -24,8 +24,9 @@ type FakeImages struct {
 
 // Testing constants
 const (
-	Image = "hello-world"
-	Tag   = "latest"
+	Registry = "registry.datica.com"
+	Image    = "hello-world"
+	Tag      = "latest"
 )
 
 var testDigest = &models.ContentDigest{

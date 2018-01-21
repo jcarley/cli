@@ -16,7 +16,7 @@ func cmdTargetsDelete(envID, imageName string, user *models.User, ie environment
 		return err
 	}
 	var targetList []string
-	repositoryName, tag, err := ii.GetGloballyUniqueNamespace(imageName, env)
+	repositoryName, tag, err := ii.GetGloballyUniqueNamespace(imageName, env, true)
 	if err != nil {
 		return err
 	}

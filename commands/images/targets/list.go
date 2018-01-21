@@ -20,7 +20,7 @@ func cmdTargetsList(envID, imageName string, user *models.User, ie environments.
 
 	var targets []*notaryClient.TargetWithRole
 
-	repositoryName, tag, err := ii.GetGloballyUniqueNamespace(imageName, env)
+	repositoryName, tag, err := ii.GetGloballyUniqueNamespace(imageName, env, true)
 	if err != nil {
 		return err
 	}
