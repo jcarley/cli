@@ -80,7 +80,7 @@ const (
 
 // Push parses a given name into registry/namespace/image:tag and attempts to push it to the remote registry
 func (d *FakeImages) Push(name string, user *models.User, env *models.Environment, ip prompts.IPrompts) (*models.Image, error) {
-	repositoryName, tag, err := d.GetGloballyUniqueNamespace(name, env)
+	repositoryName, tag, err := d.GetGloballyUniqueNamespace(name, env, true)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func (d *FakeImages) Push(name string, user *models.User, env *models.Environmen
 
 // Pull parses a name into registry/namespace/image:tag and attempts to retrieve it from the remote registry
 func (d *FakeImages) Pull(name string, user *models.User, env *models.Environment) (*models.Image, error) {
-	repositoryName, tag, err := d.GetGloballyUniqueNamespace(name, env)
+	repositoryName, tag, err := d.GetGloballyUniqueNamespace(name, env, true)
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +252,7 @@ func (d *FakeImages) GetNotaryRepository(pod, imageName string, user *models.Use
 }
 
 // GetGloballyUniqueNamespace returns the fully formatted name for an image <registry>/<namespace>/<image> and a tag if present
-func (d *FakeImages) GetGloballyUniqueNamespace(name string, env *models.Environment) (string, string, error) {
+func (d *FakeImages) GetGloballyUniqueNamespace(name string, env *models.Environment, includeRegistry bool) (string, string, error) {
 	var repositoryName string
 	var image string
 	var tag string
@@ -274,25 +274,31 @@ func (d *FakeImages) GetGloballyUniqueNamespace(name string, env *models.Environ
 	repoParts := strings.Split(image, "/")
 	registry := getServer(env.Pod, registries)
 
+	var repo string
 	switch len(repoParts) {
 	case 1:
-		repositoryName = fmt.Sprintf("%s/%s/%s", registry, env.Namespace, repoParts[0])
+		repo = repoParts[0]
+		// repositoryName = fmt.Sprintf("%s/%s/%s", registry, env.Namespace, repoParts[0])
 	case 2:
 		if repoParts[0] != env.Namespace {
 			if repoParts[0] != registry {
 				return "", "", fmt.Errorf(IncorrectNamespace)
 			}
-			repositoryName = image
-		} else {
-			repositoryName = fmt.Sprintf("%s/%s", registry, image)
+			return image, tag, nil
 		}
+		repo = repoParts[1]
 	case 3:
 		if repoParts[0] != registry || repoParts[1] != env.Namespace {
 			return "", "", fmt.Errorf(IncorrectRegistryOrNamespace)
 		}
-		repositoryName = image
+		repo = repoParts[2]
 	default:
 		return "", "", fmt.Errorf(InvalidImageName)
+	}
+	if includeRegistry {
+		repositoryName = fmt.Sprintf("%s/%s/%s", registry, env.Namespace, repo)
+	} else {
+		repositoryName = fmt.Sprintf("%s/%s", env.Namespace, repo)
 	}
 	return repositoryName, tag, nil
 }

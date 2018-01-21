@@ -313,10 +313,9 @@ func (d *SImages) GetGloballyUniqueNamespace(name string, env *models.Environmen
 	repoParts := strings.Split(image, "/")
 	registry := getServer(env.Pod, registries)
 
-	var namespace, repo string
+	var repo string
 	switch len(repoParts) {
 	case 1:
-		namespace = env.Namespace
 		repo = repoParts[0]
 	case 2:
 		if repoParts[0] != env.Namespace {
@@ -326,21 +325,19 @@ func (d *SImages) GetGloballyUniqueNamespace(name string, env *models.Environmen
 			//Allow users to pull public images
 			return image, tag, nil
 		}
-		namespace = repoParts[0]
 		repo = repoParts[1]
 	case 3:
 		if repoParts[0] != registry || repoParts[1] != env.Namespace {
 			return "", "", fmt.Errorf(IncorrectRegistryOrNamespace)
 		}
-		namespace = repoParts[1]
 		repo = repoParts[2]
 	default:
 		return "", "", fmt.Errorf(InvalidImageName)
 	}
 	if includeRegistry {
-		repositoryName = fmt.Sprintf("%s/%s/%s", registry, namespace, repo)
+		repositoryName = fmt.Sprintf("%s/%s/%s", registry, env.Namespace, repo)
 	} else {
-		repositoryName = fmt.Sprintf("%s/%s", namespace, repo)
+		repositoryName = fmt.Sprintf("%s/%s", env.Namespace, repo)
 	}
 	return repositoryName, tag, nil
 }
