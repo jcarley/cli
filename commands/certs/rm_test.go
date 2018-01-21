@@ -10,11 +10,12 @@ import (
 )
 
 var certRmTests = []struct {
-	name      string
-	expectErr bool
+	name       string
+	downStream string
+	expectErr  bool
 }{
-	{certName, false},
-	{"bad-cert-name", true},
+	{certName, test.SvcLabel, false},
+	{"bad-cert-name", test.SvcLabel, true},
 }
 
 func TestCertsRm(t *testing.T) {
@@ -30,7 +31,7 @@ func TestCertsRm(t *testing.T) {
 	mux.HandleFunc("/environments/"+test.EnvID+"/services",
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "GET")
-			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"service_proxy"}]`, test.SvcID))
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"%s"}]`, test.SvcID, test.SvcLabel))
 		},
 	)
 
@@ -38,7 +39,7 @@ func TestCertsRm(t *testing.T) {
 		t.Logf("Data: %+v", data)
 
 		// test
-		err := CmdRm(data.name, New(settings), services.New(settings))
+		err := CmdRm(data.name, New(settings), services.New(settings), data.downStream)
 
 		// assert
 		if err != nil != data.expectErr {
