@@ -2,20 +2,33 @@ package tags
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/daticahealth/cli/commands/environments"
 	"github.com/daticahealth/cli/lib/images"
 	"github.com/daticahealth/cli/lib/prompts"
 )
 
-func cmdTagDelete(ii images.IImages, ip prompts.IPrompts, image, tagName string) error {
-	tags, err := ii.ListTags(image)
+func cmdTagDelete(ii images.IImages, ip prompts.IPrompts, ie environments.IEnvironments, envID, image string) error {
+	env, err := ie.Retrieve(envID)
+	if err != nil {
+		return err
+	}
+	namespacedImage, tag, err := ii.GetGloballyUniqueNamespace(image, env, false)
+	if err != nil {
+		return err
+	} else if tag == "" {
+		return fmt.Errorf("Must include tag in image name.")
+	}
+
+	tags, err := ii.ListTags(namespacedImage)
 	if err != nil {
 		return err
 	}
 	tagFound := false
-	for _, tag := range *tags {
-		if tag == tagName {
+	for _, t := range *tags {
+		if tag == t {
 			tagFound = true
 			break
 		}
@@ -28,7 +41,7 @@ func cmdTagDelete(ii images.IImages, ip prompts.IPrompts, image, tagName string)
 		if err != nil {
 			return err
 		}
-		err = ii.DeleteTag(image, tagName)
+		err = ii.DeleteTag(namespacedImage, tag)
 		if err == nil {
 			logrus.Println("Tag deleted successfully.")
 		}

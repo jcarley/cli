@@ -2,6 +2,7 @@ package tags
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/daticahealth/cli/commands/environments"
 	"github.com/daticahealth/cli/config"
 	"github.com/daticahealth/cli/lib/auth"
 	"github.com/daticahealth/cli/lib/images"
@@ -40,7 +41,7 @@ var listCmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := cmdTagList(images.New(settings), *image)
+				err := cmdTagList(images.New(settings), environments.New(settings), settings.EnvironmentID, *image)
 				if err != nil {
 					logrus.Fatalln(err.Error())
 				}
@@ -53,11 +54,10 @@ var deleteCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Delete a tag for a given image",
 	LongHelp: "Delete a tag for a given image. Example:\n" +
-		"<pre>\ndatica -E \"<your_env_name>\" images tags delete pod012345/my-image v1\n</pre>",
+		"<pre>\ndatica -E \"<your_env_name>\" images tags delete <namespace>/<image>:<tag>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to list tags for, including the environment's namespace.")
-			tag := cmd.StringArg("TAG", "", "The tag to delete.")
+			image := cmd.StringArg("IMAGE_NAME", "", "The tagged name of the image to delete.")
 			cmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -65,7 +65,7 @@ var deleteCmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := cmdTagDelete(images.New(settings), prompts.New(), *image, *tag)
+				err := cmdTagDelete(images.New(settings), prompts.New(), environments.New(settings), settings.EnvironmentID, *image)
 				if err != nil {
 					logrus.Fatalln(err.Error())
 				}

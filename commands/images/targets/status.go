@@ -14,7 +14,7 @@ func cmdTargetsStatus(envID, imageName string, user *models.User, ie environment
 		return err
 	}
 
-	repositoryName, tag, err := ii.GetGloballyUniqueNamespace(imageName, env)
+	repositoryName, tag, err := ii.GetGloballyUniqueNamespace(imageName, env, true)
 	if err != nil {
 		return err
 	}

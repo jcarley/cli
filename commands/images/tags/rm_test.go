@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/daticahealth/cli/commands/environments"
 	"github.com/daticahealth/cli/lib/images"
 	"github.com/daticahealth/cli/lib/prompts"
 	"github.com/daticahealth/cli/test"
@@ -29,29 +30,57 @@ func (tp *tPrompts) YesNo(msg, prompt string) error {
 	return errors.New("declined")
 }
 
-func TestDeleteTag(t *testing.T) {
-	mux, server, baseURL := test.Setup()
-	defer test.Teardown(server)
-	settings := test.GetSettings(baseURL.String())
-
-	mux.HandleFunc(fmt.Sprintf("/environments/"+test.EnvID+"/images/test1234%%2Fhello/tags"),
+func setupMux(mux *http.ServeMux, t *testing.T, successfulDelete bool) {
+	mux.HandleFunc("/environments/"+test.EnvID,
+		func(w http.ResponseWriter, r *http.Request) {
+			test.AssertEquals(t, r.Method, "GET")
+			fmt.Fprint(w, fmt.Sprintf(`{"id":"%s","name":"%s","namespace":"%s","organizationId":"%s"}`, test.EnvID, test.EnvName, test.Namespace, test.OrgID))
+		},
+	)
+	mux.HandleFunc(fmt.Sprintf("/environments/"+test.EnvID+"/images/"+test.Namespace+"%%2F"+test.Image+"/tags"),
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "GET")
 			fmt.Fprint(w, `["v1", "v2", "latest"]`)
 		},
 	)
+	if successfulDelete {
+		mux.HandleFunc(fmt.Sprintf("/environments/"+test.EnvID+"/images/"+test.Namespace+"%%2F"+test.Image+"/tags/"+test.Tag),
+			func(w http.ResponseWriter, r *http.Request) {
+				test.AssertEquals(t, r.Method, "DELETE")
+				w.WriteHeader(204)
+			},
+		)
+	}
+}
 
-	mux.HandleFunc(fmt.Sprintf("/environments/"+test.EnvID+"/images/test1234%%2Fhello/tags/v1"),
-		func(w http.ResponseWriter, r *http.Request) {
-			test.AssertEquals(t, r.Method, "DELETE")
-			w.WriteHeader(204)
-		},
-	)
+var deleteTagTests = []struct {
+	imageName string
+	expectErr bool
+}{
+	// SUCCEED
+	{fmt.Sprintf("%s:%s", test.Image, test.Tag), false},
+	{fmt.Sprintf("%s/%s:%s", test.Namespace, test.Image, test.Tag), false},
+	{fmt.Sprintf("%s/%s/%s:%s", test.Registry, test.Namespace, test.Image, test.Tag), false},
+	// FAIL
+	{fmt.Sprintf("%s", test.Image), true},
+	{fmt.Sprintf("%s/%s", test.Namespace, test.Image), true},
+	{fmt.Sprintf("%s/%s/%s", test.Registry, test.Namespace, test.Image), true},
+	{fmt.Sprintf("invalid/%s", test.Image), true},
+	{fmt.Sprintf("%s/invalid/%s", test.Registry, test.Image), true},
+}
 
-	err := cmdTagDelete(images.New(settings), New(true), "test1234/hello", "v1")
+func TestDeleteTag(t *testing.T) {
+	mux, server, baseURL := test.Setup()
+	defer test.Teardown(server)
+	settings := test.GetSettings(baseURL.String())
+	setupMux(mux, t, true)
 
-	if err != nil {
-		t.Fatalf("Unexpected error while deleting tag: %v", err)
+	for _, data := range deleteTagTests {
+		err := cmdTagDelete(images.New(settings), New(true), environments.New(settings), settings.EnvironmentID, data.imageName)
+
+		if (err != nil) != data.expectErr {
+			t.Fatalf("Unexpected error while deleting tag: %v", err)
+		}
 	}
 }
 
@@ -59,22 +88,9 @@ func TestDeleteDecline(t *testing.T) {
 	mux, server, baseURL := test.Setup()
 	defer test.Teardown(server)
 	settings := test.GetSettings(baseURL.String())
+	setupMux(mux, t, true)
 
-	mux.HandleFunc(fmt.Sprintf("/environments/"+test.EnvID+"/images/test1234%%2Fhello/tags"),
-		func(w http.ResponseWriter, r *http.Request) {
-			test.AssertEquals(t, r.Method, "GET")
-			fmt.Fprint(w, `["v1", "v2", "latest"]`)
-		},
-	)
-
-	mux.HandleFunc(fmt.Sprintf("/environments/"+test.EnvID+"/images/test1234%%2Fhello/tags/v1"),
-		func(w http.ResponseWriter, r *http.Request) {
-			test.AssertEquals(t, r.Method, "DELETE")
-			w.WriteHeader(204)
-		},
-	)
-
-	err := cmdTagDelete(images.New(settings), New(false), "test1234/hello", "v1")
+	err := cmdTagDelete(images.New(settings), New(false), environments.New(settings), settings.EnvironmentID, fmt.Sprintf("%s/%s:%s", test.Namespace, test.Image, test.Tag))
 
 	if err == nil {
 		t.Fatalf("Expected error while deleting tag: %v", err)
@@ -85,15 +101,9 @@ func TestDeleteTagNotInList(t *testing.T) {
 	mux, server, baseURL := test.Setup()
 	defer test.Teardown(server)
 	settings := test.GetSettings(baseURL.String())
+	setupMux(mux, t, false)
 
-	mux.HandleFunc(fmt.Sprintf("/environments/"+test.EnvID+"/images/test1234%%2Fhello/tags"),
-		func(w http.ResponseWriter, r *http.Request) {
-			test.AssertEquals(t, r.Method, "GET")
-			fmt.Fprint(w, `["v1", "v2", "latest"]`)
-		},
-	)
-
-	err := cmdTagDelete(images.New(settings), New(false), "test1234/hello", "v3")
+	err := cmdTagDelete(images.New(settings), New(false), environments.New(settings), settings.EnvironmentID, fmt.Sprintf("%s/%s:%s", test.Namespace, test.Image, "v3"))
 
 	if err == nil {
 		t.Fatalf("Expected error while deleting tag: %v", err)
@@ -104,15 +114,9 @@ func TestDeleteTagIsRelease(t *testing.T) {
 	mux, server, baseURL := test.Setup()
 	defer test.Teardown(server)
 	settings := test.GetSettings(baseURL.String())
+	setupMux(mux, t, false)
 
-	mux.HandleFunc(fmt.Sprintf("/environments/"+test.EnvID+"/images/test1234%%2Fhello/tags"),
-		func(w http.ResponseWriter, r *http.Request) {
-			test.AssertEquals(t, r.Method, "GET")
-			fmt.Fprint(w, `["v1", "v2", "latest"]`)
-		},
-	)
-
-	mux.HandleFunc(fmt.Sprintf("/environments/"+test.EnvID+"/images/test1234%%2Fhello/tags/v1"),
+	mux.HandleFunc(fmt.Sprintf("/environments/"+test.EnvID+"/images/"+test.Namespace+"%%2F"+test.Image+"/tags/"+test.Tag),
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "DELETE")
 			w.WriteHeader(400)
@@ -120,7 +124,7 @@ func TestDeleteTagIsRelease(t *testing.T) {
 		},
 	)
 
-	err := cmdTagDelete(images.New(settings), New(false), "test1234/hello", "v1")
+	err := cmdTagDelete(images.New(settings), New(false), environments.New(settings), settings.EnvironmentID, fmt.Sprintf("%s/%s:%s", test.Namespace, test.Image, test.Tag))
 
 	if err == nil {
 		t.Fatalf("Expected error while deleting tag: %v", err)

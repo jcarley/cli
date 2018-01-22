@@ -6,6 +6,7 @@ import (
 	"github.com/daticahealth/cli/commands/services"
 	"github.com/daticahealth/cli/config"
 	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/images"
 	"github.com/daticahealth/cli/lib/jobs"
 	"github.com/daticahealth/cli/lib/prompts"
 	"github.com/daticahealth/cli/models"
@@ -20,7 +21,7 @@ var Cmd = models.Command{
 	LongHelp: "<code>deploy</code> deploys a Docker image for the given service. " +
 		"This command will only deploy for \"container\" services. " +
 		"Here is a sample command\n\n" +
-		"<pre>\ndatica -E \"<your_env_name>\" deploy container01 image01\n</pre>",
+		"<pre>\ndatica -E \"<your_env_name>\" deploy <service> <image>:<tag>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to deploy to (e.g. 'container01')")
@@ -32,7 +33,7 @@ var Cmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdDeploy(settings.EnvironmentID, *serviceName, *imageName, jobs.New(settings), services.New(settings), environments.New(settings))
+				err := CmdDeploy(settings.EnvironmentID, *serviceName, *imageName, jobs.New(settings), services.New(settings), environments.New(settings), images.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}

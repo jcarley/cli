@@ -8,13 +8,15 @@ import (
 
 	"github.com/daticahealth/cli/commands/environments"
 	"github.com/daticahealth/cli/commands/services"
+	"github.com/daticahealth/cli/lib/images"
 	"github.com/daticahealth/cli/lib/jobs"
 	"github.com/daticahealth/cli/test"
 )
 
 const (
 	container = "container01"
-	image     = "/namespace/image:tag"
+	image1    = "/" + test.Namespace + "/" + test.Image + ":" + test.Tag
+	image2    = test.Image + ":" + test.Tag
 )
 
 var deployTests = []struct {
@@ -22,9 +24,15 @@ var deployTests = []struct {
 	image     string
 	expectErr bool
 }{
-	{container, image, false},
-	{"badcontainerservice", image, true},
+	// SUCCEED
+	{container, image1, false},
+	{container, image2, false},
+	{container, test.Registry + image1, false},
+	// FAIL
+	{"badcontainerservice", image1, true},
 	{container, "/invalid/tag:name", true},
+	{container, test.Registry + "/invalid/tag:name", true},
+	{container, "notag", true},
 }
 
 func TestDeploy(t *testing.T) {
@@ -58,10 +66,10 @@ func TestDeploy(t *testing.T) {
 		t.Logf("Data: %+v", data)
 
 		// test
-		err := CmdDeploy(settings.EnvironmentID, data.container, data.image, jobs.New(settings), services.New(settings), environments.New(settings))
+		err := CmdDeploy(settings.EnvironmentID, data.container, data.image, jobs.New(settings), services.New(settings), environments.New(settings), images.New(settings))
 
 		// assert
-		if err != nil != data.expectErr {
+		if (err != nil) != data.expectErr {
 			t.Errorf("Unexpected error: %s", err)
 			continue
 		}
