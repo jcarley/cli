@@ -12,7 +12,7 @@ func cmdImagePull(envID, name string, user *models.User, ie environments.IEnviro
 	if err != nil {
 		return err
 	}
-	repositoryName, tag, err := ii.GetGloballyUniqueNamespace(name, env)
+	repositoryName, tag, err := ii.GetGloballyUniqueNamespace(name, env, true)
 	if err != nil {
 		return err
 	}
