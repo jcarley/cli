@@ -1,13 +1,11 @@
 package images
 
 import (
-	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -69,11 +67,19 @@ const (
 	trustPath  = ".docker/trust"
 )
 
+// Target contains metadata about a target
 type Target struct {
 	Name   string
 	Digest digest.Digest
 	Size   int64
 	Role   string
+}
+
+// AuxData contains metadata about the content that was pushed
+type AuxData struct {
+	Tag    string `json:"Tag"`
+	Digest string `json:"Digest"`
+	Size   int64  `json:"Size"`
 }
 
 // Push parses a given name into registry/namespace/image:tag and attempts to push it to the remote registry
@@ -84,6 +90,7 @@ func (d *SImages) Push(name string, user *models.User, env *models.Environment, 
 		return nil, err
 	}
 	defer dockerCli.Close()
+	dockerCli.NegotiateAPIVersion(ctx)
 
 	repositoryName, tag, err := d.GetGloballyUniqueNamespace(name, env)
 	if err != nil {
@@ -113,15 +120,27 @@ func (d *SImages) Push(name string, user *models.User, env *models.Environment, 
 		logrus.Printf("Pushing image %s", fullImageName)
 	}
 
-	out, err := dockerCli.ImagePush(ctx, fullImageName, types.ImagePushOptions{RegistryAuth: dockerAuth(user)})
+	resp, err := dockerCli.ImagePush(ctx, fullImageName, types.ImagePushOptions{RegistryAuth: dockerAuth(user)})
 	if err != nil {
 		return nil, err
 	}
-	defer out.Close()
-	digest, err := parseRegistryOutput(&out, true)
-	if err != nil {
+	defer resp.Close()
+
+	var digest *models.ContentDigest
+	if err = jsonmessage.DisplayJSONMessagesStream(resp, os.Stdout, os.Stdout.Fd(), true,
+		func(aux *json.RawMessage) {
+			var auxData AuxData
+			if data, jsonErr := aux.MarshalJSON(); jsonErr == nil {
+				json.Unmarshal(data, &auxData)
+				hashParts := strings.Split(auxData.Digest, ":")
+				digest.HashType = hashParts[0]
+				digest.Hash = hashParts[1]
+				digest.Size = auxData.Size
+			}
+		}); err != nil {
 		return nil, err
 	}
+
 	return &models.Image{
 		Name:   repositoryName,
 		Tag:    tag,
@@ -137,6 +156,8 @@ func (d *SImages) Pull(name string, target *Target, user *models.User, env *mode
 		return err
 	}
 	defer dockerCli.Close()
+	dockerCli.NegotiateAPIVersion(ctx)
+
 	ref := strings.Join([]string{name, string(target.Digest)}, "@")
 	resp, err := dockerCli.ImagePull(ctx, ref, types.ImagePullOptions{RegistryAuth: dockerAuth(user)})
 	if err != nil {
@@ -357,68 +378,6 @@ func dockerAuth(user *models.User) string {
 		logrus.Fatal(err)
 	}
 	return base64.URLEncoding.EncodeToString(encodedJSON)
-}
-
-// RegistryOutput holds response data from the registry
-type RegistryOutput struct {
-	Status         string            `json:"status,omitempty"`
-	ProgressDetail map[string]string `json:"progressDetail,omitempty"`
-	Aux            *AuxData          `json:"aux,omitempty"`
-	ID             string            `json:"id,omitempty"`
-	Error          string            `json:"error,omitempty"`
-}
-
-// AuxData contains metadata about the content that was pushed
-type AuxData struct {
-	Tag    string `json:"Tag"`
-	Digest string `json:"Digest"`
-	Size   int64  `json:"Size"`
-}
-
-func parseRegistryOutput(out *io.ReadCloser, print bool) (*models.ContentDigest, error) {
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(*out)
-	outputLines := strings.Split(buf.String(), "\n")
-	var contentDigest models.ContentDigest
-	var statusDigest string
-	for _, line := range outputLines {
-		var responseData RegistryOutput
-		json.Unmarshal([]byte(line), &responseData)
-		if responseData.Error != "" {
-			return nil, fmt.Errorf(responseData.Error)
-		} else if responseData.Status != "" {
-			var output string
-			if responseData.ID != "" {
-				output = fmt.Sprintf("%s: %s", responseData.ID, responseData.Status)
-			} else {
-				output = responseData.Status
-			}
-
-			//Docker daemon get this as stream, but we get it all at once so there's no print in printing progress update
-			if print && responseData.ProgressDetail == nil {
-				logrus.Println(output)
-			}
-
-			// Used to get digest from a pull request. Only push gets 'aux' data
-			if strings.Contains(responseData.Status, "Digest: ") {
-				statusDigest = strings.TrimPrefix(responseData.Status, "Digest: ")
-			}
-		} else if responseData.Aux != nil {
-			hashParts := strings.Split(responseData.Aux.Digest, ":")
-			contentDigest.HashType = hashParts[0]
-			contentDigest.Hash = hashParts[1]
-			contentDigest.Size = responseData.Aux.Size
-		}
-	}
-
-	if contentDigest.Hash == "" && statusDigest != "" {
-		hashParts := strings.Split(statusDigest, ":")
-		if len(hashParts) == 2 {
-			contentDigest.HashType = hashParts[0]
-			contentDigest.Hash = hashParts[1]
-		}
-	}
-	return &contentDigest, nil
 }
 
 func localImageExists(ctx context.Context, fullImageName string, dockerCli *dockerClient.Client) bool {
