@@ -1,14 +1,12 @@
 package targets
 
 import (
-	"encoding/hex"
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/daticahealth/cli/commands/environments"
 	"github.com/daticahealth/cli/lib/images"
 	"github.com/daticahealth/cli/models"
-	notaryClient "github.com/docker/notary/client"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -18,7 +16,7 @@ func cmdTargetsList(envID, imageName string, user *models.User, ie environments.
 		return err
 	}
 
-	var targets []*notaryClient.TargetWithRole
+	var targets []*images.Target
 
 	repositoryName, tag, err := ii.GetGloballyUniqueNamespace(imageName, env)
 	if err != nil {
@@ -43,7 +41,7 @@ func cmdTargetsList(envID, imageName string, user *models.User, ie environments.
 	if len(targets) > 0 {
 		data := [][]string{{"Name", "Digest", "Size", "Role"}, {"----", "------", "----", "----"}}
 		for _, t := range targets {
-			data = append(data, []string{t.Name, hex.EncodeToString(t.Hashes["sha256"]), fmt.Sprintf("%v", t.Length), t.Role.String()})
+			data = append(data, []string{t.Name, string(t.Digest), fmt.Sprintf("%v", t.Size), t.Role})
 		}
 
 		table := tablewriter.NewWriter(logrus.StandardLogger().Out)
