@@ -33,8 +33,9 @@ const (
 	JobIDAlt     = "abcdefgh"
 	TargetAlt    = "target2"
 
-	GoodDate = "2017-09-24T17:23:04.999999999Z07:00"
-	BadDate  = "2017-09-22T17:23:04.999999999Z07:00"
+	DownStream = "service_proxy"
+	GoodDate   = "2017-09-24T17:23:04.999999999Z07:00"
+	BadDate    = "2017-09-22T17:23:04.999999999Z07:00"
 )
 
 func Setup() (*http.ServeMux, *httptest.Server, *url.URL) {

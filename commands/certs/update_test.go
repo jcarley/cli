@@ -14,16 +14,17 @@ var certUpdateTests = []struct {
 	name        string
 	pubKeyPath  string
 	privKeyPath string
+	downStream  string
 	selfSigned  bool
 	resolve     bool
 	expectErr   bool
 }{
-	{certName, pubKeyPath, privKeyPath, true, false, false},
-	{certName, invalidPath, privKeyPath, true, false, true}, // invalid cert path
-	{certName, pubKeyPath, invalidPath, true, false, true},  // invalid key path
-	{certName, pubKeyPath, privKeyPath, false, false, true}, // cert not signed by CA
-	{certName, pubKeyPath, privKeyPath, true, true, false},
-	{"bad-cert-name", pubKeyPath, privKeyPath, true, false, true},
+	{certName, pubKeyPath, privKeyPath, test.DownStream, true, false, false},
+	{certName, invalidPath, privKeyPath, test.DownStream, true, false, true}, // invalid cert path
+	{certName, pubKeyPath, invalidPath, test.DownStream, true, false, true},  // invalid key path
+	{certName, pubKeyPath, privKeyPath, test.DownStream, false, false, true}, // cert not signed by CA
+	{certName, pubKeyPath, privKeyPath, test.DownStream, true, true, false},
+	{"bad-cert-name", pubKeyPath, privKeyPath, test.DownStream, true, false, true},
 }
 
 func TestCertsUpdate(t *testing.T) {
@@ -39,7 +40,7 @@ func TestCertsUpdate(t *testing.T) {
 	mux.HandleFunc("/environments/"+test.EnvID+"/services",
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "GET")
-			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"service_proxy"}]`, test.SvcID))
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"%s"}]`, test.SvcID, test.DownStream))
 		},
 	)
 
@@ -47,7 +48,7 @@ func TestCertsUpdate(t *testing.T) {
 		t.Logf("Data: %+v", data)
 
 		// test
-		err := CmdUpdate(data.name, data.pubKeyPath, data.privKeyPath, data.selfSigned, data.resolve, New(settings), services.New(settings), ssl.New(settings))
+		err := CmdUpdate(data.name, data.pubKeyPath, data.privKeyPath, data.downStream, data.selfSigned, data.resolve, New(settings), services.New(settings), ssl.New(settings))
 
 		// assert
 		if err != nil != data.expectErr {

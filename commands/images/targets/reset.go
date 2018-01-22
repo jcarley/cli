@@ -17,7 +17,7 @@ func cmdTargetsReset(envID, imageName string, user *models.User, ie environments
 		return err
 	}
 
-	repositoryName, tag, err := ii.GetGloballyUniqueNamespace(imageName, env)
+	repositoryName, tag, err := ii.GetGloballyUniqueNamespace(imageName, env, true)
 	if err != nil {
 		return err
 	}

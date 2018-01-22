@@ -92,7 +92,7 @@ func (d *SImages) Push(name string, user *models.User, env *models.Environment, 
 	defer dockerCli.Close()
 	dockerCli.NegotiateAPIVersion(ctx)
 
-	repositoryName, tag, err := d.GetGloballyUniqueNamespace(name, env)
+	repositoryName, tag, err := d.GetGloballyUniqueNamespace(name, env, true)
 	if err != nil {
 		return nil, err
 	}
@@ -316,12 +316,12 @@ func (d *SImages) GetNotaryRepository(pod, imageName string, user *models.User) 
 }
 
 // GetGloballyUniqueNamespace returns the fully formatted name for an image <registry>/<namespace>/<image> and a tag if present
-func (d *SImages) GetGloballyUniqueNamespace(name string, env *models.Environment) (string, string, error) {
+func (d *SImages) GetGloballyUniqueNamespace(name string, env *models.Environment, includeRegistry bool) (string, string, error) {
 	var repositoryName string
 	var image string
 	var tag string
 
-	imageParts := strings.Split(name, ":")
+	imageParts := strings.Split(strings.TrimPrefix(name, "/"), ":")
 	switch len(imageParts) {
 	case 1:
 		image = imageParts[0]
@@ -335,26 +335,31 @@ func (d *SImages) GetGloballyUniqueNamespace(name string, env *models.Environmen
 	repoParts := strings.Split(image, "/")
 	registry := getServer(env.Pod, registries)
 
+	var repo string
 	switch len(repoParts) {
 	case 1:
-		repositoryName = fmt.Sprintf("%s/%s/%s", registry, env.Namespace, repoParts[0])
+		repo = repoParts[0]
 	case 2:
 		if repoParts[0] != env.Namespace {
 			if repoParts[0] != registry {
 				return "", "", fmt.Errorf(IncorrectNamespace)
 			}
 			//Allow users to pull public images
-			repositoryName = image
-		} else {
-			repositoryName = fmt.Sprintf("%s/%s", registry, image)
+			return image, tag, nil
 		}
+		repo = repoParts[1]
 	case 3:
 		if repoParts[0] != registry || repoParts[1] != env.Namespace {
 			return "", "", fmt.Errorf(IncorrectRegistryOrNamespace)
 		}
-		repositoryName = image
+		repo = repoParts[2]
 	default:
 		return "", "", fmt.Errorf(InvalidImageName)
+	}
+	if includeRegistry {
+		repositoryName = fmt.Sprintf("%s/%s/%s", registry, env.Namespace, repo)
+	} else {
+		repositoryName = fmt.Sprintf("%s/%s", env.Namespace, repo)
 	}
 	return repositoryName, tag, nil
 }
