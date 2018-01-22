@@ -24,7 +24,7 @@ func CmdUpdate(iu IUpdate) error {
 		}
 	}
 	if !needsUpdate {
-		logrus.Println("You are already running the latest version of the Datica CLI")
+		logrus.Println("You are already running the latest 3.x version of the Datica CLI")
 		return nil
 	}
 	logrus.Printf("Version %s is available. Updating your CLI...", updater.AutoUpdater.Info.Version)
