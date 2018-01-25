@@ -1,19 +1,17 @@
 package images
 
 import (
-	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
-	"regexp"
+	"path"
 	"runtime"
 	"strings"
 	"time"
@@ -27,6 +25,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	dockerClient "github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/docker/go-connections/tlsconfig"
 	"github.com/docker/notary"
 	notaryClient "github.com/docker/notary/client"
@@ -37,6 +36,7 @@ import (
 	"github.com/docker/notary/trustpinning"
 	"github.com/docker/notary/tuf/data"
 	"github.com/olekukonko/tablewriter"
+	digest "github.com/opencontainers/go-digest"
 )
 
 var registries = map[string]string{
@@ -57,7 +57,8 @@ const (
 	MissingTrustData             = "does not have trust data for"
 	ImageDoesNotExist            = "No such image"
 	CancelingPush                = "Canceling push request"
-	InvalidDockerAPIVersion      = "Error response from daemon: client version .* is too new. Maximum supported API version is .*"
+
+	CanonicalTargetsRole = "targets"
 )
 
 // Constants for image handling
@@ -65,6 +66,21 @@ const (
 	defaultTag = "latest"
 	trustPath  = ".docker/trust"
 )
+
+// Target contains metadata about a target
+type Target struct {
+	Name   string
+	Digest digest.Digest
+	Size   int64
+	Role   string
+}
+
+// AuxData contains metadata about the content that was pushed
+type AuxData struct {
+	Tag    string `json:"Tag"`
+	Digest string `json:"Digest"`
+	Size   int64  `json:"Size"`
+}
 
 // Push parses a given name into registry/namespace/image:tag and attempts to push it to the remote registry
 func (d *SImages) Push(name string, user *models.User, env *models.Environment, ip prompts.IPrompts) (*models.Image, error) {
@@ -74,6 +90,7 @@ func (d *SImages) Push(name string, user *models.User, env *models.Environment, 
 		return nil, err
 	}
 	defer dockerCli.Close()
+	dockerCli.NegotiateAPIVersion(ctx)
 
 	repositoryName, tag, err := d.GetGloballyUniqueNamespace(name, env, true)
 	if err != nil {
@@ -103,18 +120,27 @@ func (d *SImages) Push(name string, user *models.User, env *models.Environment, 
 		logrus.Printf("Pushing image %s", fullImageName)
 	}
 
-	out, err := dockerCli.ImagePush(ctx, fullImageName, types.ImagePushOptions{RegistryAuth: dockerAuth(user)})
-	if err != nil {
-		if matched, _ := regexp.MatchString(InvalidDockerAPIVersion, err.Error()); matched {
-			return nil, fmt.Errorf("%s\nSet environment variable `DOCKER_API_VERSION` to match your local installation", err.Error())
-		}
-		return nil, err
-	}
-	defer out.Close()
-	digest, err := parseRegistryOutput(&out, true)
+	resp, err := dockerCli.ImagePush(ctx, fullImageName, types.ImagePushOptions{RegistryAuth: dockerAuth(user)})
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Close()
+
+	var digest *models.ContentDigest
+	if err = jsonmessage.DisplayJSONMessagesStream(resp, os.Stdout, os.Stdout.Fd(), true,
+		func(aux *json.RawMessage) {
+			var auxData AuxData
+			if data, jsonErr := aux.MarshalJSON(); jsonErr == nil {
+				json.Unmarshal(data, &auxData)
+				hashParts := strings.Split(auxData.Digest, ":")
+				digest.HashType = hashParts[0]
+				digest.Hash = hashParts[1]
+				digest.Size = auxData.Size
+			}
+		}); err != nil {
+		return nil, err
+	}
+
 	return &models.Image{
 		Name:   repositoryName,
 		Tag:    tag,
@@ -123,42 +149,22 @@ func (d *SImages) Push(name string, user *models.User, env *models.Environment, 
 }
 
 // Pull parses a name into registry/namespace/image:tag and attempts to retrieve it from the remote registry
-func (d *SImages) Pull(name string, user *models.User, env *models.Environment) (*models.Image, error) {
+func (d *SImages) Pull(name string, target *Target, user *models.User, env *models.Environment) error {
 	ctx := context.Background()
 	dockerCli, err := dockerClient.NewEnvClient()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer dockerCli.Close()
+	dockerCli.NegotiateAPIVersion(ctx)
 
-	repositoryName, tag, err := d.GetGloballyUniqueNamespace(name, env, true)
+	ref := strings.Join([]string{name, string(target.Digest)}, "@")
+	resp, err := dockerCli.ImagePull(ctx, ref, types.ImagePullOptions{RegistryAuth: dockerAuth(user)})
 	if err != nil {
-		return nil, err
+		return err
 	}
-	logrus.Printf("Pulling from repository %s\n", repositoryName)
-	if tag == "" {
-		tag = defaultTag
-		logrus.Printf("Using default tag: %s\n", tag)
-	}
-	fullImageName := strings.Join([]string{repositoryName, tag}, ":")
-
-	out, err := dockerCli.ImagePull(ctx, fullImageName, types.ImagePullOptions{RegistryAuth: dockerAuth(user)})
-	if err != nil {
-		if matched, _ := regexp.MatchString(InvalidDockerAPIVersion, err.Error()); matched {
-			return nil, fmt.Errorf("%s\nSet environment variable `DOCKER_API_VERSION` to match your local installation", err.Error())
-		}
-		return nil, err
-	}
-	defer out.Close()
-	digest, err := parseRegistryOutput(&out, true)
-	if err != nil {
-		return nil, err
-	}
-	return &models.Image{
-		Name:   repositoryName,
-		Tag:    tag,
-		Digest: digest,
-	}, nil
+	defer resp.Close()
+	return jsonmessage.DisplayJSONMessagesStream(resp, os.Stdout, os.Stdout.Fd(), true, nil)
 }
 
 // InitNotaryRepo intializes a notary repository
@@ -199,21 +205,37 @@ func (d *SImages) AddTargetHash(repo notaryClient.Repository, digest *models.Con
 }
 
 // ListTargets intializes a notary repository
-func (d *SImages) ListTargets(repo notaryClient.Repository, roles ...string) ([]*notaryClient.TargetWithRole, error) {
+func (d *SImages) ListTargets(repo notaryClient.Repository, roles ...string) ([]*Target, error) {
 	targets, err := repo.ListTargets(data.NewRoleList(roles)...)
 	if err != nil {
 		return nil, err
 	}
-	return targets, nil
+	var ts []*Target
+	for _, t := range targets {
+		t1, err := convertTarget(t)
+		if err != nil {
+			return nil, err
+		}
+		ts = append(ts, t1)
+	}
+	return ts, nil
 }
 
 // LookupTarget searches for a specific target in a repository by tag name
-func (d *SImages) LookupTarget(repo notaryClient.Repository, tag string) (*notaryClient.TargetWithRole, error) {
+func (d *SImages) LookupTarget(repo notaryClient.Repository, tag string) (*Target, error) {
 	target, err := repo.GetTargetByName(tag)
 	if err != nil {
 		return nil, err
 	}
-	return target, nil
+	role := string(target.Role)
+	if role != path.Join(CanonicalTargetsRole, "releases") && role != CanonicalTargetsRole {
+		return nil, fmt.Errorf("no canonical target found for %s", tag)
+	}
+	t, err := convertTarget(target)
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
 }
 
 // DeleteTargets deletes the signed targets for a list of tags
@@ -361,68 +383,6 @@ func dockerAuth(user *models.User) string {
 		logrus.Fatal(err)
 	}
 	return base64.URLEncoding.EncodeToString(encodedJSON)
-}
-
-// RegistryOutput holds response data from the registry
-type RegistryOutput struct {
-	Status         string            `json:"status,omitempty"`
-	ProgressDetail map[string]string `json:"progressDetail,omitempty"`
-	Aux            *AuxData          `json:"aux,omitempty"`
-	ID             string            `json:"id,omitempty"`
-	Error          string            `json:"error,omitempty"`
-}
-
-// AuxData contains metadata about the content that was pushed
-type AuxData struct {
-	Tag    string `json:"Tag"`
-	Digest string `json:"Digest"`
-	Size   int64  `json:"Size"`
-}
-
-func parseRegistryOutput(out *io.ReadCloser, print bool) (*models.ContentDigest, error) {
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(*out)
-	outputLines := strings.Split(buf.String(), "\n")
-	var contentDigest models.ContentDigest
-	var statusDigest string
-	for _, line := range outputLines {
-		var responseData RegistryOutput
-		json.Unmarshal([]byte(line), &responseData)
-		if responseData.Error != "" {
-			return nil, fmt.Errorf(responseData.Error)
-		} else if responseData.Status != "" {
-			var output string
-			if responseData.ID != "" {
-				output = fmt.Sprintf("%s: %s", responseData.ID, responseData.Status)
-			} else {
-				output = responseData.Status
-			}
-
-			//Docker daemon get this as stream, but we get it all at once so there's no print in printing progress update
-			if print && responseData.ProgressDetail == nil {
-				logrus.Println(output)
-			}
-
-			// Used to get digest from a pull request. Only push gets 'aux' data
-			if strings.Contains(responseData.Status, "Digest: ") {
-				statusDigest = strings.TrimPrefix(responseData.Status, "Digest: ")
-			}
-		} else if responseData.Aux != nil {
-			hashParts := strings.Split(responseData.Aux.Digest, ":")
-			contentDigest.HashType = hashParts[0]
-			contentDigest.Hash = hashParts[1]
-			contentDigest.Size = responseData.Aux.Size
-		}
-	}
-
-	if contentDigest.Hash == "" && statusDigest != "" {
-		hashParts := strings.Split(statusDigest, ":")
-		if len(hashParts) == 2 {
-			contentDigest.HashType = hashParts[0]
-			contentDigest.Hash = hashParts[1]
-		}
-	}
-	return &contentDigest, nil
 }
 
 func localImageExists(ctx context.Context, fullImageName string, dockerCli *dockerClient.Client) bool {
@@ -690,4 +650,17 @@ func userHomeDir() string {
 		env = "home"
 	}
 	return os.Getenv(env)
+}
+
+func convertTarget(t *notaryClient.TargetWithRole) (*Target, error) {
+	h, ok := t.Hashes["sha256"]
+	if !ok {
+		return nil, fmt.Errorf("no valid hash, expecting sha256")
+	}
+	return &Target{
+		Name:   t.Name,
+		Digest: digest.NewDigestFromHex("sha256", hex.EncodeToString(h)),
+		Size:   t.Length,
+		Role:   string(t.Role),
+	}, nil
 }

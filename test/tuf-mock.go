@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/daticahealth/cli/lib/images"
 	"github.com/daticahealth/cli/lib/prompts"
 	"github.com/daticahealth/cli/models"
 	notaryClient "github.com/docker/notary/client"
@@ -15,6 +16,7 @@ import (
 	"github.com/docker/notary/trustpinning"
 	"github.com/docker/notary/tuf/data"
 	"github.com/olekukonko/tablewriter"
+	digest "github.com/opencontainers/go-digest"
 )
 
 // FakeImages is a mock images struct
@@ -109,26 +111,11 @@ func (d *FakeImages) Push(name string, user *models.User, env *models.Environmen
 }
 
 // Pull parses a name into registry/namespace/image:tag and attempts to retrieve it from the remote registry
-func (d *FakeImages) Pull(name string, user *models.User, env *models.Environment) (*models.Image, error) {
-	repositoryName, tag, err := d.GetGloballyUniqueNamespace(name, env, true)
-	if err != nil {
-		return nil, err
+func (d *FakeImages) Pull(name string, target *images.Target, user *models.User, env *models.Environment) error {
+	if !imageExists(fmt.Sprintf("%s:%s", name, target.Name), remoteImages) {
+		return fmt.Errorf(ImageDoesNotExist)
 	}
-	logrus.Printf("Pulling from repository %s\n", repositoryName)
-	if tag == "" {
-		tag = defaultTag
-		logrus.Printf("Using default tag: %s\n", tag)
-	}
-	fullImageName := fmt.Sprintf("%s:%s", repositoryName, tag)
-	if !imageExists(fullImageName, remoteImages) {
-		return nil, fmt.Errorf(ImageDoesNotExist)
-	}
-
-	return &models.Image{
-		Name:   repositoryName,
-		Tag:    tag,
-		Digest: testDigest,
-	}, nil
+	return nil
 }
 
 // InitNotaryRepo intializes a notary repository
@@ -165,25 +152,19 @@ func (d *FakeImages) AddTargetHash(repo notaryClient.Repository, digest *models.
 }
 
 // ListTargets intializes a notary repository
-func (d *FakeImages) ListTargets(repo notaryClient.Repository, roles ...string) ([]*notaryClient.TargetWithRole, error) {
+func (d *FakeImages) ListTargets(repo notaryClient.Repository, roles ...string) ([]*images.Target, error) {
 	target, _ := d.LookupTarget(repo, Tag)
-	targets := []*notaryClient.TargetWithRole{target}
+	targets := []*images.Target{target}
 	return targets, nil
 }
 
 // LookupTarget searches for a specific target in a repository by tag name
-func (d *FakeImages) LookupTarget(repo notaryClient.Repository, tag string) (*notaryClient.TargetWithRole, error) {
-	hash, err := hex.DecodeString(testDigest.Hash)
-	if err != nil {
-		return nil, err
-	}
-	target := &notaryClient.TargetWithRole{
-		Target: notaryClient.Target{
-			Name:   tag,
-			Hashes: data.Hashes{testDigest.HashType: hash},
-			Length: testDigest.Size,
-		},
-		Role: "targets",
+func (d *FakeImages) LookupTarget(repo notaryClient.Repository, tag string) (*images.Target, error) {
+	target := &images.Target{
+		Name:   tag,
+		Digest: digest.NewDigestFromHex(testDigest.HashType, testDigest.Hash),
+		Size:   testDigest.Size,
+		Role:   "targets",
 	}
 	return target, nil
 }

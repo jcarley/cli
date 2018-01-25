@@ -13,11 +13,11 @@ type IImages interface {
 	ListTags(imageName string) (*[]string, error)
 	DeleteTag(imageName, tagName string) error
 	Push(name string, user *models.User, env *models.Environment, ip prompts.IPrompts) (*models.Image, error)
-	Pull(name string, user *models.User, env *models.Environment) (*models.Image, error)
+	Pull(name string, target *Target, user *models.User, env *models.Environment) error
 	InitNotaryRepo(repo notaryClient.Repository, rootKeyPath string) error
 	AddTargetHash(repo notaryClient.Repository, digest *models.ContentDigest, tag string, publish bool) error
-	ListTargets(repo notaryClient.Repository, roles ...string) ([]*notaryClient.TargetWithRole, error)
-	LookupTarget(repo notaryClient.Repository, tag string) (*notaryClient.TargetWithRole, error)
+	ListTargets(repo notaryClient.Repository, roles ...string) ([]*Target, error)
+	LookupTarget(repo notaryClient.Repository, tag string) (*Target, error)
 	DeleteTargets(repo notaryClient.Repository, tags []string, publish bool) error
 	PrintChangelist(changes []changelist.Change)
 	CheckChangelist(repo notaryClient.Repository, ip prompts.IPrompts) error
