@@ -126,7 +126,7 @@ func (d *SImages) Push(name string, user *models.User, env *models.Environment, 
 	}
 	defer resp.Close()
 
-	var digest *models.ContentDigest
+	var digest models.ContentDigest
 	if err = jsonmessage.DisplayJSONMessagesStream(resp, os.Stdout, os.Stdout.Fd(), true,
 		func(aux *json.RawMessage) {
 			var auxData AuxData
@@ -144,7 +144,7 @@ func (d *SImages) Push(name string, user *models.User, env *models.Environment, 
 	return &models.Image{
 		Name:   repositoryName,
 		Tag:    tag,
-		Digest: digest,
+		Digest: &digest,
 	}, nil
 }
 
