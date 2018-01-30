@@ -16,6 +16,10 @@ func cmdImagePull(envID, name string, user *models.User, ie environments.IEnviro
 	if err != nil {
 		return err
 	}
+	if tag == "" {
+		logrus.Printf("No tag specified. Using default tag '%s'\n", images.DefaultTag)
+		tag = images.DefaultTag
+	}
 	logrus.Println("Verifying image has been signed...")
 	repo := ii.GetNotaryRepository(env.Pod, repositoryName, user)
 	target, err := ii.LookupTarget(repo, tag)
