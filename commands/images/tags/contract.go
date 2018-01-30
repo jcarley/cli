@@ -30,10 +30,10 @@ var listCmd = models.Command{
 	Name:      "list",
 	ShortHelp: "List tags for a given image",
 	LongHelp: "List pushed tags for given image. Example:\n" +
-		"<pre>\ndatica -E \"<your_env_name>\" images tags list pod012345/my-image\n</pre>",
+		"<pre>\ndatica -E \"<your_env_name>\" images tags list <image>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to list tags for, including the environment's namespace.")
+			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to list tags for, including the environment's namespace. (e.g. 'my-image')")
 			cmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -54,10 +54,10 @@ var deleteCmd = models.Command{
 	Name:      "rm",
 	ShortHelp: "Delete a tag for a given image",
 	LongHelp: "Delete a tag for a given image. Example:\n" +
-		"<pre>\ndatica -E \"<your_env_name>\" images tags delete <namespace>/<image>:<tag>\n</pre>",
+		"<pre>\ndatica -E \"<your_env_name>\" images tags rm <image>:<tag>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			image := cmd.StringArg("IMAGE_NAME", "", "The tagged name of the image to delete.")
+			image := cmd.StringArg("TAGGED_IMAGE", "", "The tagged name of the image to delete. (e.g. 'my-image:tag')")
 			cmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())

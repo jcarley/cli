@@ -19,7 +19,7 @@ func cmdTagDelete(ii images.IImages, ip prompts.IPrompts, ie environments.IEnvir
 	if err != nil {
 		return err
 	} else if tag == "" {
-		return fmt.Errorf("Must include tag in image name.")
+		return fmt.Errorf("Must include tag in image name in the format <image>:<tag>")
 	}
 
 	tags, err := ii.ListTags(namespacedImage)
