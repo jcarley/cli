@@ -13,8 +13,8 @@ import (
 var Cmd = models.Command{
 	Name:      "init",
 	ShortHelp: "Get started using the Datica platform",
-	LongHelp: "The `init` command walks you through setting up the CLI to use with the Datica platform. " +
-		"The `init` command requires you to have an environment already setup. ",
+	LongHelp: "The <code>init</code> command walks you through setting up the CLI to use with the Datica platform. " +
+		"The <code>init</code> command requires you to have an environment already set up. ",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			cmd.Action = func() {

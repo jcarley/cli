@@ -9,6 +9,7 @@ builds/
 build/
 public/
 Godeps/_workspace
-docs/cli-docs.md
+docs/cli-docs.*
 .datica_update
 cli
+main

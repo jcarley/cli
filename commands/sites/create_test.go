@@ -17,6 +17,7 @@ var createTests = []struct {
 	name                 string
 	svcName              string
 	certName             string
+	downStream           string
 	clientMaxBodySize    int
 	proxyConnectTimeout  int
 	proxyReadTimeout     int
@@ -27,11 +28,11 @@ var createTests = []struct {
 	letsEncrypt          bool
 	expectErr            bool
 }{
-	{"test.example.com", "code-1", "test_example_com", -1, -1, -1, -1, -1, false, false, false, false},
-	{"test.example.com", "code-1", "test_example_com", -1, -1, -1, -1, -1, false, false, true, false},
-	{"test.example.com", "code-1", "test_example_com", 1, 2, 3, 4, 5, true, true, false, false},
-	{"test.example.com", "code-1", "test_example_com", 1, 2, 3, 4, 5, true, true, true, false},
-	{"test.example.com", "code-invalid", "test_example_com", 1, 2, 3, 4, 5, true, true, false, true},
+	{"test.example.com", test.SvcLabel, "test_example_com", test.DownStream, -1, -1, -1, -1, -1, false, false, false, false},
+	{"test.example.com", test.SvcLabel, "test_example_com", test.DownStream, -1, -1, -1, -1, -1, false, false, true, false},
+	{"test.example.com", test.SvcLabel, "test_example_com", test.DownStream, 1, 2, 3, 4, 5, true, true, false, false},
+	{"test.example.com", test.SvcLabel, "test_example_com", test.DownStream, 1, 2, 3, 4, 5, true, true, true, false},
+	{"test.example.com", "code-invalid", "test_example_com", test.DownStream, 1, 2, 3, 4, 5, true, true, false, true},
 }
 
 func TestCreate(t *testing.T) {
@@ -39,7 +40,7 @@ func TestCreate(t *testing.T) {
 	defer test.Teardown(server)
 	settings := test.GetSettings(baseURL.String())
 	certNameSent := ""
-	mux.HandleFunc("/environments/"+test.EnvID+"/services/"+test.SvcID+"/certs",
+	mux.HandleFunc("/environments/"+test.EnvID+"/services/"+test.SvcIDAlt+"/certs",
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "POST")
 			defer r.Body.Close()
@@ -55,7 +56,7 @@ func TestCreate(t *testing.T) {
 			fmt.Fprint(w, `{}`)
 		},
 	)
-	mux.HandleFunc("/environments/"+test.EnvID+"/services/"+test.SvcID+"/sites",
+	mux.HandleFunc("/environments/"+test.EnvID+"/services/"+test.SvcIDAlt+"/sites",
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "POST")
 			defer r.Body.Close()
@@ -69,7 +70,7 @@ func TestCreate(t *testing.T) {
 	mux.HandleFunc("/environments/"+test.EnvID+"/services",
 		func(w http.ResponseWriter, r *http.Request) {
 			test.AssertEquals(t, r.Method, "GET")
-			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"service_proxy"},{"id":"%s","label":"code-1"}]`, test.SvcID, test.SvcIDAlt))
+			fmt.Fprint(w, fmt.Sprintf(`[{"id":"%s","label":"%s"},{"id":"%s","label":"%s"}]`, test.SvcID, test.SvcLabel, test.SvcIDAlt, test.DownStream))
 		},
 	)
 
@@ -78,7 +79,7 @@ func TestCreate(t *testing.T) {
 		t.Logf("Data: %+v", data)
 
 		// test
-		err := CmdCreate(data.name, data.svcName, data.certName, data.clientMaxBodySize, data.proxyConnectTimeout, data.proxyReadTimeout, data.proxySendTimeout, data.proxyUpstreamTimeout, data.enableCORS, data.enableWebSockets, data.letsEncrypt, New(settings), certs.New(settings), services.New(settings))
+		err := CmdCreate(data.name, data.svcName, data.certName, data.downStream, data.clientMaxBodySize, data.proxyConnectTimeout, data.proxyReadTimeout, data.proxySendTimeout, data.proxyUpstreamTimeout, data.enableCORS, data.enableWebSockets, data.letsEncrypt, New(settings), certs.New(settings), services.New(settings))
 
 		// assert
 		if err != nil != data.expectErr {

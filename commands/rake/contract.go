@@ -15,9 +15,9 @@ import (
 var Cmd = models.Command{
 	Name:      "rake",
 	ShortHelp: "Execute a rake task",
-	LongHelp: "`rake` executes a rake task by its name asynchronously. " +
+	LongHelp: "<code>rake</code> executes a rake task by its name asynchronously. " +
 		"Once executed, the output of the task can be seen through your logging Dashboard. Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" rake code-1 db:migrate\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" rake code-1 db:migrate\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
 			serviceName := cmd.StringArg("SERVICE_NAME", "", "The service that will run the rake task.")

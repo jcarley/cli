@@ -6,6 +6,7 @@ import (
 	"github.com/daticahealth/cli/commands/services"
 	"github.com/daticahealth/cli/config"
 	"github.com/daticahealth/cli/lib/auth"
+	"github.com/daticahealth/cli/lib/images"
 	"github.com/daticahealth/cli/lib/jobs"
 	"github.com/daticahealth/cli/lib/prompts"
 	"github.com/daticahealth/cli/models"
@@ -17,14 +18,14 @@ import (
 var Cmd = models.Command{
 	Name:      "deploy",
 	ShortHelp: "Deploy a Docker image to a container service.",
-	LongHelp: "`deploy` deploys a Docker image for the given service. " +
+	LongHelp: "<code>deploy</code> deploys a Docker image for the given service. " +
 		"This command will only deploy for \"container\" services. " +
 		"Here is a sample command\n\n" +
-		"```\ndatica -E \"<your_env_name>\" deploy container01 image01\n```",
+		"<pre>\ndatica -E \"<your_env_name>\" deploy <service> <image>:<tag>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service to deploy to (e.g. 'container01')")
-			imageName := cmd.StringArg("IMAGE_NAME", "", "The name of the image to deploy (e.g. 'image01')")
+			serviceName := cmd.StringArg("SERVICE_NAME", "", "The name of the service where the image will be deployed. (e.g. 'container-1')")
+			imageName := cmd.StringArg("TAGGED_IMAGE", "", "The name and tag of the image to deploy. (e.g. 'my-image:tag)")
 			cmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())
@@ -32,7 +33,7 @@ var Cmd = models.Command{
 				if err := config.CheckRequiredAssociation(settings); err != nil {
 					logrus.Fatal(err.Error())
 				}
-				err := CmdDeploy(settings.EnvironmentID, *serviceName, *imageName, jobs.New(settings), services.New(settings), environments.New(settings))
+				err := CmdDeploy(settings.EnvironmentID, *serviceName, *imageName, jobs.New(settings), services.New(settings), environments.New(settings), images.New(settings))
 				if err != nil {
 					logrus.Fatal(err.Error())
 				}

@@ -10,12 +10,10 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/daticahealth/cli/commands/deploykeys"
-	"github.com/daticahealth/cli/commands/domain"
 	"github.com/daticahealth/cli/commands/environments"
 	"github.com/daticahealth/cli/commands/git"
 	"github.com/daticahealth/cli/commands/keys"
 	"github.com/daticahealth/cli/commands/services"
-	"github.com/daticahealth/cli/commands/sites"
 	"github.com/daticahealth/cli/config"
 	"github.com/daticahealth/cli/lib/prompts"
 	"github.com/daticahealth/cli/models"
@@ -165,10 +163,6 @@ func CmdInit(settings *models.Settings, p prompts.IPrompts) error {
 		}
 	}
 
-	domain, err := domain.FindEnvironmentDomain(env.ID, env.Namespace, is, sites.New(settings))
-	if err != nil {
-		return err
-	}
-	logrus.Printf("All set! Run \"git push datica master\" to push your code. Once the build finishes, you can view your code running at %s. It may take a few minutes for DNS to propagate.", domain)
+	logrus.Println("All set! Next, you'll need to make sure you have an SSH key to push code using the \"datica keys\" command. Once your key is set up, run \"git push datica master\" to push your code.")
 	return nil
 }
