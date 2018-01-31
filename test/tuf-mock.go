@@ -76,7 +76,7 @@ const (
 
 // Constants for image handling
 const (
-	defaultTag = "latest"
+	DefaultTag = "latest"
 	trustPath  = ".docker/trust"
 )
 
@@ -88,7 +88,7 @@ func (d *FakeImages) Push(name string, user *models.User, env *models.Environmen
 	}
 
 	if tag == "" {
-		tag = defaultTag
+		tag = DefaultTag
 	}
 	fullImageName := strings.Join([]string{repositoryName, tag}, ":")
 

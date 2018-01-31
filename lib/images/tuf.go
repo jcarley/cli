@@ -63,7 +63,7 @@ const (
 
 // Constants for image handling
 const (
-	defaultTag = "latest"
+	DefaultTag = "latest"
 	trustPath  = ".docker/trust"
 )
 
@@ -98,7 +98,7 @@ func (d *SImages) Push(name string, user *models.User, env *models.Environment, 
 	}
 
 	if tag == "" {
-		tag = defaultTag
+		tag = DefaultTag
 	}
 	fullImageName := strings.Join([]string{repositoryName, tag}, ":")
 	if fullImageName != name {

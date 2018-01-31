@@ -36,7 +36,7 @@ var listCmd = models.Command{
 		"<pre>\ndatica -E \"<your_env_name>\" images targets list <image>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to list targets for.")
+			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to list targets for. (e.g. 'my-image')")
 			cmd.Action = func() {
 				user, err := auth.New(settings, prompts.New()).Signin()
 				if err != nil {
@@ -61,7 +61,7 @@ var deleteCmd = models.Command{
 		"<pre>\ndatica -E \"<your_env_name>\" images targets rm <image>:<tag>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to delete targets for")
+			image := cmd.StringArg("TAGGED_IMAGE", "", "The name and tag of the image to delete targets from. (e.g. 'my-image:tag')")
 			cmd.Action = func() {
 				user, err := auth.New(settings, prompts.New()).Signin()
 				if err != nil {
@@ -86,7 +86,7 @@ var statusCmd = models.Command{
 		"<pre>\ndatica -E \"<your_env_name>\" images targets status <image>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to list unpublished changes for.")
+			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to list unpublished changes for. (e.g. 'my-image')")
 			cmd.Action = func() {
 				user, err := auth.New(settings, prompts.New()).Signin()
 				if err != nil {
@@ -111,7 +111,7 @@ var resetCmd = models.Command{
 		"<pre>\ndatica -E \"<your_env_name>\" images targets reset <image>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to reset unpublished changes for.")
+			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to reset unpublished changes for. (e.g. 'my-image')")
 			cmd.Action = func() {
 				user, err := auth.New(settings, prompts.New()).Signin()
 				if err != nil {
