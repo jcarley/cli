@@ -33,7 +33,7 @@ var listCmd = models.Command{
 		"<pre>\ndatica -E \"<your_env_name>\" images tags list <image>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to list tags for, including the environment's namespace. (e.g. 'my-image')")
+			image := cmd.StringArg("IMAGE_NAME", "", "The name of the image to list tags for. (e.g. 'my-image')")
 			cmd.Action = func() {
 				if _, err := auth.New(settings, prompts.New()).Signin(); err != nil {
 					logrus.Fatal(err.Error())

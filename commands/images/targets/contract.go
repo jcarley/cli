@@ -61,7 +61,7 @@ var deleteCmd = models.Command{
 		"<pre>\ndatica -E \"<your_env_name>\" images targets rm <image>:<tag>\n</pre>",
 	CmdFunc: func(settings *models.Settings) func(cmd *cli.Cmd) {
 		return func(cmd *cli.Cmd) {
-			image := cmd.StringArg("TAGGED_IMAGE", "", "The name and tag of the image to delete targets for (e.g. 'my-image:tag')")
+			image := cmd.StringArg("TAGGED_IMAGE", "", "The name and tag of the image to delete targets from. (e.g. 'my-image:tag')")
 			cmd.Action = func() {
 				user, err := auth.New(settings, prompts.New()).Signin()
 				if err != nil {
