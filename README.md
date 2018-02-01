@@ -4,7 +4,7 @@ Welcome to the Datica CLI.
 
 ## Documentation
 
-To learn more about the Datica CLI and all the great features we've added, we recommend reading the [documentation](https://resources.datica.com/compliant-cloud/cli-reference/).
+To learn more about the Datica CLI and all the great features we've added, we recommend reading the [documentation](https://help.datica.com/hc/en-us/articles/115005672426).
 
 Check out the [releases](https://github.com/daticahealth/cli/releases) page or check below to download the right version for your platform.
 
