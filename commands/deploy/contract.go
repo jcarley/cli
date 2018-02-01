@@ -38,7 +38,7 @@ var Cmd = models.Command{
 					logrus.Fatal(err.Error())
 				}
 			}
-			cmd.Spec = "SERVICE_NAME IMAGE_NAME"
+			cmd.Spec = "SERVICE_NAME TAGGED_IMAGE"
 		}
 	},
 }
