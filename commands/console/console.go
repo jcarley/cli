@@ -91,9 +91,9 @@ func (c *SConsole) Open(command string, service *models.Service) error {
 	logrus.Println("Checking to make sure this is a new build")
 
 	oldState, _ := term.SaveState(fdIn)
-	// settings taken from MakeRaw function of https://github.com/moby/moby/blob/master/pkg/term/termios_linux.go           "-ignbrk", "-igncr", "-istrip", "-parmrk", "-inlcr", "-echonl"
-	// sttyCommand := exec.Command("/bin/stty", "cooked", "-brkint", "-icrnl", "-ixon", "-opost", "-echo", "-echoe", "-icanon", "-isig", "-iexten", "-parenb")
-	sttyCommand := exec.Command("/bin/stty", "icanon", "isig", "iexten", "echo", "echoe", "-echok", "echoke", "-echonl", "echoctl", "-echoprt", "-altwerase", "-noflsh", "-tostop", "-flusho", "pendin", "-nokerninfo", "-extproc",
+	// // settings taken from MakeRaw function of https://github.com/moby/moby/blob/master/pkg/term/termios_linux.go           "-ignbrk", "-igncr", "-istrip", "-parmrk", "-inlcr", "-echonl"
+	// // sttyCommand := exec.Command("/bin/stty", "cooked", "-brkint", "-icrnl", "-ixon", "-opost", "-echo", "-echoe", "-icanon", "-isig", "-iexten", "-parenb")
+	sttyCommand := exec.Command("/bin/stty", "icanon", "isig", "iexten", "echo", "echoe", "-echok", "echoke", "-echonl", "-echoctl", "-echoprt", "-altwerase", "-noflsh", "-tostop", "-flusho", "pendin", "-nokerninfo", "-extproc",
 		"-istrip", "icrnl", "-inlcr", "-igncr", "ixon", "-ixoff", "ixany", "imaxbel", "iutf8", "-ignbrk", "brkint", "-inpck", "-ignpar", "-parmrk", "opost", "onlcr", "-oxtabs", "-onocr", "-onlret", "cread",
 		"cs8", "-parenb", "-parodd", "hupcl", "-clocal", "-cstopb", "-crtscts", "-dsrflow", "-dtrflow", "-mdmbuf")
 	sttyCommand.Stdin = stdin
