@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"runtime"
 	"strings"
+	"syscall"
 
 	"golang.org/x/net/websocket"
 
@@ -38,26 +39,40 @@ func CmdConsole(svcName, command string, ic IConsole, is services.IServices) err
 func (c *SConsole) Open(command string, service *models.Service) error {
 	stdin, stdout, _ := term.StdStreams()
 	fdIn, isTermIn := term.GetFdInfo(stdin)
+	fdOut, _ := term.GetFdInfo(stdout)
 	if !isTermIn {
 		return errors.New("StdIn is not a terminal")
 	}
-	var size *term.Winsize
-	var err error
-	if runtime.GOOS != "windows" {
-		size, err = term.GetWinsize(fdIn)
-	} else {
-		fdOut, _ := term.GetFdInfo(stdout)
-		size, err = term.GetWinsize(fdOut)
-	}
 
-	if err != nil {
-		return err
-	}
-	if size.Width != 80 {
-		logrus.Warnln("Your terminal width is not 80 characters. Please resize your terminal to be exactly 80 characters wide to avoid line wrapping issues.")
-	} else {
-		logrus.Warnln("Keep your terminal width at 80 characters. Resizing your terminal will introduce line wrapping issues.")
-	}
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGWINCH)
+	go func() {
+		for range ch {
+
+			var size *term.Winsize
+			var err error
+
+			if runtime.GOOS != "windows" {
+				size, err = term.GetWinsize(fdIn)
+			} else {
+				size, err = term.GetWinsize(fdIn)
+			}
+			err = term.SetWinsize(fdOut, size)
+
+			if err != nil {
+				// not sure what to do here yet
+				fmt.Printf("Error: %s", err.Error())
+			}
+
+		}
+	}()
+	ch <- syscall.SIGWINCH // Initial resize
+
+	// if size.Width != 80 {
+	//   logrus.Warnln("Your terminal width is not 80 characters. Please resize your terminal to be exactly 80 characters wide to avoid line wrapping issues.")
+	// } else {
+	//   logrus.Warnln("Keep your terminal width at 80 characters. Resizing your terminal will introduce line wrapping issues.")
+	// }
 
 	logrus.Printf("Opening console to %s (%s)", service.Name, service.ID)
 	job, err := c.Request(command, service)
